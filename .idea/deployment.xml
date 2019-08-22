@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="root@192.168.254.128:22" uploadOnCheckin="1e50e072-3333-405f-8d7e-c0a5d91cf584">
+    <serverData>
+      <paths name="root@172.20.10.2:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
+            <mapping local="" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="root@192.168.254.128:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/django" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myUploadOnCheckinName" value="root@192.168.254.128:22" />
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
