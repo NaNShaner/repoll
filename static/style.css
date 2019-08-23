@@ -1,0 +1,9 @@
+li{
+    color: green;
+    text-decoration: none;
+    list-style-type: decimal;
+}
+
+body{
+    background-color: rgb(223, 204, 204);
+}

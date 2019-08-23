@@ -39,7 +39,7 @@ def results(request, question_id):
 def vote(request, question_id):
     question = get_object_or_404(Question, pk=question_id)
     try:
-        selected_choice = question.choice_set.get(pk=request.POST('choice'))
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
     except(KeyError, Choice.DoesNotExist):
         return render(request, 'polls/detail.html', {
             "question": question,
@@ -48,7 +48,7 @@ def vote(request, question_id):
     else:
         selected_choice.votes += 1
         selected_choice.save()
-        return HttpResponseRedirect(reverse('polls:results', args=(question_id)))
+        return HttpResponseRedirect(reverse('polls:results', args=(question_id,)))
 
 
 def run_scan_tomcat(request, apptrye):
@@ -57,3 +57,7 @@ def run_scan_tomcat(request, apptrye):
         return HttpResponse(ex[1])
     else:
         return HttpResponse("当前入参错误，apptype为%s" % apptrye)
+
+
+def url_test(request, year, month, slug):
+    return HttpResponse("{} {} {}".format(year, month, slug))

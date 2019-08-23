@@ -14,7 +14,8 @@ class Question(models.Model):
     pub_date = models.DateTimeField('date published')
 
     def was_published_recently(self):
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+        now = timezone.now()
+        return now - datetime.timedelta(days=1) <= self.pub_date <= now
 
     def __str__(self):
         return self.question_text
@@ -32,6 +33,8 @@ class Choice(models.Model):
 class Person(models.Model):
     name = models.CharField(max_length=5)
     sex = models.CharField(max_length=5)
+    upload = models.FileField(upload_to='uploads/')
+    email_filed = models.EmailField(default='test@test.com')
 
     def __str__(self):
         return self.name

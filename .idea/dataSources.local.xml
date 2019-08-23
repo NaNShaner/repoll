@@ -11,5 +11,14 @@
       <user-name>root</user-name>
       <introspection-schemas>*:@</introspection-schemas>
     </data-source>
+    <data-source name="Django default" uuid="a7ac336f-830e-49eb-b3c6-1252a34236fa">
+      <database-info product="MySQL" version="5.7.27" jdbc-version="4.2" driver-name="MySQL Connector/J" driver-version="mysql-connector-java-8.0.15 (Revision: 79a4336f140499bd22dd07f02b708e163844e3d5)" dbms="MYSQL" exact-version="5.7.27" exact-driver-version="8.0">
+        <extra-name-characters>#@</extra-name-characters>
+        <identifier-quote-string>`</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
+      <user-name>root</user-name>
+      <introspection-schemas>*:@</introspection-schemas>
+    </data-source>
   </component>
 </project>
