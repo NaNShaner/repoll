@@ -94,3 +94,8 @@ def pyecharts(request):
         .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"))
     )
     return HttpResponse(c.render_embed())
+
+
+def list(request):
+    test = Question.objects.all()
+    return render(request, 'polls/list.html', {"b": test})
