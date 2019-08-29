@@ -7,6 +7,23 @@ import subprocess
 from .models import Question, Choice
 from django.http import Http404
 from django.urls import reverse
+from django.db import models
+
+
+
+#### pyecharts ####
+import json
+from jinja2 import Environment, FileSystemLoader
+from pyecharts.globals import CurrentConfig
+from django.http import HttpResponse
+
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
+from pyecharts import options as opts
+from pyecharts.charts import Bar
+from random import randrange
+from rest_framework.views import APIView
+
+
 
 
 # Create your views here.
@@ -60,4 +77,20 @@ def run_scan_tomcat(request, apptrye):
 
 
 def url_test(request, year, month, slug):
+    test = Question.objects.all()
+    print(test)
     return HttpResponse("{} {} {}".format(year, month, slug))
+
+
+# echarts
+def pyecharts(request):
+    obj = Choice.objects.get(id=1)
+    print(obj)
+    c = (
+        Bar()
+        .add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
+        .add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+        .add_yaxis("商家B", [15, 25, 16, 55, 48, 8])
+        .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"))
+    )
+    return HttpResponse(c.render_embed())

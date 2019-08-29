@@ -25,7 +25,7 @@ SECRET_KEY = 'jw4f%am^w47or#dty2d(b*w$+f50n-w4-qy3ok#2*ds00i=d%&'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [u'192.168.254.128']
+ALLOWED_HOSTS = [u'172.20.10.5']
 
 
 # Application definition
@@ -38,7 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'polls.apps.PollsConfig',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -86,7 +95,7 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '192.168.254.128',
+        'HOST': '172.20.10.5',
         'PORT': '3306',
     }
 }

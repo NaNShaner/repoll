@@ -32,7 +32,11 @@ class Choice(models.Model):
 
 class Person(models.Model):
     name = models.CharField(max_length=5)
-    sex = models.CharField(max_length=5)
+    sex_choice = [
+        (0, "男"),
+        (1, "女")
+    ]
+    sex = models.IntegerField(choices=sex_choice)
     upload = models.FileField(upload_to='uploads/')
     email_filed = models.EmailField(default='test@test.com')
 

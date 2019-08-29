@@ -8,7 +8,7 @@
 <h1>{{ question.question_text }}</h1>
 <ul>
     {% for choice in question.choice_set.all %}
-        <li>{{ choice.choice_text }} -- 计票{{ choice.votes }} {{ choice.vote|pluralize }}次</li>
+        <li>{{ choice.choice_text }} -- 计票{{ choice.votes }} {{ choice.votes|pluralize }}次</li>
     {% endfor %}
 </ul>
 <a href="{% url 'polls:detail' question.id %}"> 重新投票？</a>
