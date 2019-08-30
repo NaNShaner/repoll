@@ -31,15 +31,16 @@ class Choice(models.Model):
 
 
 class Person(models.Model):
-    name = models.CharField(max_length=5)
+    name = models.CharField(max_length=5, unique=True)
     sex_choice = [
         (0, "男"),
         (1, "女")
     ]
     sex = models.IntegerField(choices=sex_choice)
     upload = models.FileField(upload_to='uploads/')
+    image = models.ImageField(help_text="只能上传图片")
     email_filed = models.EmailField(default='test@test.com')
 
     def __str__(self):
-        return self.name
+        return self.name, self.sex
 
