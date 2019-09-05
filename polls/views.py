@@ -4,10 +4,11 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 import subprocess
-from .models import Question, Choice
+from .models import Question, Choice, RedisInfo
 from django.http import Http404
 from django.urls import reverse
 from django.db import models
+from django.utils import timezone
 
 
 
@@ -101,7 +102,8 @@ def list(request):
     return render(request, 'polls/list.html', {"b": test})
 
 
-def redis_exec(request, port):
-    _cmd = "redis-server --port " + port
-    _ex_cmd = subprocess.getstatusoutput(_cmd)
-    return HttpResponse(_ex_cmd[1])
+def redis_exec(request, appname, type, port):
+    t = timezone.now()
+    b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t)
+    b.save()
+    return HttpResponse(b)

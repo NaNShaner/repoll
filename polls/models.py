@@ -53,6 +53,8 @@ class RedisInfo(models.Model):
     ]
     redis_type = models.IntegerField(choices=type_choice)
     redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
+    pub_date = models.DateTimeField('date published')
+
 
     def __str__(self):
         return self.sys_type

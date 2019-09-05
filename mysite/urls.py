@@ -19,7 +19,7 @@ from django.contrib import admin
 
 from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
-from polls.models import Question
+from polls.models import Question, RedisInfo
 
 
 # Serializers define the API representation.
@@ -35,6 +35,12 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['question_text', 'pub_date']
 
 
+class RedisSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RedisInfo
+        fields = ['sys_type', 'redis_type', 'redis_port', 'pub_date']
+
+
 # ViewSets define the view behavior.
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -46,9 +52,16 @@ class QuestionViewSet(viewsets.ModelViewSet):
     serializer_class = QuestionSerializer
 
 
+class RedisViewSet(viewsets.ModelViewSet):
+    queryset = RedisInfo.objects.all()
+    serializer_class = RedisSerializer
+
+
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'polls_question', QuestionViewSet)
+router.register(r'redis', RedisViewSet)
+
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
