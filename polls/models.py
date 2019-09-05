@@ -44,3 +44,15 @@ class Person(models.Model):
     def __str__(self):
         return self.name, self.sex
 
+
+class RedisInfo(models.Model):
+    sys_type = models.CharField(max_length=5, unique=True)
+    type_choice = [
+        (0, "哨兵"),
+        (1, "集群")
+    ]
+    redis_type = models.IntegerField(choices=type_choice)
+    redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
+
+    def __str__(self):
+        return self.sys_type

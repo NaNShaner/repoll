@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>资源列表</title>
+</head>
+<body>
+<ul>
+    {% for a in b %}
+    <li>{{ a.question_text }} -- {{ a.pub_date }}</li>
+    {% endfor %}
+</ul>
+</body>
+</html>

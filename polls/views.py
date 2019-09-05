@@ -99,3 +99,9 @@ def pyecharts(request):
 def list(request):
     test = Question.objects.all()
     return render(request, 'polls/list.html', {"b": test})
+
+
+def redis_exec(request, port):
+    _cmd = "redis-server --port " + port
+    _ex_cmd = subprocess.getstatusoutput(_cmd)
+    return HttpResponse(_ex_cmd[1])
