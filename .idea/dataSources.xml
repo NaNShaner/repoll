@@ -2,10 +2,11 @@
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
     <data-source source="LOCAL" name="Django default" uuid="a7ac336f-830e-49eb-b3c6-1252a34236fa">
+      <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <imported>true</imported>
       <remarks>$PROJECT_DIR$/mysite/settings.py</remarks>
-      <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>
+      <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
       <jdbc-url>jdbc:mysql://192.168.254.128:3306/django</jdbc-url>
       <driver-properties>
         <property name="autoReconnect" value="true" />
@@ -16,14 +17,14 @@
         <property name="tinyInt1isBit" value="false" />
       </driver-properties>
     </data-source>
-    <data-source source="LOCAL" name="django@172.20.10.9" uuid="dc22840d-e2ac-4194-ae41-4de8b487978e">
-      <driver-ref>mysql</driver-ref>
+    <data-source source="LOCAL" name="MySQL - django@172.20.10.5" uuid="3d5d9ab7-c7f1-4547-b8a0-739abc0e373c">
+      <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://172.20.10.9:3306/django</jdbc-url>
+      <jdbc-url>jdbc:mysql://172.20.10.5:3306/django</jdbc-url>
       <driver-properties>
         <property name="autoReconnect" value="true" />
-        <property name="zeroDateTimeBehavior" value="convertToNull" />
+        <property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL" />
         <property name="tinyInt1isBit" value="false" />
         <property name="characterEncoding" value="utf8" />
         <property name="characterSetResults" value="utf8" />

@@ -7,6 +7,7 @@ from django.db import models
 import datetime
 from django.db import models
 from django.utils import timezone
+from django import forms
 
 
 class Question(models.Model):
@@ -45,6 +46,10 @@ class Person(models.Model):
         return self.name, self.sex
 
 
+class NameForm(forms.Form):
+    your_name = forms.CharField(label='Your name', max_length=100)
+
+
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
     type_choice = [
@@ -54,7 +59,7 @@ class RedisInfo(models.Model):
     redis_type = models.IntegerField(choices=type_choice)
     redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
     pub_date = models.DateTimeField('date published')
-
+    host_ip = models.CharField(max_length=50, default="请输入ip")
 
     def __str__(self):
         return self.sys_type

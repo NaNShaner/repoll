@@ -9,7 +9,7 @@ from django.http import Http404
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
-
+from polls.models import NameForm
 
 
 #### pyecharts ####
@@ -107,3 +107,17 @@ def redis_exec(request, appname, type, port):
     b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t)
     b.save()
     return HttpResponse(b)
+
+
+def get_name(request):
+    if request.method == 'POST':
+        form = NameForm(request.POST)
+        if form.is_valid():
+            return HttpResponseRedirect('/thanks/')
+    else:
+        form = NameForm()
+    return render(request, 'polls/name.html', {'form': form})
+
+
+def return_name(request):
+    return render(request, 'polls/your-name.html', {'your-name': "毕井锐"})

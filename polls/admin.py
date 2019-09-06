@@ -32,12 +32,13 @@ class QuestionAdmin(admin.ModelAdmin):
 
 
 class RedisAdmin(admin.ModelAdmin):
-    list_display = ('sys_type', 'redis_type', 'redis_port')
+    list_display = ('sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date')
     list_filter = ['redis_type']
     search_fields = ['redis_type']
     fieldsets = [
         ('所属系统', {'fields': ['sys_type']}),
-        ('Redis类型', {'fields': ['redis_type', 'redis_port']}),
+        ('Redis类型', {'fields': ['redis_type','pub_date']}),
+        ('Redis信息', {'fields': ['host_ip', 'redis_port']}),
     ]
     # inlines = [RedisInline]
 

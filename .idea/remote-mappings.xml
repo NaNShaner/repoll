@@ -10,6 +10,13 @@
             </list>
           </settings>
         </remote-mappings>
+        <remote-mappings server-id="python@sftp://root@172.20.10.5:22/usr/bin/python3">
+          <settings>
+            <list>
+              <mapping local-root="$PROJECT_DIR$" remote-root="/django" />
+            </list>
+          </settings>
+        </remote-mappings>
       </list>
     </list>
   </component>

@@ -17,5 +17,7 @@ urlpatterns = [
     path('<int:year>/<int:month>/<slug:slug>/', views.url_test, name='url_test'),
     path(r'pyecharts/', views.pyecharts, name='pyecharts'),
     path(r'list/', views.list, name='list'),
-    path(r'<str:appname>/<str:type>/<str:port>/', views.redis_exec, name='redis_exec')
+    path(r'<str:appname>/<str:type>/<str:port>/', views.redis_exec, name='redis_exec'),
+    path(r'form/', views.get_name, name='get_name'),
+    path(r'your-name/', views.return_name, name='return_name')
 ]
