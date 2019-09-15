@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 import subprocess
 from .models import Question, Choice, RedisInfo
@@ -9,7 +9,9 @@ from django.http import Http404
 from django.urls import reverse
 from django.db import models
 from django.utils import timezone
-from polls.models import NameForm
+from polls.models import NameForm, Post
+from django.template.loader import get_template
+from datetime import datetime
 
 
 #### pyecharts ####
@@ -23,8 +25,6 @@ from pyecharts import options as opts
 from pyecharts.charts import Bar
 from random import randrange
 from rest_framework.views import APIView
-
-
 
 
 # Create your views here.
@@ -121,3 +121,28 @@ def get_name(request):
 
 def return_name(request):
     return render(request, 'polls/your-name.html', {'your-name': "毕井锐"})
+
+
+def homepage(request):
+    # posts = Post.objects.all()
+    # post_list = []
+    # for count, post in enumerate(posts):
+    #     post_list.append("No.{0}".format(str(count)+" "+str(post)+"<br>"))
+    # return HttpResponse(post_list)
+    template = get_template('polls/blog_index.html')
+    posts = Post.objects.all()
+    now = datetime.now()
+    a = locals()
+    html = template.render(locals())
+    return HttpResponse(html)
+
+
+def showpost(request, slug):
+    template = get_template('polls/blog.html')
+    try:
+        post = Post.objects.get(slug=slug)
+        if post is not None:
+            html = template.render(locals())
+            return HttpResponse(html)
+    except:
+        return redirect('/')

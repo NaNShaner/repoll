@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-#-*- coding:UTF-8 -*-
+# -*- coding:UTF-8 -*-
 
 from django.urls import path
 from . import views
@@ -19,5 +19,6 @@ urlpatterns = [
     path(r'list/', views.list, name='list'),
     path(r'<str:appname>/<str:type>/<str:port>/', views.redis_exec, name='redis_exec'),
     path(r'form/', views.get_name, name='get_name'),
+    path(r'your-name/', views.return_name, name='return_name'),
     path(r'your-name/', views.return_name, name='return_name')
 ]

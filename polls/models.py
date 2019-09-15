@@ -63,3 +63,20 @@ class RedisInfo(models.Model):
 
     def __str__(self):
         return self.sys_type
+
+
+class Post(models.Model):
+    title = models.CharField(max_length=200)
+    slug = models.CharField(max_length=200)
+    body = models.TextField()
+    now = timezone.now()
+    pub_date = models.DateTimeField(default=now)
+
+    class Meta:
+        ordering = ('-pub_date', )
+
+    def __unicode__(self):
+        return self.title
+
+    def __str__(self):
+        return self.title

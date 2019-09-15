@@ -20,6 +20,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
 from polls.models import Question, RedisInfo
+from polls.views import homepage, showpost
 
 
 # Serializers define the API representation.
@@ -64,8 +65,10 @@ router.register(r'redis', RedisViewSet)
 
 
 urlpatterns = [
+    url(r'^$', homepage),
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^polls/(\w+)$', showpost),
 ]

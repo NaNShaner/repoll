@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo
+from .models import Question, Person, Choice, RedisInfo, Post
 
 # Register your models here.
 
 admin.site.register(Choice)
 admin.site.register(Person)
+
 
 
 class ChoiceInline(admin.TabularInline):
@@ -43,5 +44,10 @@ class RedisAdmin(admin.ModelAdmin):
     # inlines = [RedisInline]
 
 
+class PostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'slug', 'pub_date')
+
+
+admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(RedisInfo, RedisAdmin)
