@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'polls.apps.PollsConfig',
     'rest_framework',
+    'captcha',
 ]
 
 REST_FRAMEWORK = {
@@ -139,9 +140,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
 
 STATIC_URL = '/static/'
+print(BASE_DIR + STATIC_URL)
+
 # STATIC_ROOT = "/static/"
-# STATICFILES_DIRS = (
-#     os.path.join('/django/', STATIC_URL),
-#     '/django/static/'
-# )
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 # print(STATICFILES_DIRS)

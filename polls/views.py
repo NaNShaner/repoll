@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import subprocess
 from .models import Question, Choice, RedisInfo
 from django.http import Http404
@@ -12,7 +12,12 @@ from django.utils import timezone
 from polls.models import NameForm, Post
 from django.template.loader import get_template
 from datetime import datetime
-
+import redis
+import os
+import time
+import csv
+from django.views.decorators.csrf import csrf_exempt
+from polls.models import NginxAcess
 
 #### pyecharts ####
 import json
@@ -113,7 +118,7 @@ def get_name(request):
     if request.method == 'POST':
         form = NameForm(request.POST)
         if form.is_valid():
-            return HttpResponseRedirect('/thanks/')
+            return HttpResponseRedirect('polls/name.html')
     else:
         form = NameForm()
     return render(request, 'polls/name.html', {'form': form})
@@ -132,6 +137,7 @@ def homepage(request):
     template = get_template('polls/blog_index.html')
     posts = Post.objects.all()
     now = datetime.now()
+    hour = now.timetuple().tm_hour
     a = locals()
     html = template.render(locals())
     return HttpResponse(html)
@@ -146,3 +152,37 @@ def showpost(request, slug):
             return HttpResponse(html)
     except:
         return redirect('/')
+
+
+def run_nginx_log(request):
+    ls  = os.listdir("/Users/bijingrui/PycharmProjects/mysite/upload")
+    # obj = NginxAcess.objects
+    start = time.time()
+    if ls:
+        for file in ls:
+            if "log" in file:
+                with open("/Users/bijingrui/PycharmProjects/mysite/upload/" + file) as f:
+                    for line in f:
+                        ipaddr = line.split()[0]
+                        date1 = line.split()[3].replace("[", "").replace("Sep", "9").replace("/",":").split(":")
+                        date = date1[2] + "-" + date1[1] + "-" + date1[0] + " " + date1[3] + ":" + date1[4] + ":" + date1[5]
+                        obj = NginxAcess(ipaddr=ipaddr, date=date, count="1")
+                        obj.save()
+    end = time.time()
+    t = end - start
+    return HttpResponse("文件解析入库成功，耗时{0}".format(t))
+
+
+@csrf_exempt
+def test_api(request):
+    return JsonResponse({"result": 0, "msg": "sucess"})
+
+
+def downlad(request):
+    respose = HttpResponse(content_type='text/csv')
+    respose['Conent-Dispostion'] = 'attachment; filename="somefilename.csv"'
+    writer = csv.writer(respose)
+    writer.writerow(['First Row', 'A', 'B', 'C'])
+    return respose
+
+

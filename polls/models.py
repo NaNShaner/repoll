@@ -8,6 +8,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django import forms
+from captcha.fields import CaptchaField
 
 
 class Question(models.Model):
@@ -71,6 +72,7 @@ class Post(models.Model):
     body = models.TextField()
     now = timezone.now()
     pub_date = models.DateTimeField(default=now)
+    captcha = CaptchaField()
 
     class Meta:
         ordering = ('-pub_date', )
@@ -80,3 +82,17 @@ class Post(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class NginxAcess(models.Model):
+    ipaddr = models.CharField(max_length=16)
+    date = models.DateTimeField('date published')
+    count = models.IntegerField()
+
+    def __str__(self):
+        return self.ipaddr
+
+
+class FileUpload(models.Model):
+    file_name = models.FileField(upload_to='upload/', verbose_name=u"文件名称", default="文件")
+

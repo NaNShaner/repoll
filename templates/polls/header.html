@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <div class="well">
+        <h1 style="font-family:微软雅黑;">欢迎光临文学天地</h1>
+    </br>
+        {% if hour < 6 %}
+            早安
+        {% elif hour < 18 %}
+            白天
+        {% elif hour < 24 %}
+            晚安
+        {% endif %}
+    </br>
+    </br>
+    </div>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+</head>
+<body>
+
+</body>
+</html>

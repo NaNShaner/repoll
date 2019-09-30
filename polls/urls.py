@@ -20,5 +20,7 @@ urlpatterns = [
     path(r'<str:appname>/<str:type>/<str:port>/', views.redis_exec, name='redis_exec'),
     path(r'form/', views.get_name, name='get_name'),
     path(r'your-name/', views.return_name, name='return_name'),
-    path(r'your-name/', views.return_name, name='return_name')
+    path(r'file/', views.run_nginx_log, name='run_nginx_log'),
+    path(r'test_api/', views.test_api, name='test_api'),
+    path('download.html', views.downlad),
 ]

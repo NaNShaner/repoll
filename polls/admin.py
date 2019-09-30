@@ -2,12 +2,13 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post
+from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload
 
 # Register your models here.
 
 admin.site.register(Choice)
 admin.site.register(Person)
+admin.site.register(FileUpload)
 
 
 
@@ -48,6 +49,11 @@ class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'pub_date')
 
 
+class NginxAcessAdmin(admin.ModelAdmin):
+    list_display = ('ipaddr', 'date', 'count')
+
+
 admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(RedisInfo, RedisAdmin)
+admin.site.register(NginxAcess, NginxAcessAdmin)
