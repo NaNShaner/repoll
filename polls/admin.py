@@ -9,7 +9,7 @@ from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileU
 admin.site.register(Choice)
 admin.site.register(Person)
 admin.site.register(FileUpload)
-
+#admin.site.register(Production)
 
 
 class ChoiceInline(admin.TabularInline):

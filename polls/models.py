@@ -96,3 +96,15 @@ class NginxAcess(models.Model):
 class FileUpload(models.Model):
     file_name = models.FileField(upload_to='upload/', verbose_name=u"文件名称", default="文件")
 
+
+class Production(forms.ModelForm):
+    name = forms.CharField(max_length=50, label="名字", error_messages={'required': "不能为空"})
+    weight = forms.CharField(max_length=50, label="重量")
+    size = forms.CharField(max_length=50, label="尺寸")
+    AI = forms.BooleanField(label="智能机", initial=True)
+    choice_list = [
+        (0, '华为'),
+        (1, "苹果"),
+        (2, "OPPO")
+    ]
+    type = forms.ChoiceField(choices=choice_list, label="型号")

@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import subprocess
-from .models import Question, Choice, RedisInfo
+from .models import Question, Choice, RedisInfo, Production
 from django.http import Http404
 from django.urls import reverse
 from django.db import models
@@ -18,6 +18,7 @@ import time
 import csv
 from django.views.decorators.csrf import csrf_exempt
 from polls.models import NginxAcess
+from .models import forms
 
 #### pyecharts ####
 import json
@@ -186,3 +187,24 @@ def downlad(request):
     return respose
 
 
+def login(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        return redirect('/')
+    else:
+        if request.GET.get('name'):
+            name = request.GET.get('name')
+        else:
+            name = 'Everyone'
+        return HttpResponse('username is {0}'.format(name))
+
+
+def form(request):
+    product = Production()
+    return render(request, 'polls/form.html', locals())
+
+
+def favicon(request):
+    img = "static/favicon.ico"
+    image_date = open(img, "rb").read()
+    return HttpResponse(image_date, content_type='image/jpg')
