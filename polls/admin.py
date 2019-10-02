@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload
-
+from django.contrib.admin.models import LogEntry
 # Register your models here.
 
 admin.site.register(Choice)
@@ -43,6 +43,19 @@ class RedisAdmin(admin.ModelAdmin):
         ('Redis信息', {'fields': ['host_ip', 'redis_port']}),
     ]
     # inlines = [RedisInline]
+    save_on_top = False
+
+    # def redisCount(self, obj):
+    #     return obj.redis_type.count()
+    # redisCount.short_description = "Redis 数量"
+
+    class Media:
+        css = {
+            'all': (
+                "https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
+            ),
+        }
+        js = ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js",)
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -53,6 +66,11 @@ class NginxAcessAdmin(admin.ModelAdmin):
     list_display = ('ipaddr', 'date', 'count')
 
 
+class logEntryAdmin(admin.ModelAdmin):
+    list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
+
+
+admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(RedisInfo, RedisAdmin)
