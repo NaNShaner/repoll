@@ -39,7 +39,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 class RedisSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RedisInfo
-        fields = ['sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date']
+        fields = ['sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date'] or "__all__"
 
 
 # ViewSets define the view behavior.

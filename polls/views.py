@@ -19,6 +19,7 @@ import csv
 from django.views.decorators.csrf import csrf_exempt
 from polls.models import NginxAcess
 from .models import forms
+from rest_framework.decorators import api_view
 
 #### pyecharts ####
 import json
@@ -108,9 +109,25 @@ def list(request):
     return render(request, 'polls/list.html', {"b": test})
 
 
-def redis_exec(request, appname, type, port):
+# @api_view(http_method_names=['GET', 'POST'])
+# def redis_exec(request):
+#     j = json.loads(request.body)
+#     appname = j.get('appName')
+#     type = j.get('type')
+#     port = j.get('port')
+#     t = timezone.now()
+#     b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t)
+#     b.save()
+#     return HttpResponse(b)
+
+
+def redis_exec(request):
+    appname = request.GET.get('appName')
+    type = request.GET.get('type')
+    port = request.GET.get('port')
+    ipaddr = request.GET.get('ip')
     t = timezone.now()
-    b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t)
+    b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t, host_ip=ipaddr)
     b.save()
     return HttpResponse(b)
 
@@ -130,11 +147,6 @@ def return_name(request):
 
 
 def homepage(request):
-    # posts = Post.objects.all()
-    # post_list = []
-    # for count, post in enumerate(posts):
-    #     post_list.append("No.{0}".format(str(count)+" "+str(post)+"<br>"))
-    # return HttpResponse(post_list)
     template = get_template('polls/blog_index.html')
     posts = Post.objects.all()
     now = datetime.now()
