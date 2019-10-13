@@ -126,10 +126,15 @@ def redis_exec(request):
     type = request.GET.get('type')
     port = request.GET.get('port')
     ipaddr = request.GET.get('ip')
-    t = timezone.now()
-    b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t, host_ip=ipaddr)
-    b.save()
-    return HttpResponse(b)
+    if type == '0':
+        _cmd = "ssh -l root " + ipaddr + " " + "\" redis-server \""
+        _ex_cmd = subprocess.getstatusoutput(_cmd)
+        print(_ex_cmd)
+        t = timezone.now()
+        b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t, host_ip=ipaddr)
+        b.save()
+        return HttpResponse(_ex_cmd[1])
+    return HttpResponse("Redis 启动失败")
 
 
 def get_name(request):
