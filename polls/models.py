@@ -51,6 +51,22 @@ class NameForm(forms.Form):
     your_name = forms.CharField(label='Your name', max_length=100)
 
 
+class Ipaddr(models.Model):
+    ip = models.GenericIPAddressField(verbose_name="服务器IP")
+    area = models.CharField(max_length=50, verbose_name="机房")
+    choice_list = [
+        (0, '虚拟机'),
+        (1, "物理机")
+    ]
+    machina_type = models.IntegerField(choices=choice_list, verbose_name="机器类型")
+    machina_mem = models.CharField(max_length=50, verbose_name="内存大小")
+    used_mem = models.CharField(max_length=50, verbose_name="已分配内存")
+    used_cpu = models.CharField(max_length=50, verbose_name="CPU使用率")
+
+    def __str__(self):
+        return self.ip
+
+
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
     type_choice = [
@@ -60,10 +76,27 @@ class RedisInfo(models.Model):
     redis_type = models.IntegerField(choices=type_choice)
     redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
     pub_date = models.DateTimeField('date published')
-    host_ip = models.CharField(max_length=50, default="请输入ip")
+    host_ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.sys_type
+
+
+class RedisApply(models.Model):
+    ins_name = models.CharField(max_length=50, verbose_name="应用名称")
+    ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
+    type_choice = [
+        (0, "哨兵"),
+        (1, "集群")
+    ]
+    redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
+    redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
+    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    area = models.CharField(max_length=50, verbose_name="机房")
+    pub_date = models.DateTimeField('date published', default=timezone.now)
+
+    def __str__(self):
+        return self.ins_name
 
 
 class Post(models.Model):
@@ -110,18 +143,5 @@ class Production(forms.ModelForm):
     type = forms.ChoiceField(choices=choice_list, label="型号")
 
 
-class Ipaddr(models.Model):
-    ip = models.GenericIPAddressField(verbose_name="服务器IP")
-    area = models.CharField(max_length=50, verbose_name="机房")
-    choice_list = [
-        (0, '虚拟机'),
-        (1, "物理机")
-    ]
-    machina_type = models.IntegerField(choices=choice_list, verbose_name="机器类型")
-    machina_mem = models.CharField(max_length=50, verbose_name="内存大小")
-    used_mem = models.CharField(max_length=50, verbose_name="已分配内存")
-    used_cpu = models.CharField(max_length=50, verbose_name="CPU使用率")
 
-    def __str__(self):
-        return self.ip
 

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import subprocess
-from .models import Question, Choice, RedisInfo, Production
+from .models import Question, Choice, RedisInfo, Production, RedisApply
 from django.http import Http404
 from django.urls import reverse
 from django.db import models
@@ -45,6 +45,17 @@ def index(request):
     }
     # return HttpResponse(template.render(context, request))
     return render(request, 'polls/index.html', context)
+
+
+def redisApproval(request):
+    obj = RedisApply.objects.order_by('-pub_date')[:5]
+    # template =get_template("polls/redis_list.html")
+    # html = template.render(locals())
+    context = {
+        "redis_list": obj
+    }
+
+    return render(request, 'polls/redis_list.html', context)
 
 
 def detail(request, question_id):
@@ -225,3 +236,11 @@ def favicon(request):
     img = "static/favicon.ico"
     image_date = open(img, "rb").read()
     return HttpResponse(image_date, content_type='image/jpg')
+
+
+def redisLogin(request):
+    return render_to_response('polls/redis_info.html')
+
+
+
+

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redis 实例审批</title>
+</head>
+<body>
+{% if redis_list %}
+    <ul>
+    {% for ins in redis_list %}
+    <li>{{ ins.ins_name }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+</body>
+</html>

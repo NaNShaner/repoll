@@ -24,4 +24,6 @@ urlpatterns = [
     path(r'test_api/', views.test_api, name='test_api'),
     path('download.html', views.downlad),
     path('login.html', views.login),
+    path('redisLogin.html', views.redisLogin),
+    path(r'redisApproval/', views.redisApproval),
 ]

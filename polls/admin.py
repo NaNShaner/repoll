@@ -2,14 +2,13 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr
+from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr, RedisApply
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 
 admin.site.register(Choice)
 admin.site.register(Person)
 admin.site.register(FileUpload)
-#admin.site.register(Production)
 
 
 class ChoiceInline(admin.TabularInline):
@@ -76,9 +75,16 @@ class IpaddrAdmin(admin.ModelAdmin):
     search_fields = ['ip']
 
 
+class RedisApplyAdmin(admin.ModelAdmin):
+    list_display = ['ins_name', 'ins_disc', 'redis_type', 'redis_mem', 'sys_author', 'area', 'pub_date']
+    list_filter = ['redis_type']
+    search_fields = ['area']
+
+
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(RedisInfo, RedisAdmin)
 admin.site.register(NginxAcess, NginxAcessAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
+admin.site.register(RedisApply, RedisApplyAdmin)
