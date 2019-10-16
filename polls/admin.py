@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload
+from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 
@@ -70,8 +70,15 @@ class logEntryAdmin(admin.ModelAdmin):
     list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
 
 
+class IpaddrAdmin(admin.ModelAdmin):
+    list_display = ['ip', 'area', 'machina_type', 'machina_mem', 'used_mem', 'used_cpu']
+    list_filter = ['area']
+    search_fields = ['ip']
+
+
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(RedisInfo, RedisAdmin)
 admin.site.register(NginxAcess, NginxAcessAdmin)
+admin.site.register(Ipaddr, IpaddrAdmin)

@@ -10,15 +10,15 @@
       <user-name>root</user-name>
       <introspection-schemas>*:@</introspection-schemas>
     </data-source>
-    <data-source name="django@172.20.10.9" uuid="6ca3506e-2eb7-41b3-89b4-e2d4305245a0">
-      <database-info product="MySQL" version="8.0.17" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.47 ( Revision: fe1903b1ecb4a96a917f7ed3190d80c049b1de29 )">
+    <data-source name="django@127.0.0.1" uuid="6ca3506e-2eb7-41b3-89b4-e2d4305245a0">
+      <database-info product="MySQL" version="8.0.0-dmr" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.47 ( Revision: fe1903b1ecb4a96a917f7ed3190d80c049b1de29 )">
         <extra-name-characters>#@</extra-name-characters>
         <identifier-quote-string>`</identifier-quote-string>
       </database-info>
       <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>
       <user-name>root</user-name>
-      <introspection-schemas>*:django</introspection-schemas>
+      <introspection-schemas>*:cache-cloud,django</introspection-schemas>
     </data-source>
   </component>
 </project>

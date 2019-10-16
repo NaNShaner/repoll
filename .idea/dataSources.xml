@@ -17,11 +17,11 @@
         <property name="tinyInt1isBit" value="false" />
       </driver-properties>
     </data-source>
-    <data-source source="LOCAL" name="django@172.20.10.9" uuid="6ca3506e-2eb7-41b3-89b4-e2d4305245a0">
+    <data-source source="LOCAL" name="django@127.0.0.1" uuid="6ca3506e-2eb7-41b3-89b4-e2d4305245a0">
       <driver-ref>mysql</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mysql://172.20.10.9:3306/django</jdbc-url>
+      <jdbc-url>jdbc:mysql://127.0.0.1:32768/django</jdbc-url>
       <driver-properties>
         <property name="autoReconnect" value="true" />
         <property name="zeroDateTimeBehavior" value="convertToNull" />

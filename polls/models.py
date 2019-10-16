@@ -108,3 +108,20 @@ class Production(forms.ModelForm):
         (2, "OPPO")
     ]
     type = forms.ChoiceField(choices=choice_list, label="型号")
+
+
+class Ipaddr(models.Model):
+    ip = models.GenericIPAddressField(verbose_name="服务器IP")
+    area = models.CharField(max_length=50, verbose_name="机房")
+    choice_list = [
+        (0, '虚拟机'),
+        (1, "物理机")
+    ]
+    machina_type = models.IntegerField(choices=choice_list, verbose_name="机器类型")
+    machina_mem = models.CharField(max_length=50, verbose_name="内存大小")
+    used_mem = models.CharField(max_length=50, verbose_name="已分配内存")
+    used_cpu = models.CharField(max_length=50, verbose_name="CPU使用率")
+
+    def __str__(self):
+        return self.ip
+

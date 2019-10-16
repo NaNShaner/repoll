@@ -120,14 +120,14 @@ def list(request):
 #     b.save()
 #     return HttpResponse(b)
 
-
+@api_view(http_method_names=['GET', 'POST'])
 def redis_exec(request):
     appname = request.GET.get('appName')
     type = request.GET.get('type')
     port = request.GET.get('port')
     ipaddr = request.GET.get('ip')
     if type == '0':
-        _cmd = "ssh -l root " + ipaddr + " " + "\" redis-server \""
+        _cmd = "ssh -l root " + ipaddr + " " + "\" redis-server \" " + "--port" + port
         _ex_cmd = subprocess.getstatusoutput(_cmd)
         print(_ex_cmd)
         t = timezone.now()
