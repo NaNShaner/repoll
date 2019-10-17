@@ -26,4 +26,5 @@ urlpatterns = [
     path('login.html', views.login),
     path('redisLogin.html', views.redisLogin),
     path(r'redisApproval/', views.redisApproval),
+    path(r'from_name/', views.get_name),
 ]

@@ -5,9 +5,9 @@
     <title>Title</title>
 </head>
 <body>
-<form action="polls/your-name/" method="post">
+<form action="/your-name/" method="post">
     {% csrf_token %}
-    {{ form }}
+    {{ form.as_table }}
     <input type="submit" value="Submit" />
 </form>
 </body>

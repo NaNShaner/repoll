@@ -8,7 +8,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django import forms
-from captcha.fields import CaptchaField
+#from captcha.fields import CaptchaField
 
 
 class Question(models.Model):
@@ -105,7 +105,7 @@ class Post(models.Model):
     body = models.TextField()
     now = timezone.now()
     pub_date = models.DateTimeField(default=now)
-    captcha = CaptchaField()
+    # captcha = CaptchaField()
 
     class Meta:
         ordering = ('-pub_date', )

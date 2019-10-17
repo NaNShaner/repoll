@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'polls.apps.PollsConfig',
     'rest_framework',
-    'captcha',
+    # 'captcha',
 ]
 
 
@@ -54,8 +54,8 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     # 配置全站redis缓存
-    'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
 
 
     'django.middleware.security.SecurityMiddleware',
@@ -103,8 +103,8 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '127.0.0.1',
-        'PORT': '32768',
+        'HOST': '172.20.10.5',
+        'PORT': '3306',
     }
 }
 
