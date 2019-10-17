@@ -7,7 +7,8 @@ import subprocess
 from .models import Question, Choice, RedisInfo, Production, RedisApply
 from django.http import Http404
 from django.urls import reverse
-from django.db import models
+#from django.db import models
+from .models import models as mo
 from django.utils import timezone
 from polls.models import NameForm, Post
 from django.template.loader import get_template
@@ -21,6 +22,7 @@ from polls.models import NginxAcess
 from .models import forms
 from rest_framework.decorators import api_view
 from .form import NameForm
+
 
 
 #### pyecharts ####
@@ -145,6 +147,7 @@ def redis_exec(request):
         print(_ex_cmd)
         t = timezone.now()
         b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t, host_ip=ipaddr)
+        mo.Redis
         b.save()
         return HttpResponse(_ex_cmd[1])
     return HttpResponse("Redis 启动失败")

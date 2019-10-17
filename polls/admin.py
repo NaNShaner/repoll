@@ -6,6 +6,15 @@ from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileU
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 
+
+class MyAdminSite(admin.AdminSite):
+    site_header = 'Redis云管系统'  # 此处设置页面显示标题
+    site_title = '运维管理'  # 此处设置页面头部标题
+
+
+admin_site = MyAdminSite(name='management')
+
+
 admin.site.register(Choice)
 admin.site.register(Person)
 admin.site.register(FileUpload)
