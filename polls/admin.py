@@ -95,19 +95,24 @@ class RedisApplyAdmin(admin.ModelAdmin):
         # 获得被打钩的checkbox对应的资产
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
         success_upline_number = 0
-        for asset_id in selected:
-            # print(selected)
-            obj = ApproveRedis(request, asset_id)
-            create_redis_ins = obj.create_asset()
-            if create_redis_ins:
-                success_upline_number += 1
-            # ret = obj.asset_upline()
-            # if ret:
-            #     success_upline_number += 1
-            #     print(success_upline_number)
-        # 顶部绿色提示信息
-        self.message_user(request, "成功批准  %s  条新资产上线！" % success_upline_number)
-    approve_selected_new_assets.short_description = "批准选择的新资产"
+        try:
+            for asset_id in selected:
+                # print(selected)
+                obj = ApproveRedis(request, asset_id)
+                create_redis_ins = obj.create_asset()
+                if create_redis_ins:
+                    success_upline_number += 1
+                    self.message_user(request, "成功批准  %s  个新Redis实例上线！" % success_upline_number)
+                else:
+                    self.message_user(request, "实例为 {0} 的实例上线失败".format(queryset))
+                # ret = obj.asset_upline()
+                # if ret:
+                #     success_upline_number += 1
+                #     print(success_upline_number)
+            # 顶部绿色提示信息
+        except ValueError as e:
+            self.message_user(request, "实例为 {0} 的实例上线失败，原因为{1}".format(queryset, e))
+    approve_selected_new_assets.short_description = "批准选择的Redis实例"
 
 
 admin.site.register(LogEntry, logEntryAdmin)
