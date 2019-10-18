@@ -2,10 +2,10 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr, RedisApply
+from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr, RedisApply, RedisIns
 from django.contrib.admin.models import LogEntry
 # Register your models here.
-
+from .handlers import ApproveRedis
 
 class MyAdminSite(admin.AdminSite):
     site_header = 'Redis云管系统'  # 此处设置页面显示标题
@@ -18,6 +18,7 @@ admin_site = MyAdminSite(name='management')
 admin.site.register(Choice)
 admin.site.register(Person)
 admin.site.register(FileUpload)
+admin.site.register(RedisIns)
 
 
 class ChoiceInline(admin.TabularInline):
@@ -88,6 +89,25 @@ class RedisApplyAdmin(admin.ModelAdmin):
     list_display = ['ins_name', 'ins_disc', 'redis_type', 'redis_mem', 'sys_author', 'area', 'pub_date']
     list_filter = ['redis_type']
     search_fields = ['area']
+    actions = ['approve_selected_new_assets']
+
+    def approve_selected_new_assets(self, request, queryset):
+        # 获得被打钩的checkbox对应的资产
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        success_upline_number = 0
+        for asset_id in selected:
+            # print(selected)
+            obj = ApproveRedis(request, asset_id)
+            create_redis_ins = obj.create_asset()
+            if create_redis_ins:
+                success_upline_number += 1
+            # ret = obj.asset_upline()
+            # if ret:
+            #     success_upline_number += 1
+            #     print(success_upline_number)
+        # 顶部绿色提示信息
+        self.message_user(request, "成功批准  %s  条新资产上线！" % success_upline_number)
+    approve_selected_new_assets.short_description = "批准选择的新资产"
 
 
 admin.site.register(LogEntry, logEntryAdmin)

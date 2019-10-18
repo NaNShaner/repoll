@@ -99,6 +99,23 @@ class RedisApply(models.Model):
         return self.ins_name
 
 
+class RedisIns(models.Model):
+    ins_name = models.CharField(max_length=50, verbose_name="应用名称")
+    ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
+    type_choice = [
+        (0, "哨兵"),
+        (1, "集群")
+    ]
+    redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
+    redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
+    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    area = models.CharField(max_length=50, verbose_name="机房")
+    pub_date = models.DateTimeField('date published', default=timezone.now)
+
+    def __str__(self):
+        return self.ins_name
+
+
 class Post(models.Model):
     title = models.CharField(max_length=200)
     slug = models.CharField(max_length=200)
