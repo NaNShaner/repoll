@@ -8,6 +8,7 @@ import datetime
 from django.db import models
 from django.utils import timezone
 from django import forms
+from django.utils.html import format_html
 #from captcha.fields import CaptchaField
 
 
@@ -71,12 +72,16 @@ class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
     type_choice = [
         (0, "哨兵"),
-        (1, "集群")
+        (1, "集群"),
+        (2, "单机")
     ]
     redis_type = models.IntegerField(choices=type_choice)
     redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
     pub_date = models.DateTimeField('date published')
     host_ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('-pub_date', )
 
     def __str__(self):
         return self.sys_type
@@ -87,7 +92,8 @@ class RedisApply(models.Model):
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         (0, "哨兵"),
-        (1, "集群")
+        (1, "集群"),
+        (2, "单机")
     ]
     redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
@@ -98,9 +104,13 @@ class RedisApply(models.Model):
     status_choice = [
         (0, "申请中"),
         (1, "已审批"),
+        (2, "已拒绝"),
     ]
     apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
-                                       verbose_name="实例状态")
+                                       verbose_name="申请状态")
+
+    class Meta:
+        ordering = ('-pub_date', )
 
     def __str__(self):
         return self.ins_name
@@ -111,7 +121,8 @@ class RedisIns(models.Model):
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         (0, "哨兵"),
-        (1, "集群")
+        (1, "集群"),
+        (2, "单机")
     ]
     redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
@@ -123,8 +134,19 @@ class RedisIns(models.Model):
         (0, "已上线"),
         (1, "已下线"),
         (2, "未审批"),
+        (3, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
+    apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
+
+    class Meta:
+        ordering = ('-pub_date', )
+
+    def colored_name(self):
+        return format_html(
+            '<span style="color: #{};">{} {}</span>',
+            self.ins_status,
+        )
 
     def __str__(self):
         return self.ins_name

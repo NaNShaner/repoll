@@ -7,12 +7,13 @@ from django.contrib.admin.models import LogEntry
 # Register your models here.
 from .handlers import ApproveRedis
 
+
 class MyAdminSite(admin.AdminSite):
     site_header = 'Redis云管系统'  # 此处设置页面显示标题
     site_title = '运维管理'  # 此处设置页面头部标题
 
 
-admin_site = MyAdminSite(name='management')
+admin.site = MyAdminSite(name='management')
 
 
 admin.site.register(Choice)
@@ -53,10 +54,6 @@ class RedisAdmin(admin.ModelAdmin):
     # inlines = [RedisInline]
     save_on_top = False
 
-    # def redisCount(self, obj):
-    #     return obj.redis_type.count()
-    # redisCount.short_description = "Redis 数量"
-
     class Media:
         css = {
             'all': (
@@ -90,7 +87,18 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
-    actions = ['approve_selected_new_assets']
+    # date_hierarchy = 'go_time'
+    actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
+
+    def always_inster_redis_ins(self, request):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        try:
+            for asset_id in selected:
+                # print(selected)
+                obj = ApproveRedis(request, asset_id)
+                obj.create_asset()
+        except ValueError as e:
+            return e
 
     def approve_selected_new_assets(self, request, queryset):
         # 获得被打钩的checkbox对应的资产
@@ -107,14 +115,26 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     obj.redis_apply_status_update()
                 else:
                     self.message_user(request, "实例为 {0} 的实例上线失败".format(queryset))
-                # ret = obj.asset_upline()
-                # if ret:
-                #     success_upline_number += 1
-                #     print(success_upline_number)
-            # 顶部绿色提示信息
         except ValueError as e:
             self.message_user(request, "实例为 {0} 的实例上线失败，原因为{1}".format(queryset, e))
     approve_selected_new_assets.short_description = "批准选择的Redis实例"
+
+    def deny_selected_new_assets(self, request, queryset):
+        # 获得被打钩的checkbox对应的资产
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        deny_upline_number = 0
+        try:
+            for asset_id in selected:
+                # print(selected)
+                obj = ApproveRedis(request, asset_id)
+                deny_redis_ins = obj.deny_create()
+                if deny_redis_ins:
+                    deny_upline_number += 1
+                    self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
+        except ValueError as e:
+            self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
+        # self.message_user(request, "操作实例为 {0} 的实例失败".format(queryset))
+    deny_selected_new_assets.short_description = "拒绝选择的Redis实例"
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
@@ -124,6 +144,9 @@ class RedisApprovalAdmin(admin.ModelAdmin):
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
+
+    def colored_status(self, request):
+        pass
 
 
 admin.site.register(LogEntry, logEntryAdmin)

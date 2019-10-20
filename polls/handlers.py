@@ -1,7 +1,7 @@
 
 from .models import models
 from polls.models import RedisApply, RedisInfo, RedisIns
-import json
+import redis
 
 # def log(log_type, msg=None, asset=None, new_asset=None, request=None):
 #     """
@@ -41,15 +41,6 @@ class ApproveRedis:
     def _server_upline(self):
         # 在实际的生产环境中，下面的操作应该是原子性的整体事务，任何一步出现异常，所有操作都要回滚。
         asset = self.create_asset()  # 创建一条资产并返回资产对象。注意要和待审批区的资产区分开。
-        # try:
-        #     self._create_manufacturer(asset) # 创建厂商
-        # except Exception as e:
-        #     asset.delete()
-        #     print(e)
-        #     return False
-        # else:
-        #     print("新服务器上线!")
-        #     return True
         print(asset)
         return True
 
@@ -77,20 +68,42 @@ class ApproveRedis:
             return e
         return asset
 
-    # def _create_manufacturer(self, asset):
-    #     """
-    #     创建厂商
-    #     :param asset:
-    #     :return:
-    #     """
-    #     # 判断厂商数据是否存在。如果存在，看看数据库里是否已经有该厂商，再决定是获取还是创建。
-    #     m = self.new_asset.sys_type
-    #     if m:
-    #         manufacturer_obj, _ = RedisInfo.objects.get_or_create(name=m)
-    #         asset.manufacturer = manufacturer_obj
-    #         asset.save()
+    def deny_create(self):
+        """
+        创建厂商
+        :param asset:
+        :return:
+        """
+        try:
+            if not RedisIns.objects.filter(ins_name=self.new_asset.ins_name):
+                asset = RedisIns.objects.create(ins_name=self.new_asset.ins_name,
+                                                ins_disc=self.new_asset.ins_disc,
+                                                redis_type=self.new_asset.redis_type,
+                                                redis_mem=self.new_asset.redis_mem,
+                                                sys_author=self.new_asset.sys_author,
+                                                area=self.new_asset.area,
+                                                pub_date=self.new_asset.pub_date,
+                                                approval_user=self.request.user,
+                                                ins_status=RedisIns.ins_choice[3][0]
+                                                )
+                if RedisIns.objects.filter(ins_name=self.new_asset.ins_name).values('ins_status') == 0:
+                    RedisApply.objects.filter(ins_name=self.new_asset.ins_name).update(
+                        apply_status=RedisApply.status_choice[2][0]
+                    )
+            else:
+                RedisIns.objects.filter(ins_name=self.new_asset.ins_name).update(ins_status=RedisIns.ins_choice[3][0])
+                RedisApply.objects.filter(ins_name=self.new_asset.ins_name).update(
+                    apply_status=RedisApply.status_choice[2][0]
+                )
+                return True
+        except ValueError as e:
+            return e
+        return asset
 
     def redis_apply_status_update(self):
-        obj = RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
-        obj.save()
+        RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
+        # obj.save()
         return True
+
+    def redis_ping(self):
+        r = redis.StrictRedis(host=self.new_asset.ins_name)
