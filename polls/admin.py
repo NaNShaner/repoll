@@ -31,6 +31,11 @@ class RedisInline(admin.TabularInline):
     extra = 2
 
 
+class RedisInsInline(admin.TabularInline):
+    model = RedisIns
+    extra = 2
+
+
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('question_text', 'pub_date', 'was_published_recently')
     list_filter = ['pub_date']
@@ -82,6 +87,14 @@ class IpaddrAdmin(admin.ModelAdmin):
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
+
+    def get_queryset(self, request):
+        """函数作用：使当前登录的用户只能看到自己负责的服务器"""
+        qs = super(RedisApplyAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(user=RedisApply.objects.filter(approval_user=request.user))
+
     list_display = ['ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
@@ -90,18 +103,14 @@ class RedisApplyAdmin(admin.ModelAdmin):
     # date_hierarchy = 'go_time'
     actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
 
-    def always_inster_redis_ins(self, request):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        try:
-            for asset_id in selected:
-                # print(selected)
-                obj = ApproveRedis(request, asset_id)
-                obj.create_asset()
-        except ValueError as e:
-            return e
-
     def approve_selected_new_assets(self, request, queryset):
-        # 获得被打钩的checkbox对应的资产
+        """
+        用于在申请redis的界面添加一个审批通过按钮
+        :param request: Http Request实例
+        :param queryset: 勾选实例名称
+        :return:
+        """
+        # 获得被打钩的checkbox对应的Redis的id编号，用于更新数据库的主键
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
         success_upline_number = 0
         try:
@@ -120,7 +129,13 @@ class RedisApplyAdmin(admin.ModelAdmin):
     approve_selected_new_assets.short_description = "批准选择的Redis实例"
 
     def deny_selected_new_assets(self, request, queryset):
-        # 获得被打钩的checkbox对应的资产
+        """
+        用于在申请redis的界面添加一个审批拒绝按钮
+        :param request: Http Request实例
+        :param queryset: 勾选实例名称
+        :return:
+        """
+        # 获得被打钩的checkbox对应的Redis的id编号，用于更新数据库的主键
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
         deny_upline_number = 0
         try:
@@ -133,7 +148,6 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
         except ValueError as e:
             self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
-        # self.message_user(request, "操作实例为 {0} 的实例失败".format(queryset))
     deny_selected_new_assets.short_description = "拒绝选择的Redis实例"
 
 

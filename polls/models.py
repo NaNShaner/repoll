@@ -129,7 +129,7 @@ class RedisIns(models.Model):
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
     pub_date = models.DateTimeField('审批时间', default=timezone.now)
-    approval_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
+    approval_user = models.CharField(max_length=150, null=True, verbose_name="审批人")
     ins_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -137,6 +137,7 @@ class RedisIns(models.Model):
         (3, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
+    ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
 
     class Meta:

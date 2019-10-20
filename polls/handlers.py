@@ -46,10 +46,10 @@ class ApproveRedis:
 
     def create_asset(self):
         """
-        创建资产并上线
+        创建Redis实例并上线
         :return:
         """
-        # 利用request.user自动获取当前管理人员的信息，作为审批人添加到资产数据中。
+        # 利用request.user自动获取当前管理人员的信息，作为审批人添加到Redis实例数据中。
         try:
             if not RedisIns.objects.filter(ins_name=self.new_asset.ins_name):
                 asset = RedisIns.objects.create(ins_name=self.new_asset.ins_name,
@@ -70,8 +70,7 @@ class ApproveRedis:
 
     def deny_create(self):
         """
-        创建厂商
-        :param asset:
+
         :return:
         """
         try:
