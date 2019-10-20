@@ -1,5 +1,3 @@
-from django.db.models import signals
-from django.dispatch import receiver
 
 from .models import models
 from polls.models import RedisApply, RedisInfo, RedisIns
@@ -30,6 +28,7 @@ class ApproveRedis:
     """
     def __init__(self, request, asset_id):
         self.request = request
+        self.asset_id = asset_id
         self.new_asset = RedisApply.objects.get(id=asset_id)
         # self.data = json.loads(self.new_asset.data)
 
@@ -69,6 +68,8 @@ class ApproveRedis:
                                                 sys_author=self.new_asset.sys_author,
                                                 area=self.new_asset.area,
                                                 pub_date=self.new_asset.pub_date,
+                                                approval_user=self.request.user,
+                                                ins_status=RedisIns.ins_choice[0][0]
                                                 )
             else:
                 return False
@@ -88,3 +89,8 @@ class ApproveRedis:
     #         manufacturer_obj, _ = RedisInfo.objects.get_or_create(name=m)
     #         asset.manufacturer = manufacturer_obj
     #         asset.save()
+
+    def redis_apply_status_update(self):
+        obj = RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
+        obj.save()
+        return True

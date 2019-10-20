@@ -18,7 +18,6 @@ admin_site = MyAdminSite(name='management')
 admin.site.register(Choice)
 admin.site.register(Person)
 admin.site.register(FileUpload)
-admin.site.register(RedisIns)
 
 
 class ChoiceInline(admin.TabularInline):
@@ -86,7 +85,9 @@ class IpaddrAdmin(admin.ModelAdmin):
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
-    list_display = ['ins_name', 'ins_disc', 'redis_type', 'redis_mem', 'sys_author', 'area', 'pub_date']
+    list_display = ['ins_name', 'ins_disc', 'redis_type',
+                    'redis_mem', 'sys_author', 'area',
+                    'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
     actions = ['approve_selected_new_assets']
@@ -103,6 +104,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 if create_redis_ins:
                     success_upline_number += 1
                     self.message_user(request, "成功批准  %s  个新Redis实例上线！" % success_upline_number)
+                    obj.redis_apply_status_update()
                 else:
                     self.message_user(request, "实例为 {0} 的实例上线失败".format(queryset))
                 # ret = obj.asset_upline()
@@ -115,6 +117,15 @@ class RedisApplyAdmin(admin.ModelAdmin):
     approve_selected_new_assets.short_description = "批准选择的Redis实例"
 
 
+class RedisApprovalAdmin(admin.ModelAdmin):
+    list_display = ['ins_name', 'ins_disc', 'redis_type',
+                    'redis_mem', 'sys_author', 'area',
+                    'pub_date', 'approval_user', 'ins_status',
+                    ]
+    list_filter = ['redis_type']
+    search_fields = ['area', 'ins_status']
+
+
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Post, PostAdmin)
 admin.site.register(Question, QuestionAdmin)
@@ -122,3 +133,4 @@ admin.site.register(RedisInfo, RedisAdmin)
 admin.site.register(NginxAcess, NginxAcessAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
+admin.site.register(RedisIns, RedisApprovalAdmin)

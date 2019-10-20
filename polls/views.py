@@ -147,7 +147,6 @@ def redis_exec(request):
         print(_ex_cmd)
         t = timezone.now()
         b = RedisInfo(sys_type=appname, redis_type=type, redis_port=port, pub_date=t, host_ip=ipaddr)
-        mo.Redis
         b.save()
         return HttpResponse(_ex_cmd[1])
     return HttpResponse("Redis 启动失败")

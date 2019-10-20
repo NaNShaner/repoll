@@ -93,13 +93,14 @@ class RedisApply(models.Model):
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
-    pub_date = models.DateTimeField('date published', default=timezone.now)
-    create_user = models.CharField(max_length=150, verbose_name="申请人")
+    pub_date = models.DateTimeField('申请时间', default=timezone.now)
+    create_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
     status_choice = [
         (0, "申请中"),
         (1, "已审批"),
     ]
-    apply_status = models.IntegerField(choices=status_choice, blank=True, verbose_name="实例状态")
+    apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
+                                       verbose_name="实例状态")
 
     def __str__(self):
         return self.ins_name
@@ -116,13 +117,14 @@ class RedisIns(models.Model):
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
-    pub_date = models.DateTimeField('date published', default=timezone.now)
-    create_user = models.CharField(max_length=150, verbose_name="申请人")
+    pub_date = models.DateTimeField('审批时间', default=timezone.now)
+    approval_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
     ins_choice = [
         (0, "已上线"),
         (1, "已下线"),
+        (2, "未审批"),
     ]
-    ins_status = models.IntegerField(choices=ins_choice, blank=True, verbose_name="实例状态")
+    ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
 
     def __str__(self):
         return self.ins_name
