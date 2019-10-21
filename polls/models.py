@@ -142,6 +142,7 @@ class RedisIns(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
+        verbose_name = "Redis实例信息"
 
     def colored_name(self):
         return format_html(
@@ -211,12 +212,40 @@ class RedisVersion(models.Model):
         verbose_name = "Redis版本视图"
 
 
+class RedisModel(models.Model):
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.IntegerField(choices=choice_list, default=choice_list[0][0], verbose_name="Redis运行模式")
+    pub_date = models.DateTimeField("版本发布时间")
+    who_apply = models.CharField(max_length=50, verbose_name="版本发布人")
+
+    def __str__(self):
+        return self.redis_type
+
+    class Meta:
+        verbose_name = "Redis模式视图"
+
+
 class RedisConf(models.Model):
-    redis_version = models.ForeignKey(RedisVersion,on_delete=models.CASCADE)
+    redis_type = models.ForeignKey(RedisModel, on_delete=models.CASCADE)
+    redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
     pub_date = models.DateTimeField("配置发布时间")
     who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
-    redis_port = models.IntegerField(max_length=10, verbose_name="端口")
-    redis_mem = models.IntegerField(max_length=999, verbose_name="内存大小")
+    choice_list = [
+        (0, '无效'),
+        (1, "有效")
+    ]
+    redis_port = models.IntegerField(default=6379, verbose_name="端口")
+    redis_mem = models.CharField(max_length=150, default="64m", verbose_name="内存大小")
+    daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
+    tcp_backlog = models.IntegerField(default=511, help_text="TCP连接完成队列", verbose_name="tcp-backlog")
+    timeout = models.IntegerField(default=0, help_text="客户端闲置多少秒后关闭连接,默认为0,永不关闭", verbose_name="timeout")
+    tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
+    loglevel = models.CharField(max_length=50, default="notice", help_text="日志级别", verbose_name="loglevel")
+    databases = models.IntegerField(help_text="可用的数据库数，默认值为16个,默认数据库为0", verbose_name="databases", default=16)
 
     def __str__(self):
         return self.redis_version

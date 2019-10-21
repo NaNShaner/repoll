@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from django.contrib import admin
 from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, \
-    FileUpload, Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf
+    FileUpload, Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 from .handlers import ApproveRedis
@@ -94,6 +94,12 @@ class RedisConfAdmin(admin.ModelAdmin):
     search_fields = ['who_apply']
 
 
+class RedisModelAdmin(admin.ModelAdmin):
+    list_display = ['redis_type']
+    list_filter = ['redis_type']
+    search_fields = ['redis_type']
+
+
 class RedisApplyAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
@@ -181,3 +187,4 @@ admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
 admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
+admin.site.register(RedisModel, RedisModelAdmin)
