@@ -197,5 +197,29 @@ class Production(forms.ModelForm):
     type = forms.ChoiceField(choices=choice_list, label="型号")
 
 
+class RedisVersion(models.Model):
+    redis_version = models.CharField(max_length=60, unique=True, primary_key=True, default="3.0.6", verbose_name="Redis版本")
+    pub_date = models.DateTimeField("版本发布时间")
+    who_apply = models.CharField(max_length=50, verbose_name="版本发布人")
+
+    def __str__(self):
+        return self.redis_version
+
+    class Meta:
+        ordering = ('-pub_date', )
+        verbose_name = "Redis版本视图"
 
 
+class RedisConf(models.Model):
+    redis_version = models.ForeignKey(RedisVersion,on_delete=models.CASCADE)
+    pub_date = models.DateTimeField("配置发布时间")
+    who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
+    redis_port = models.IntegerField(max_length=10, verbose_name="端口")
+    redis_mem = models.IntegerField(max_length=999, verbose_name="内存大小")
+
+    def __str__(self):
+        return self.redis_version
+
+    class Meta:
+        ordering = ('-pub_date', )
+        verbose_name = "Redis配置信息"
