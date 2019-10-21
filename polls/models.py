@@ -198,7 +198,8 @@ class Production(forms.ModelForm):
 
 
 class RedisVersion(models.Model):
-    redis_version = models.CharField(max_length=60, unique=True, primary_key=True, default="3.0.6", verbose_name="Redis版本")
+    redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
+                                     default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField("版本发布时间")
     who_apply = models.CharField(max_length=50, verbose_name="版本发布人")
 

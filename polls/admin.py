@@ -2,7 +2,8 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, FileUpload, Ipaddr, RedisApply, RedisIns
+from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, \
+    FileUpload, Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 from .handlers import ApproveRedis
@@ -79,6 +80,18 @@ class IpaddrAdmin(admin.ModelAdmin):
     list_display = ['ip', 'area', 'machina_type', 'machina_mem', 'used_mem', 'used_cpu']
     list_filter = ['area']
     search_fields = ['ip']
+
+
+class RedisVersionAdmin(admin.ModelAdmin):
+    list_display = ['redis_version', 'who_apply', 'pub_date']
+    list_filter = ['redis_version']
+    search_fields = ['who_apply']
+
+
+class RedisConfAdmin(admin.ModelAdmin):
+    list_display = ['redis_version', 'who_apply', 'pub_date']
+    list_filter = ['redis_version']
+    search_fields = ['who_apply']
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
@@ -166,3 +179,5 @@ admin.site.register(NginxAcess, NginxAcessAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
+admin.site.register(RedisVersion, RedisVersionAdmin)
+admin.site.register(RedisConf, RedisConfAdmin)
