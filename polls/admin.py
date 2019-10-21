@@ -95,9 +95,9 @@ class RedisConfAdmin(admin.ModelAdmin):
 
 
 class RedisModelAdmin(admin.ModelAdmin):
-    list_display = ['redis_type']
-    list_filter = ['redis_type']
-    search_fields = ['redis_type']
+    list_display = ['redis_type_models']
+    list_filter = ['redis_type_models']
+    search_fields = ['redis_type_models']
 
 
 class RedisApplyAdmin(admin.ModelAdmin):

@@ -218,12 +218,12 @@ class RedisModel(models.Model):
         ('Redis-Cluster', 'Redis-Cluster'),
         ('Redis-Sentinel', 'Redis-Sentinel')
     ]
-    redis_type = models.IntegerField(choices=choice_list, default=choice_list[0][0], verbose_name="Redis运行模式")
-    pub_date = models.DateTimeField("版本发布时间")
-    who_apply = models.CharField(max_length=50, verbose_name="版本发布人")
+    redis_type_models = models.CharField(max_length=150, choices=choice_list, default=choice_list[0][0], verbose_name="Redis运行模式")
+    # pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
+    # who_apply = models.CharField(max_length=50, null=True, verbose_name="版本发布人")
 
     def __str__(self):
-        return self.redis_type
+        return self.redis_type_models
 
     class Meta:
         verbose_name = "Redis模式视图"
