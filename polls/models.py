@@ -230,7 +230,7 @@ class RedisModel(models.Model):
 
 
 class RedisConf(models.Model):
-    redis_type = models.ForeignKey(RedisModel, on_delete=models.CASCADE)
+    redis_type = models.ForeignKey(RedisModel,default='Redis-Standalone' ,on_delete=models.CASCADE)
     redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
     pub_date = models.DateTimeField("配置发布时间")
     who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
@@ -240,7 +240,7 @@ class RedisConf(models.Model):
     ]
     redis_port = models.IntegerField(default=6379, verbose_name="端口")
     redis_mem = models.CharField(max_length=150, default="64m", verbose_name="内存大小")
-    daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
+    redis_daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
     tcp_backlog = models.IntegerField(default=511, help_text="TCP连接完成队列", verbose_name="tcp-backlog")
     timeout = models.IntegerField(default=0, help_text="客户端闲置多少秒后关闭连接,默认为0,永不关闭", verbose_name="timeout")
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
