@@ -10,46 +10,7 @@ from django.utils import timezone
 from django import forms
 from django.utils.html import format_html
 #from captcha.fields import CaptchaField
-
-
-class Question(models.Model):
-    question_text = models.CharField(max_length=200)
-    pub_date = models.DateTimeField('date published')
-
-    def was_published_recently(self):
-        now = timezone.now()
-        return now - datetime.timedelta(days=1) <= self.pub_date <= now
-
-    def __str__(self):
-        return self.question_text
-
-
-class Choice(models.Model):
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    choice_text = models.CharField(max_length=300)
-    votes = models.IntegerField(default=0)
-
-    def __str__(self):
-        return self.choice_text
-
-
-class Person(models.Model):
-    name = models.CharField(max_length=5, unique=True)
-    sex_choice = [
-        (0, "男"),
-        (1, "女")
-    ]
-    sex = models.IntegerField(choices=sex_choice)
-    upload = models.FileField(upload_to='uploads/')
-    image = models.ImageField(help_text="只能上传图片")
-    email_filed = models.EmailField(default='test@test.com')
-
-    def __str__(self):
-        return self.name, self.sex
-
-
-class NameForm(forms.Form):
-    your_name = forms.CharField(label='Your name', max_length=100)
+from django.contrib.auth.models import User
 
 
 class Ipaddr(models.Model):
@@ -67,6 +28,9 @@ class Ipaddr(models.Model):
     def __str__(self):
         return self.ip
 
+    class Meta:
+        verbose_name = "资源池服务器列表"
+
 
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
@@ -82,6 +46,7 @@ class RedisInfo(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
+        verbose_name = "Redis实例信息"
 
     def __str__(self):
         return self.sys_type
@@ -111,6 +76,7 @@ class RedisApply(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
+        verbose_name = "Redis实例申请"
 
     def __str__(self):
         return self.ins_name
@@ -154,37 +120,6 @@ class RedisIns(models.Model):
         return self.ins_name
 
 
-class Post(models.Model):
-    title = models.CharField(max_length=200)
-    slug = models.CharField(max_length=200)
-    body = models.TextField()
-    now = timezone.now()
-    pub_date = models.DateTimeField(default=now)
-    # captcha = CaptchaField()
-
-    class Meta:
-        ordering = ('-pub_date', )
-
-    def __unicode__(self):
-        return self.title
-
-    def __str__(self):
-        return self.title
-
-
-class NginxAcess(models.Model):
-    ipaddr = models.CharField(max_length=16)
-    date = models.DateTimeField('date published')
-    count = models.IntegerField()
-
-    def __str__(self):
-        return self.ipaddr
-
-
-class FileUpload(models.Model):
-    file_name = models.FileField(upload_to='upload/', verbose_name=u"文件名称", default="文件")
-
-
 class Production(forms.ModelForm):
     name = forms.CharField(max_length=50, label="名字", error_messages={'required': "不能为空"})
     weight = forms.CharField(max_length=50, label="重量")
@@ -201,15 +136,16 @@ class Production(forms.ModelForm):
 class RedisVersion(models.Model):
     redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
                                      default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
-    pub_date = models.DateTimeField("版本发布时间")
-    who_apply = models.CharField(max_length=50, verbose_name="版本发布人")
+    pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
+    who_apply_ver = models.CharField(max_length=50, verbose_name="版本发布人")
 
     def __str__(self):
         return self.redis_version
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis版本视图"
+        verbose_name = "RedisVersion"
+        verbose_name_plural = "Redis版本视图"
 
 
 class RedisModel(models.Model):
@@ -218,9 +154,8 @@ class RedisModel(models.Model):
         ('Redis-Cluster', 'Redis-Cluster'),
         ('Redis-Sentinel', 'Redis-Sentinel')
     ]
-    redis_type_models = models.CharField(max_length=150, choices=choice_list, default=choice_list[0][0], verbose_name="Redis运行模式")
-    # pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    # who_apply = models.CharField(max_length=50, null=True, verbose_name="版本发布人")
+    redis_type_models = models.CharField(max_length=150, choices=choice_list, unique=True,
+                                         default=choice_list[0][0], verbose_name="Redis运行模式")
 
     def __str__(self):
         return self.redis_type_models
@@ -230,7 +165,9 @@ class RedisModel(models.Model):
 
 
 class RedisConf(models.Model):
-    redis_type = models.ForeignKey(RedisModel,default='Redis-Standalone' ,on_delete=models.CASCADE)
+    redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
+                                      to_field='redis_type_models',
+                                      on_delete=models.CASCADE)
     redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
     pub_date = models.DateTimeField("配置发布时间")
     who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
@@ -246,6 +183,7 @@ class RedisConf(models.Model):
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
     loglevel = models.CharField(max_length=50, default="notice", help_text="日志级别", verbose_name="loglevel")
     databases = models.IntegerField(help_text="可用的数据库数，默认值为16个,默认数据库为0", verbose_name="databases", default=16)
+    appendonly = models.CharField(max_length=150, help_text="开启append only持久化模式", verbose_name="appendonly", default="yes")
 
     def __str__(self):
         return self.redis_version

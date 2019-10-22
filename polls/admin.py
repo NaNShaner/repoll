@@ -2,8 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Question, Person, Choice, RedisInfo, Post, NginxAcess, \
-    FileUpload, Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel
+from .models import Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 from .handlers import ApproveRedis
@@ -15,32 +14,6 @@ class MyAdminSite(admin.AdminSite):
 
 
 admin.site = MyAdminSite(name='management')
-
-
-admin.site.register(Choice)
-admin.site.register(Person)
-admin.site.register(FileUpload)
-
-
-class ChoiceInline(admin.TabularInline):
-    model = Choice
-    extra = 2
-
-
-class RedisInline(admin.TabularInline):
-    model = RedisInfo
-    extra = 2
-
-
-class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('question_text', 'pub_date', 'was_published_recently')
-    list_filter = ['pub_date']
-    search_fields = ['question_text']
-    fieldsets = [
-        (None, {'fields': ['question_text']}),
-        ('Date infomation', {'fields': ['pub_date']}),
-    ]
-    inlines = [ChoiceInline]
 
 
 class RedisAdmin(admin.ModelAdmin):
@@ -64,14 +37,6 @@ class RedisAdmin(admin.ModelAdmin):
         js = ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js",)
 
 
-class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'pub_date')
-
-
-class NginxAcessAdmin(admin.ModelAdmin):
-    list_display = ('ipaddr', 'date', 'count')
-
-
 class logEntryAdmin(admin.ModelAdmin):
     list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
 
@@ -83,9 +48,9 @@ class IpaddrAdmin(admin.ModelAdmin):
 
 
 class RedisVersionAdmin(admin.ModelAdmin):
-    list_display = ['redis_version', 'who_apply', 'pub_date']
+    list_display = ['redis_version', 'who_apply_ver', 'pub_date']
     list_filter = ['redis_version']
-    search_fields = ['who_apply']
+    search_fields = ['who_apply_ver']
 
 
 class RedisConfAdmin(admin.ModelAdmin):
@@ -178,10 +143,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LogEntry, logEntryAdmin)
-admin.site.register(Post, PostAdmin)
-admin.site.register(Question, QuestionAdmin)
-admin.site.register(RedisInfo, RedisAdmin)
-admin.site.register(NginxAcess, NginxAcessAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)

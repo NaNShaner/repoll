@@ -19,8 +19,8 @@ from django.contrib import admin
 
 from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
-from polls.models import Question, RedisInfo
-from polls.views import homepage, showpost, favicon
+from polls.models import RedisInfo
+from polls.views import favicon
 
 
 # Serializers define the API representation.
@@ -28,12 +28,6 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
         fields = ['url', 'username', 'password', 'email', 'is_staff']
-
-
-class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Question
-        fields = ['question_text', 'pub_date']
 
 
 class RedisSerializer(serializers.HyperlinkedModelSerializer):
@@ -48,11 +42,6 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-
 class RedisViewSet(viewsets.ModelViewSet):
     queryset = RedisInfo.objects.all()
     serializer_class = RedisSerializer
@@ -60,16 +49,13 @@ class RedisViewSet(viewsets.ModelViewSet):
 
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
-router.register(r'polls_question', QuestionViewSet)
 router.register(r'redis', RedisViewSet)
 
 
 urlpatterns = [
-    url(r'^$', homepage),
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
     url(r'^', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^polls/(\w+)$', showpost),
     url(r'favicon.ico$', favicon)
 ]

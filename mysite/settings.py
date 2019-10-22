@@ -104,10 +104,10 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '172.20.10.5',
-        'PORT': '3306',
-        # 'HOST': '127.0.0.1',
-        # 'PORT': '32768',
+        # 'HOST': '172.20.10.5',
+        # 'PORT': '3306',
+        'HOST': '127.0.0.1',
+        'PORT': '32768',
     }
 }
 
@@ -156,7 +156,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
@@ -165,7 +165,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 
-STATIC_ROOT = os.path.join(BASE_DIR, "/static/")
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
