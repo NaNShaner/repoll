@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404, redirect, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import subprocess
-from .models import RedisInfo, Production, RedisApply
+from .models import RedisInfo, RedisApply
 from django.http import Http404
 from django.urls import reverse
 #from django.db import models

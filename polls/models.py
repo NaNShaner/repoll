@@ -100,7 +100,8 @@ class RedisIns(models.Model):
         (0, "已上线"),
         (1, "已下线"),
         (2, "未审批"),
-        (3, "已拒绝"),
+        (3, "已审批"),
+        (4, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
     ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
@@ -118,19 +119,6 @@ class RedisIns(models.Model):
 
     def __str__(self):
         return self.ins_name
-
-
-class Production(forms.ModelForm):
-    name = forms.CharField(max_length=50, label="名字", error_messages={'required': "不能为空"})
-    weight = forms.CharField(max_length=50, label="重量")
-    size = forms.CharField(max_length=50, label="尺寸")
-    AI = forms.BooleanField(label="智能机", initial=True)
-    choice_list = [
-        (0, '华为'),
-        (1, "苹果"),
-        (2, "OPPO")
-    ]
-    type = forms.ChoiceField(choices=choice_list, label="型号")
 
 
 class RedisVersion(models.Model):
@@ -191,3 +179,11 @@ class RedisConf(models.Model):
     class Meta:
         ordering = ('-pub_date', )
         verbose_name = "Redis配置信息"
+
+
+class RedisRunningIns(models.Model):
+    ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
+    redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
+                                      to_field='redis_type_models',
+                                      on_delete=models.CASCADE)
+    device_mem = models.CharField(max_length=200, verbose_name="内存使用情况")

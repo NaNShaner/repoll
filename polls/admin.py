@@ -137,9 +137,26 @@ class RedisApprovalAdmin(admin.ModelAdmin):
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
+    actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
 
     def colored_status(self, request):
         pass
+
+    def apply_selected_new_redis(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        deny_upline_number = 0
+        try:
+            for asset_id in selected:
+                # print(selected)
+                obj = ApproveRedis(request, asset_id)
+                deny_redis_ins = obj.deny_create()
+                if deny_redis_ins:
+                    deny_upline_number += 1
+                    self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
+        except ValueError as e:
+            self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
+
+    apply_selected_new_redis.short_description = "创建选择的Redis实例"
 
 
 admin.site.register(LogEntry, logEntryAdmin)

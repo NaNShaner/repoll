@@ -60,7 +60,7 @@ class ApproveRedis:
                                                 area=self.new_asset.area,
                                                 pub_date=self.new_asset.pub_date,
                                                 approval_user=self.request.user,
-                                                ins_status=RedisIns.ins_choice[0][0]
+                                                ins_status=RedisIns.ins_choice[3][0]
                                                 )
             else:
                 return False
@@ -106,3 +106,10 @@ class ApproveRedis:
 
     def redis_ping(self):
         r = redis.StrictRedis(host=self.new_asset.ins_name)
+
+
+class ApplyRedis:
+    def __init__(self, request, redis_id):
+        self.request = request
+        self.asset_id = redis_id
+        self.new_asset = RedisApply.objects.get(id=redis_id)
