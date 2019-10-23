@@ -11,6 +11,7 @@ from django import forms
 from django.utils.html import format_html
 #from captcha.fields import CaptchaField
 from django.contrib.auth.models import User
+from django.utils.encoding import force_bytes
 
 
 class Ipaddr(models.Model):
@@ -53,7 +54,7 @@ class RedisInfo(models.Model):
 
 
 class RedisApply(models.Model):
-    ins_name = models.CharField(max_length=50, verbose_name="应用名称")
+    apply_ins_name = models.CharField(max_length=50, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         (0, "哨兵"),
@@ -79,11 +80,11 @@ class RedisApply(models.Model):
         verbose_name = "Redis实例申请"
 
     def __str__(self):
-        return self.ins_name
+        return self.apply_ins_name
 
 
 class RedisIns(models.Model):
-    ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
+    redis_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         (0, "哨兵"),
@@ -105,20 +106,14 @@ class RedisIns(models.Model):
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
     ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
-    apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
+    # apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
 
     class Meta:
         ordering = ('-pub_date', )
         verbose_name = "Redis实例信息"
 
-    def colored_name(self):
-        return format_html(
-            '<span style="color: #{};">{} {}</span>',
-            self.ins_status,
-        )
-
     def __str__(self):
-        return self.ins_name
+        return self.redis_ins_name
 
 
 class RedisVersion(models.Model):
@@ -182,8 +177,22 @@ class RedisConf(models.Model):
 
 
 class RedisRunningIns(models.Model):
-    ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
+    running_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
     redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
                                       to_field='redis_type_models',
                                       on_delete=models.CASCADE)
     device_mem = models.CharField(max_length=200, verbose_name="内存使用情况")
+
+
+class ApplyRedisText(models.Model):
+    redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
+    apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
+    who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")
+    apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
+
+    def __str__(self):
+        # return self.redis_ins
+        return "{0}".format("执行成功")
+
+    class Meta:
+        verbose_name = "实例审批"

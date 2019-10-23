@@ -2,6 +2,19 @@
 from .models import models
 from polls.models import RedisApply, RedisInfo, RedisIns
 import redis
+from django.dispatch import receiver
+from django.core.signals import request_finished
+
+
+# 针对model 的signal
+from django.dispatch import receiver
+from django.db.models.signals import post_save
+
+
+@receiver(post_save, sender=RedisIns, dispatch_uid="mymodel_post_save")
+def my_model_handler(sender, **kwargs):
+    print('Saved: {}'.format(kwargs['instance'].__dict__))
+
 
 # def log(log_type, msg=None, asset=None, new_asset=None, request=None):
 #     """
@@ -51,8 +64,8 @@ class ApproveRedis:
         """
         # 利用request.user自动获取当前管理人员的信息，作为审批人添加到Redis实例数据中。
         try:
-            if not RedisIns.objects.filter(ins_name=self.new_asset.ins_name):
-                asset = RedisIns.objects.create(ins_name=self.new_asset.ins_name,
+            if not RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name):
+                asset = RedisIns.objects.create(redis_ins_name=self.new_asset.apply_ins_name,
                                                 ins_disc=self.new_asset.ins_disc,
                                                 redis_type=self.new_asset.redis_type,
                                                 redis_mem=self.new_asset.redis_mem,
@@ -74,8 +87,8 @@ class ApproveRedis:
         :return:
         """
         try:
-            if not RedisIns.objects.filter(ins_name=self.new_asset.ins_name):
-                asset = RedisIns.objects.create(ins_name=self.new_asset.ins_name,
+            if not RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name):
+                asset = RedisIns.objects.create(redis_ins_name=self.new_asset.apply_ins_name,
                                                 ins_disc=self.new_asset.ins_disc,
                                                 redis_type=self.new_asset.redis_type,
                                                 redis_mem=self.new_asset.redis_mem,
@@ -85,13 +98,13 @@ class ApproveRedis:
                                                 approval_user=self.request.user,
                                                 ins_status=RedisIns.ins_choice[3][0]
                                                 )
-                if RedisIns.objects.filter(ins_name=self.new_asset.ins_name).values('ins_status') == 0:
-                    RedisApply.objects.filter(ins_name=self.new_asset.ins_name).update(
+                if RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).values('ins_status') == 0:
+                    RedisApply.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(
                         apply_status=RedisApply.status_choice[2][0]
                     )
             else:
-                RedisIns.objects.filter(ins_name=self.new_asset.ins_name).update(ins_status=RedisIns.ins_choice[3][0])
-                RedisApply.objects.filter(ins_name=self.new_asset.ins_name).update(
+                RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(ins_status=RedisIns.ins_choice[3][0])
+                RedisApply.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(
                     apply_status=RedisApply.status_choice[2][0]
                 )
                 return True
@@ -104,8 +117,6 @@ class ApproveRedis:
         # obj.save()
         return True
 
-    def redis_ping(self):
-        r = redis.StrictRedis(host=self.new_asset.ins_name)
 
 
 class ApplyRedis:
@@ -113,3 +124,5 @@ class ApplyRedis:
         self.request = request
         self.asset_id = redis_id
         self.new_asset = RedisApply.objects.get(id=redis_id)
+
+

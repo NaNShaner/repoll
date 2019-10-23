@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel
+from .models import Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel, ApplyRedisText
 from django.contrib.admin.models import LogEntry
 # Register your models here.
 from .handlers import ApproveRedis
@@ -65,6 +65,11 @@ class RedisModelAdmin(admin.ModelAdmin):
     search_fields = ['redis_type_models']
 
 
+class ChoiceInline(admin.StackedInline):
+    model = ApplyRedisText
+    extra = 1
+
+
 class RedisApplyAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
@@ -74,7 +79,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(user=RedisApply.objects.filter(approval_user=request.user))
 
-    list_display = ['ins_name', 'ins_disc', 'redis_type',
+    list_display = ['apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
@@ -131,32 +136,33 @@ class RedisApplyAdmin(admin.ModelAdmin):
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
-    list_display = ['ins_name', 'ins_disc', 'redis_type',
+    list_display = ['redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'approval_user', 'ins_status',
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
+    inlines = [ChoiceInline]
 
-    def colored_status(self, request):
-        pass
-
-    def apply_selected_new_redis(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        deny_upline_number = 0
-        try:
-            for asset_id in selected:
-                # print(selected)
-                obj = ApproveRedis(request, asset_id)
-                deny_redis_ins = obj.deny_create()
-                if deny_redis_ins:
-                    deny_upline_number += 1
-                    self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
-        except ValueError as e:
-            self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
-
-    apply_selected_new_redis.short_description = "创建选择的Redis实例"
+    # def colored_status(self, request):
+    #     pass
+    #
+    # def apply_selected_new_redis(self, request, queryset):
+    #     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+    #     deny_upline_number = 0
+    #     try:
+    #         for asset_id in selected:
+    #             # print(selected)
+    #             obj = ApproveRedis(request, asset_id)
+    #             deny_redis_ins = obj.deny_create()
+    #             if deny_redis_ins:
+    #                 deny_upline_number += 1
+    #                 self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
+    #     except ValueError as e:
+    #         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
+    #
+    # apply_selected_new_redis.short_description = "创建选择的Redis实例"
 
 
 admin.site.register(LogEntry, logEntryAdmin)
