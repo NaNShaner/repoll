@@ -120,7 +120,7 @@ class RedisVersion(models.Model):
     redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
                                      default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply = models.CharField(max_length=60, verbose_name="版本发布人")
+    who_apply = models.CharField(max_length=60, default=User, verbose_name="版本发布人")
 
     def __str__(self):
         return self.redis_version
@@ -169,7 +169,8 @@ class RedisConf(models.Model):
     appendonly = models.CharField(max_length=150, help_text="开启append only持久化模式", verbose_name="appendonly", default="yes")
 
     def __str__(self):
-        return self.redis_version
+        # return self.redis_version
+        return "配置添加成功"
 
     class Meta:
         ordering = ('-pub_date', )

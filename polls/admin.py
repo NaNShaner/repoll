@@ -42,7 +42,7 @@ class logEntryAdmin(admin.ModelAdmin):
 
 
 class IpaddrAdmin(admin.ModelAdmin):
-    list_display = ['ip', 'area', 'machina_type', 'machina_mem', 'used_mem', 'used_cpu']
+    list_display = ['id', 'ip', 'area', 'machina_type', 'machina_mem', 'used_mem', 'used_cpu']
     list_filter = ['area']
     search_fields = ['ip']
 
@@ -79,7 +79,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(user=RedisApply.objects.filter(approval_user=request.user))
 
-    list_display = ['apply_ins_name', 'ins_disc', 'redis_type',
+    list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
@@ -136,7 +136,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
-    list_display = ['redis_ins_name', 'ins_disc', 'redis_type',
+    list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'approval_user', 'ins_status',
                     ]

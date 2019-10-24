@@ -1,9 +1,10 @@
 
 from .models import models
-from polls.models import RedisApply, RedisInfo, RedisIns, ApplyRedisText
+from polls.models import RedisApply, RedisInfo, RedisIns, ApplyRedisText, RedisRunningIns, Ipaddr
 import redis
 from django.dispatch import receiver
 from django.core.signals import request_finished
+from django.forms.models import model_to_dict
 
 
 # 针对model 的signal
@@ -14,8 +15,12 @@ from django.db.models.signals import post_save, pre_save
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):
     a = sender
-    b = kwargs
-    print("done")
+    redis_text = kwargs['instance'].apply_text
+    redis_ins_id = kwargs['instance'].redis_ins_id
+    redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id).values('redis_type').first()
+
+    redis_ins_type = RedisIns.type_choice[redis_ins_obj['redis_type']][1]
+
     print('Saved: {}'.format(kwargs['instance'].__dict__))
 
 
