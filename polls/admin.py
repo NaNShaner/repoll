@@ -48,9 +48,9 @@ class IpaddrAdmin(admin.ModelAdmin):
 
 
 class RedisVersionAdmin(admin.ModelAdmin):
-    list_display = ['redis_version', 'who_apply_ver', 'pub_date']
+    list_display = ['redis_version', 'who_apply', 'pub_date']
     list_filter = ['redis_version']
-    search_fields = ['who_apply_ver']
+    search_fields = ['who_apply']
 
 
 class RedisConfAdmin(admin.ModelAdmin):

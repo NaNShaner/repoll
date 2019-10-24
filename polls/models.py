@@ -30,7 +30,7 @@ class Ipaddr(models.Model):
         return self.ip
 
     class Meta:
-        verbose_name = "资源池服务器列表"
+        verbose_name_plural = "资源池服务器列表"
 
 
 class RedisInfo(models.Model):
@@ -47,7 +47,7 @@ class RedisInfo(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis实例信息"
+        verbose_name_plural = "Redis实例信息"
 
     def __str__(self):
         return self.sys_type
@@ -77,7 +77,7 @@ class RedisApply(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis实例申请"
+        verbose_name_plural = "Redis实例申请"
 
     def __str__(self):
         return self.apply_ins_name
@@ -110,7 +110,7 @@ class RedisIns(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis实例信息"
+        verbose_name_plural = "Redis实例信息"
 
     def __str__(self):
         return self.redis_ins_name
@@ -120,7 +120,7 @@ class RedisVersion(models.Model):
     redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
                                      default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply_ver = models.CharField(max_length=50, verbose_name="版本发布人")
+    who_apply = models.CharField(max_length=60, verbose_name="版本发布人")
 
     def __str__(self):
         return self.redis_version
@@ -144,7 +144,7 @@ class RedisModel(models.Model):
         return self.redis_type_models
 
     class Meta:
-        verbose_name = "Redis模式视图"
+        verbose_name_plural = "Redis模式视图"
 
 
 class RedisConf(models.Model):
@@ -173,7 +173,7 @@ class RedisConf(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis配置信息"
+        verbose_name_plural = "Redis配置信息"
 
 
 class RedisRunningIns(models.Model):

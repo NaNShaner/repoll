@@ -1,6 +1,6 @@
 
 from .models import models
-from polls.models import RedisApply, RedisInfo, RedisIns
+from polls.models import RedisApply, RedisInfo, RedisIns, ApplyRedisText
 import redis
 from django.dispatch import receiver
 from django.core.signals import request_finished
@@ -8,13 +8,25 @@ from django.core.signals import request_finished
 
 # 针对model 的signal
 from django.dispatch import receiver
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 
 
-@receiver(post_save, sender=RedisIns, dispatch_uid="mymodel_post_save")
+@receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):
+    a = sender
+    b = kwargs
+    print("done")
     print('Saved: {}'.format(kwargs['instance'].__dict__))
 
+
+# @receiver(request_finished)
+# def my_callback(sender, **kwargs):
+#     print("Request finished!")
+#
+#
+# @receiver(pre_save, sender=RedisIns)
+# def my_handler(sender, **kwargs):
+#     print("Hello World!!!")
 
 # def log(log_type, msg=None, asset=None, new_asset=None, request=None):
 #     """
@@ -124,5 +136,6 @@ class ApplyRedis:
         self.request = request
         self.asset_id = redis_id
         self.new_asset = RedisApply.objects.get(id=redis_id)
+
 
 
