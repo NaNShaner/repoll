@@ -115,6 +115,25 @@ class RedisIns(models.Model):
     def __str__(self):
         return self.redis_ins_name
 
+    def ins_status_color(self):
+        if self.ins_status == 0:
+            color = '#00F'
+        elif self.ins_status == 1:
+            color = '#F01'
+        elif self.ins_status == 2:
+            color = '#F02'
+        elif self.ins_status == 3:
+            color = '#F03'
+        elif self.ins_status == 4:
+            color = '#F04'
+        else:
+            color = ''
+        return format_html(
+            '<span style="color: {}">{}</span>',
+            color,
+            self.ins_status,
+        )
+
 
 class RedisVersion(models.Model):
     redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
