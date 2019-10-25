@@ -68,7 +68,10 @@ def my_model_handler(sender, **kwargs):
                         redis_ip=redis_ip,
                         redis_port=redis_port)
     a.standalone_conf()
-    a.saved_redis_qps()
+    while True:
+        for i in a.saved_redis_qps():
+            print(i)
+        time.sleep(1)
 
 
 def get_redis_conf(redis_type):
@@ -105,24 +108,28 @@ class RedisStandalone:
         return True
 
     def saved_redis_qps(self):
-        print("1==={0}===".format(self.redis_ins_ip))
-        print("2==={0}===".format(self.redis_ip))
-        while True:
+        # print("1==={0}===".format(self.redis_ins_ip))
+        # print("2==={0}===".format(self.redis_ip))
+        count = 0
+        for i in range(0, count+1):
             r = RedisWatch(redis_ins_ip=self.redis_ip, redis_ins_port=self.redis_port)
             time.sleep(1)
-            print(r.get_redis_ins_qps())
+            count += 1
+            yield r.get_redis_ins_qps()
+        # r = RedisWatch(redis_ins_ip=self.redis_ip, redis_ins_port=self.redis_port)
+        # return r.get_redis_ins_qps()
 
 
 class RedisWatch:
 
     def __init__(self, redis_ins_ip, redis_ins_port):
         self.redis_ins_ip = redis_ins_ip
-        self.redis_pyhon_ins = redis.ConnectionPool(host=self.redis_ins_ip, port=redis_ins_port)
+        self.redis_pyhon_ins = redis.ConnectionPool(host="127.0.0.1", port=redis_ins_port)
         self.redis_pool = redis.Redis(connection_pool=self.redis_pyhon_ins)
 
     def get_redis_ins_qps(self):
-        qps = self.redis_pool.info(section='Stats')
-        print(qps)
+        qps = self.redis_pool.info()
+        return qps['instantaneous_ops_per_sec']
 
 
 # @receiver(request_finished)
