@@ -216,3 +216,15 @@ class ApplyRedisText(models.Model):
 
     class Meta:
         verbose_name_plural = "实例审批"
+
+
+class RunningInsTime(models.Model):
+    collect_date = models.DateTimeField(default=timezone.now, verbose_name="收集时间")
+    redis_ins = models.ForeignKey(RedisRunningIns, on_delete=models.CASCADE, verbose_name="应用名称")
+    redis_qps = models.FloatField(default=0, verbose_name="Redis QPS")
+
+    def __str__(self):
+        return self.redis_ins
+
+    class Meta:
+        verbose_name_plural = "Redis实例监控"

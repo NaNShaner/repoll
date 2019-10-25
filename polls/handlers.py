@@ -37,12 +37,12 @@ work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):
-    all_redis_ip = []
+    redis_ip = ''
+    redis_port = ''
     redis_apply_ip = Ipaddr.objects.all()
     redis_ins_id = kwargs['instance'].redis_ins_id
     redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
-    for redis_ip_ipaddr in redis_apply_ip:
-        all_redis_ip.append(redis_ip_ipaddr)
+    all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
     redis_text = kwargs['instance'].apply_text
     if isinstance(redis_text, str):
         try:
@@ -52,16 +52,23 @@ def my_model_handler(sender, **kwargs):
             redis_mem = redis_text_split[2]
             if redis_ip in all_redis_ip:
                 print("{0}在Redis云管列表中...".format(redis_ip))
-            a = RedisStandalone(redis_ins_obj)
-            a.standalone_conf()
         except ValueError as e:
             print(e)
 
     redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
+    redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
     redis_ins_type = RedisIns.type_choice[redis_ins_obj_type['redis_type']][1]
-    print(redis_ins_obj_name, redis_ins_type)
-    print('Saved: {}'.format(kwargs['instance'].__dict__))
+    # print(redis_ins_obj_name, redis_ins_type)
+    # print('Saved: {}'.format(kwargs['instance'].__dict__))
+    a = RedisStandalone(redis_ins=redis_ins_obj,
+                        redis_ins_name=redis_ins_obj_name,
+                        redis_ins_type=redis_ins_type,
+                        redis_ins_mem=redis_ins_obj_mem,
+                        redis_ip=redis_ip,
+                        redis_port=redis_port)
+    a.standalone_conf()
+    a.saved_redis_qps()
 
 
 def get_redis_conf(redis_type):
@@ -76,12 +83,46 @@ def get_redis_conf(redis_type):
 
 class RedisStandalone:
 
-    def __init__(self, redis_ins):
-        self.redis_ins_ip = model_to_dict(redis_ins)
+    def __init__(self, redis_ins, redis_ins_name, redis_ins_type, redis_ins_mem, redis_ip, redis_port):
+        self.redis_ins_ip = [r.__dict__ for r in redis_ins]
+        self.redis_ins_name = redis_ins_name
+        self.redis_ins_type = redis_ins_type
+        self.redis_ins_mem = redis_ins_mem
+        self.redis_ip = redis_ip
+        self.redis_port = redis_port
 
     def standalone_conf(self):
         redis_conf = get_redis_conf(redis_type="Redis-Standalone")
+        print(self.redis_ins_name)
+        print(self.redis_ins_type)
         print(redis_conf)
+
+    def saved_redis_running_ins(self):
+        obj = RedisRunningIns(running_ins_name=self.redis_ins_name,
+                              redis_type=self.redis_ins_type,
+                              device_mem=self.redis_ins_mem)
+        obj.save()
+        return True
+
+    def saved_redis_qps(self):
+        print("1==={0}===".format(self.redis_ins_ip))
+        print("2==={0}===".format(self.redis_ip))
+        while True:
+            r = RedisWatch(redis_ins_ip=self.redis_ip, redis_ins_port=self.redis_port)
+            time.sleep(1)
+            print(r.get_redis_ins_qps())
+
+
+class RedisWatch:
+
+    def __init__(self, redis_ins_ip, redis_ins_port):
+        self.redis_ins_ip = redis_ins_ip
+        self.redis_pyhon_ins = redis.ConnectionPool(host=self.redis_ins_ip, port=redis_ins_port)
+        self.redis_pool = redis.Redis(connection_pool=self.redis_pyhon_ins)
+
+    def get_redis_ins_qps(self):
+        qps = self.redis_pool.info(section='Stats')
+        print(qps)
 
 
 # @receiver(request_finished)
