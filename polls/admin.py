@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from .models import Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel, ApplyRedisText
 from django.contrib.admin.models import LogEntry
+
 # Register your models here.
 from .handlers import ApproveRedis
 
@@ -148,22 +149,8 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     # def colored_status(self, request):
     #     pass
     #
-    # def apply_selected_new_redis(self, request, queryset):
-    #     selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-    #     deny_upline_number = 0
-    #     try:
-    #         for asset_id in selected:
-    #             # print(selected)
-    #             obj = ApproveRedis(request, asset_id)
-    #             deny_redis_ins = obj.deny_create()
-    #             if deny_redis_ins:
-    #                 deny_upline_number += 1
-    #                 self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
-    #     except ValueError as e:
-    #         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
-    #
-    # apply_selected_new_redis.short_description = "创建选择的Redis实例"
-
+    def return_message(self, request, queryset, mem=None):
+        self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)

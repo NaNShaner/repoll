@@ -1,24 +1,48 @@
 
 from .models import models
-from polls.models import RedisApply, RedisInfo, RedisIns, ApplyRedisText, RedisRunningIns, Ipaddr
+from polls.models import *
 import redis
 from django.dispatch import receiver
 from django.core.signals import request_finished
 from django.forms.models import model_to_dict
-
-
+from django.http import HttpResponse
+import time
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
+
+# 定义一个信号
+import django.dispatch
+work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
+
+
+# def create_signal(request, redis_text):
+#     print("我已经做完了工作。现在我发送一个信号出去，给那些指定的接收器。")
+#
+#     # 发送信号，将请求的url地址和时间一并传递过去
+#     work_done.send(create_signal, request=request, redis_text=redis_text)
+#     return HttpResponse("200,ok")
+#
+#
+# @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
+# def model_per_saved(sender, **kwargs):
+#     redis_text = kwargs['instance'].apply_text
+#     work_done.send(create_signal, redis_text=redis_text)
+#
+#
+# @receiver(work_done, sender=create_signal)
+# def my_callback(sender, **kwargs):
+#     print("我在%s时间收到来自%s的信号" % (kwargs['redis_text'], sender))
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):
     all_redis_ip = []
     redis_apply_ip = Ipaddr.objects.all()
+    redis_ins_id = kwargs['instance'].redis_ins_id
+    redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
     for redis_ip_ipaddr in redis_apply_ip:
         all_redis_ip.append(redis_ip_ipaddr)
-
     redis_text = kwargs['instance'].apply_text
     if isinstance(redis_text, str):
         try:
@@ -26,24 +50,38 @@ def my_model_handler(sender, **kwargs):
             redis_ip = redis_text_split[0]
             redis_port = redis_text_split[1]
             redis_mem = redis_text_split[2]
-            if redis_ip not in all_redis_ip:
-                print("{0}不在Redis云管列表中...".format(redis_ip))
-                raise "{0}不在Redis云管列表中...".format(redis_ip)
-            print(redis_ip, redis_port, redis_mem)
+            if redis_ip in all_redis_ip:
+                print("{0}在Redis云管列表中...".format(redis_ip))
+            a = RedisStandalone(redis_ins_obj)
+            a.standalone_conf()
         except ValueError as e:
             print(e)
 
-
-
-    redis_ins_id = kwargs['instance'].redis_ins_id
-    redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
     redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
-
     redis_ins_type = RedisIns.type_choice[redis_ins_obj_type['redis_type']][1]
-
-
+    print(redis_ins_obj_name, redis_ins_type)
     print('Saved: {}'.format(kwargs['instance'].__dict__))
+
+
+def get_redis_conf(redis_type):
+    """
+    通过redis的模式获取当前所有的配置文件
+    :param redis_type:
+    :return:
+    """
+    obj = RedisConf.objects.all().filter(redis_type=redis_type)
+    return obj
+
+
+class RedisStandalone:
+
+    def __init__(self, redis_ins):
+        self.redis_ins_ip = model_to_dict(redis_ins)
+
+    def standalone_conf(self):
+        redis_conf = get_redis_conf(redis_type="Redis-Standalone")
+        print(redis_conf)
 
 
 # @receiver(request_finished)
@@ -158,11 +196,7 @@ class ApproveRedis:
 
 
 
-class ApplyRedis:
-    def __init__(self, request, redis_id):
-        self.request = request
-        self.asset_id = redis_id
-        self.new_asset = RedisApply.objects.get(id=redis_id)
+
 
 
 

@@ -215,4 +215,4 @@ class ApplyRedisText(models.Model):
         return "{0}".format("执行成功")
 
     class Meta:
-        verbose_name = "实例审批"
+        verbose_name_plural = "实例审批"
