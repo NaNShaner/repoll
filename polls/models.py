@@ -86,10 +86,15 @@ class RedisApply(models.Model):
 class RedisIns(models.Model):
     redis_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
+    # type_choice = [
+    #     (0, "哨兵"),
+    #     (1, "集群"),
+    #     (2, "单机")
+    # ]
     type_choice = [
-        (0, "哨兵"),
-        (1, "集群"),
-        (2, "单机")
+        (0, "Redis-Standalone"),
+        (1, "Redis-Cluster"),
+        (2, "Redis-Sentinel")
     ]
     redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
@@ -110,7 +115,8 @@ class RedisIns(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name_plural = "Redis实例信息"
+        verbose_name = "Redis Approve"
+        verbose_name_plural = "Redis审批信息"
 
     def __str__(self):
         return self.redis_ins_name
@@ -196,12 +202,15 @@ class RedisConf(models.Model):
         verbose_name_plural = "Redis配置信息"
 
 
-class RedisRunningIns(models.Model):
-    running_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
-    redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
-                                      to_field='redis_type_models',
-                                      on_delete=models.CASCADE)
-    device_mem = models.CharField(max_length=200, verbose_name="内存使用情况")
+# class RedisRunningIns(models.Model):
+#     running_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
+#     redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
+#                                       to_field='redis_type_models',
+#                                       on_delete=models.CASCADE)
+#     device_mem = models.CharField(max_length=200, verbose_name="内存使用情况")
+#
+#     class Meta:
+#         verbose_name_plural = "Redis监控实例"
 
 
 class ApplyRedisText(models.Model):
@@ -219,12 +228,39 @@ class ApplyRedisText(models.Model):
 
 
 class RunningInsTime(models.Model):
-    collect_date = models.DateTimeField(default=timezone.now, verbose_name="收集时间")
-    redis_ins = models.ForeignKey(RedisRunningIns, on_delete=models.CASCADE, verbose_name="应用名称")
-    redis_qps = models.FloatField(default=0, verbose_name="Redis QPS")
+    running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list, unique=True,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    running_ins_port = models.IntegerField(null=True, verbose_name="端口")
+    redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
 
     def __str__(self):
-        return self.redis_ins
+        return self.running_ins_name
 
     class Meta:
-        verbose_name_plural = "Redis实例监控"
+        verbose_name = "Redis Running Ins"
+        verbose_name_plural = "Redis已运行实例"
+
+
+class RealTimeQps(models.Model):
+    redis_used_mem = models.FloatField(default=0, null=True, max_length=50, verbose_name="Redis已用内存")
+    collect_date = models.DateTimeField(auto_now=True, verbose_name="收集时间")
+    redis_qps = models.FloatField(default=0, null=True, verbose_name="Redis QPS")
+    redis_ins_used_mem = models.CharField(max_length=50, null=True, verbose_name="Redis内存使用率")
+    redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Redis Monitor"
+        verbose_name_plural = "Redis监控信息"
+
+
+
+
+
+

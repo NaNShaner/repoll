@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-from .models import Ipaddr, RedisApply, RedisIns, RedisVersion, RedisConf, RedisModel, ApplyRedisText
+from .models import *
 from django.contrib.admin.models import LogEntry
 
 # Register your models here.
@@ -68,6 +68,11 @@ class RedisModelAdmin(admin.ModelAdmin):
 
 class ChoiceInline(admin.StackedInline):
     model = ApplyRedisText
+    extra = 1
+
+
+class RealTimeQpsInline(admin.StackedInline):
+    model = RealTimeQps
     extra = 1
 
 
@@ -139,7 +144,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
 class RedisApprovalAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'approval_user', 'ins_status',
+                    'pub_date', 'approval_user', 'ins_status'
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
@@ -152,6 +157,14 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     def return_message(self, request, queryset, mem=None):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
+
+class RunningInsTimeAdmin(admin.ModelAdmin):
+    list_display = ['id', 'running_ins_name', 'redis_type']
+    list_filter = ['running_ins_name']
+    search_fields = ['redis_type']
+    inlines = [RealTimeQpsInline]
+
+
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
@@ -159,3 +172,5 @@ admin.site.register(RedisIns, RedisApprovalAdmin)
 admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
 admin.site.register(RedisModel, RedisModelAdmin)
+admin.site.register(RunningInsTime, RunningInsTimeAdmin)
+admin.site.register(RealTimeQps)
