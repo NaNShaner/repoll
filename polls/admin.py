@@ -159,7 +159,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'running_ins_name', 'redis_type']
+    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     inlines = [RealTimeQpsInline]

@@ -70,40 +70,6 @@ def my_model_handler(sender, **kwargs):
     a.saved_redis_running_ins()
 
 
-# @receiver(post_save, sender=RedisIns, dispatch_uid="RedisIns_post_save")
-# def model_RedisIns_handler(sender, **kwargs):
-#     redis_ip = ''
-#     redis_port = ''
-#     redis_apply_ip = Ipaddr.objects.all()
-#     redis_ins_id = kwargs['instance'].redis_ins_name
-#     redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
-#     all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
-#     redis_text = kwargs['instance'].apply_text
-#     if isinstance(redis_text, str):
-#         try:
-#             redis_text_split = redis_text.split(":")
-#             redis_ip = redis_text_split[0]
-#             redis_port = redis_text_split[1]
-#             redis_mem = redis_text_split[2]
-#             if redis_ip in all_redis_ip:
-#                 print("{0}在Redis云管列表中...".format(redis_ip))
-#         except ValueError as e:
-#             print(e)
-#
-#     redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
-#     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
-#     redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
-#     redis_ins_type = RedisIns.type_choice[redis_ins_obj_type['redis_type']][1]
-#     # print(redis_ins_obj_name, redis_ins_type)
-#     # print('Saved: {}'.format(kwargs['instance'].__dict__))
-#     a = RedisStandalone(redis_ins=redis_ins_obj,
-#                         redis_ins_name=redis_ins_obj_name,
-#                         redis_ins_type=redis_ins_type,
-#                         redis_ins_mem=redis_ins_obj_mem,
-#                         redis_ip=redis_ip,
-#                         redis_port=redis_port)
-#     a.saved_redis_running_ins()
-
 
 def get_redis_conf(redis_type):
     """
@@ -121,7 +87,7 @@ class RedisStandalone:
         self.redis_ins_ip = [r.__dict__ for r in redis_ins]
         self.redis_ins_name = redis_ins_name['redis_ins_name']
         self.redis_ins_type = redis_ins_type
-        self.redis_ins_mem = redis_ins_mem
+        self.redis_ins_mem = redis_ins_mem['redis_mem']
         self.redis_ip = redis_ip
         self.redis_port = redis_port
 
