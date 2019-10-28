@@ -33,13 +33,7 @@ work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 # @receiver(work_done, sender=create_signal)
 # def my_callback(sender, **kwargs):
 #     print("我在%s时间收到来自%s的信号" % (kwargs['redis_text'], sender))
-def mem_unit_chage(mem):
-    memory = mem[0:-1]
-    type = mem[-1]
-    if type == 'g' or 'G':
-        return float(memory) * 1024
-    else:
-        return float(memory)
+
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):

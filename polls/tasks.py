@@ -25,6 +25,7 @@ def get_redis_ins_qps():
     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
     for redis_name in all_redis_names:
         redis_ins_all = running_ins_names.filter(running_ins_name=redis_name)
+        redis_ins = running_ins_names.get(running_ins_name=redis_name)
         redis_id = redis_ins_all.values('id').first()['id']
         redis_ip = redis_ins_all.values('redis_ip').first()['redis_ip']
         redis_port = redis_ins_all.values('running_ins_port').first()['running_ins_port']
@@ -47,8 +48,8 @@ def get_redis_ins_qps():
             real_time_qps_obj = RealTimeQps(redis_used_mem=used_memory_human,
                                             redis_qps=qps['instantaneous_ops_per_sec'],
                                             redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
-                                            redis_running_monitor=redis_id,
-                                            collect_date=timezone.now)
+                                            collect_date=timezone.now,
+                                            redis_running_monitor=redis_ins)
             save_status = real_time_qps_obj.save()
             print(real_time_qps_obj, save_status)
             i += 1

@@ -75,7 +75,8 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        # 'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [os.path.join(BASE_DIR, '/templates/polls')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -173,6 +174,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
 # print(STATICFILES_DIRS)
+print(BASE_DIR)
 
 
 CRONJOBS = [

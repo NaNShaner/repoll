@@ -234,7 +234,7 @@ class RunningInsTime(models.Model):
         ('Redis-Cluster', 'Redis-Cluster'),
         ('Redis-Sentinel', 'Redis-Sentinel')
     ]
-    redis_type = models.CharField(max_length=150, choices=choice_list, unique=True,
+    redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
     running_ins_port = models.IntegerField(null=True, verbose_name="端口")
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")

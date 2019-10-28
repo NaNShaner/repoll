@@ -4,11 +4,10 @@ from __future__ import unicode_literals
 from django.shortcuts import render, get_object_or_404, redirect, render_to_response
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import subprocess
-from .models import RedisInfo, RedisApply
+from .models import RedisInfo, RedisApply, RealTimeQps, RunningInsTime
 from django.http import Http404
 from django.urls import reverse
 #from django.db import models
-from .models import models as mo
 from django.utils import timezone
 from django.template.loader import get_template
 from datetime import datetime
@@ -97,22 +96,34 @@ def run_scan_tomcat(request, apptrye):
         return HttpResponse("当前入参错误，apptype为%s" % apptrye)
 
 
-def url_test(request, year, month, slug):
-    test = Question.objects.all()
-    print(test)
-    return HttpResponse("{} {} {}".format(year, month, slug))
+# def url_test(request, year, month, slug):
+#     test = Question.objects.all()
+#     print(test)
+#     return HttpResponse("{} {} {}".format(year, month, slug))
 
 
 # echarts
 def pyecharts(request):
-    c = (
-        Bar()
-        .add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
-        .add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
-        .add_yaxis("商家B", [15, 25, 16, 55, 48, 8])
-        .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"))
-    )
-    return HttpResponse(c.render_embed())
+    # real_time_qps = RealTimeQps.objects.all()
+    # redis_ins_id = list(set([redis_ins_id.__dict__['redis_running_monitor_id'] for redis_ins_id in real_time_qps]))
+    # for ins_id in redis_ins_id:
+    #     real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id)
+    #     real_time = [real_time.__dict__['collect_date'] for real_time in real_time_obj]
+    #     redis_qps = [redis_qps.__dict__['redis_qps'] for redis_qps in real_time_obj]
+    #     c = (
+    #         Bar()
+    #         .add_xaxis(real_time)
+    #         .add_yaxis("商家A", redis_qps)
+    #         .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"))
+    #     )
+    #     c.render_embed()
+    bar = Bar()
+    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
+    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
+    # 也可以传入路径参数，如 bar.render("mycharts.html")
+    bar.render("polls/render1.html")
+    return render(request, "polls/render1.html")
 
 
 # def list(request):
