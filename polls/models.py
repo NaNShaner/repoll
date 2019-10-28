@@ -36,11 +36,11 @@ class Ipaddr(models.Model):
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
     type_choice = [
-        (0, "哨兵"),
-        (1, "集群"),
-        (2, "单机")
+        ("Redis-Standalone", "Redis-Standalone"),
+        ("Redis-Cluster", "Redis-Cluster"),
+        ("Redis-Sentinel", "Redis-Sentinel")
     ]
-    redis_type = models.IntegerField(choices=type_choice)
+    redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_port = models.IntegerField(verbose_name="Redis 端口", default=6379)
     pub_date = models.DateTimeField('date published')
     host_ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
@@ -57,11 +57,11 @@ class RedisApply(models.Model):
     apply_ins_name = models.CharField(max_length=50, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
-        (0, "哨兵"),
-        (1, "集群"),
-        (2, "单机")
+        ("Redis-Standalone", "Redis-Standalone"),
+        ("Redis-Cluster", "Redis-Cluster"),
+        ("Redis-Sentinel", "Redis-Sentinel")
     ]
-    redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
+    redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
@@ -92,11 +92,11 @@ class RedisIns(models.Model):
     #     (2, "单机")
     # ]
     type_choice = [
-        (0, "Redis-Standalone"),
-        (1, "Redis-Cluster"),
-        (2, "Redis-Sentinel")
+        ("Redis-Standalone", "Redis-Standalone"),
+        ("Redis-Cluster", "Redis-Cluster"),
+        ("Redis-Sentinel", "Redis-Sentinel")
     ]
-    redis_type = models.IntegerField(choices=type_choice, verbose_name="存储种类")
+    redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
@@ -249,7 +249,7 @@ class RunningInsTime(models.Model):
 
 
 class RealTimeQps(models.Model):
-    redis_used_mem = models.FloatField(default=0, null=True, max_length=50, verbose_name="Redis已用内存")
+    redis_used_mem = models.CharField(default=0, null=True, max_length=50, verbose_name="Redis已用内存")
     collect_date = models.DateTimeField(auto_now=True, verbose_name="收集时间")
     redis_qps = models.FloatField(default=0, null=True, verbose_name="Redis QPS")
     redis_ins_used_mem = models.CharField(max_length=50, null=True, verbose_name="Redis内存使用率")

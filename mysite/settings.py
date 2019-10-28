@@ -106,10 +106,10 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        # 'HOST': '172.20.10.5',
-        # 'PORT': '3306',
-        'HOST': '127.0.0.1',
-        'PORT': '32768',
+        'HOST': '172.20.10.5',
+        'PORT': '3306',
+        # 'HOST': '127.0.0.1',
+        # 'PORT': '32768',
     }
 }
 
@@ -176,6 +176,8 @@ STATICFILES_DIRS = [
 
 
 CRONJOBS = [
+    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
+    #  '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
     ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-     '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
+     '>> /django/redis_qps.log'),
 ]

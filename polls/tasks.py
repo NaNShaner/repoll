@@ -1,6 +1,7 @@
 import time
 import redis
 from .models import RealTimeQps, RunningInsTime
+from django.utils import timezone
 
 
 # class RedisWatch(object):
@@ -24,13 +25,14 @@ def get_redis_ins_qps():
     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
     for redis_name in all_redis_names:
         redis_ins_all = running_ins_names.filter(running_ins_name=redis_name)
-        id = redis_ins_all.values('id').first()
+        redis_id = redis_ins_all.values('id').first()['id']
         redis_ip = redis_ins_all.values('redis_ip').first()['redis_ip']
         redis_port = redis_ins_all.values('running_ins_port').first()['running_ins_port']
         redis_ins_mem = redis_ins_all.values('redis_ins_mem').first()['redis_ins_mem']
-        print(redis_port, type(redis_port))
-        print(redis_ip, type(redis_ip))
-        print(redis_ins_mem, type(redis_ins_mem))
+        print("redis_port{0},{1}".format(redis_port, type(redis_port)))
+        print("redis_ip{0},{1}".format(redis_ip, type(redis_ip)))
+        print("redis_ins_mem{0},{1}".format(redis_ins_mem, type(redis_ins_mem)))
+        print("redis_id{0},{1}".format(redis_id, type(redis_id)))
         redis_pyhon_ins = redis.ConnectionPool(host=redis_ip, port=redis_port)
         redis_pool = redis.Redis(connection_pool=redis_pyhon_ins)
         i = 0
@@ -41,7 +43,14 @@ def get_redis_ins_qps():
             time.sleep(1)
             print("{0},Redis的QPS为{1},已用内存{2},内存使用率{3}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                                                               qps['instantaneous_ops_per_sec'],
-                                                              used_memory_human, redis_ins_used_mem))
+                                                              used_memory_human, float('%.2f' % redis_ins_used_mem)))
+            real_time_qps_obj = RealTimeQps(redis_used_mem=used_memory_human,
+                                            redis_qps=qps['instantaneous_ops_per_sec'],
+                                            redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
+                                            redis_running_monitor=redis_id,
+                                            collect_date=timezone.now)
+            save_status = real_time_qps_obj.save()
+            print(real_time_qps_obj, save_status)
             i += 1
 
 
