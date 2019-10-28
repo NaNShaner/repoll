@@ -104,26 +104,28 @@ def run_scan_tomcat(request, apptrye):
 
 # echarts
 def pyecharts(request):
-    # real_time_qps = RealTimeQps.objects.all()
-    # redis_ins_id = list(set([redis_ins_id.__dict__['redis_running_monitor_id'] for redis_ins_id in real_time_qps]))
-    # for ins_id in redis_ins_id:
-    #     real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id)
-    #     real_time = [real_time.__dict__['collect_date'] for real_time in real_time_obj]
-    #     redis_qps = [redis_qps.__dict__['redis_qps'] for redis_qps in real_time_obj]
-    #     c = (
-    #         Bar()
-    #         .add_xaxis(real_time)
-    #         .add_yaxis("商家A", redis_qps)
-    #         .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"))
-    #     )
-    #     c.render_embed()
-    bar = Bar()
-    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
-    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
-    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
-    # 也可以传入路径参数，如 bar.render("mycharts.html")
-    bar.render("polls/render1.html")
-    return render(request, "polls/render1.html")
+    real_time_qps = RealTimeQps.objects.all()
+    redis_ins_id = list(set([redis_ins_id.__dict__['redis_running_monitor_id'] for redis_ins_id in real_time_qps]))
+    for ins_id in redis_ins_id:
+        real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id)
+        real_time = [real_time.__dict__['collect_date'] for real_time in real_time_obj]
+        redis_qps = [redis_qps.__dict__['redis_qps'] for redis_qps in real_time_obj]
+        c = (
+            Bar()
+            .add_xaxis(real_time)
+            .add_yaxis("商家A", redis_qps)
+            .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"), toolbox_opts=opts.ToolboxOpts())
+        )
+        # c.render_embed()
+    # bar = Bar()
+    # bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
+    # bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+    # # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
+    # # 也可以传入路径参数，如 bar.render("mycharts.html")
+    # a = bar.render("/Users/bijingrui/PycharmProjects/mysite1/templates/polls/render1.html")
+    # print(a)
+    # return render(request, "polls/render1.html")
+        return HttpResponse(c.render_embed())
 
 
 # def list(request):

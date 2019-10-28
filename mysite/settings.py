@@ -75,8 +75,8 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        # 'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        'DIRS': [os.path.join(BASE_DIR, '/templates/polls')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        # 'DIRS': [os.path.join(BASE_DIR, '/templates/polls')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -107,10 +107,10 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '172.20.10.5',
-        'PORT': '3306',
-        # 'HOST': '127.0.0.1',
-        # 'PORT': '32768',
+        # 'HOST': '172.20.10.5',
+        # 'PORT': '3306',
+        'HOST': '127.0.0.1',
+        'PORT': '32768',
     }
 }
 
@@ -178,8 +178,8 @@ print(BASE_DIR)
 
 
 CRONJOBS = [
-    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-    #  '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
     ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-     '>> /django/redis_qps.log'),
+     '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
+    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
+    #  '>> /django/redis_qps.log'),
 ]

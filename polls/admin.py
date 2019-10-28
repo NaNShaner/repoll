@@ -165,6 +165,12 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
     inlines = [RealTimeQpsInline]
 
 
+class RealTimeQpsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'redis_running_monitor', 'collect_date', 'redis_used_mem', 'redis_qps', 'redis_ins_used_mem']
+    list_filter = ['redis_running_monitor']
+    search_fields = ['collect_date']
+
+
 admin.site.register(LogEntry, logEntryAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
@@ -173,4 +179,4 @@ admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
 admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
-admin.site.register(RealTimeQps)
+admin.site.register(RealTimeQps, RealTimeQpsAdmin)
