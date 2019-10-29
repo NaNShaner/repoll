@@ -30,7 +30,8 @@ from django.http import HttpResponse
 
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
 from pyecharts import options as opts
-from pyecharts.charts import Bar
+from pyecharts.charts import Bar, Line
+from pyecharts.faker import Faker
 from random import randrange
 from rest_framework.views import APIView
 
@@ -114,7 +115,9 @@ def pyecharts(request):
             Bar()
             .add_xaxis(real_time)
             .add_yaxis("商家A", redis_qps)
-            .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"), toolbox_opts=opts.ToolboxOpts())
+            .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"),
+                             toolbox_opts=opts.ToolboxOpts(),
+                             datazoom_opts=[opts.DataZoomOpts(), opts.DataZoomOpts(type_="inside")],)
         )
         # c.render_embed()
     # bar = Bar()
