@@ -107,10 +107,10 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '172.20.10.5',
-        'PORT': '3306',
-        # 'HOST': '127.0.0.1',
-        # 'PORT': '32768',
+        # 'HOST': '172.20.10.5',
+        # 'PORT': '3306',
+        'HOST': '127.0.0.1',
+        'PORT': '32768',
     }
 }
 
