@@ -123,7 +123,6 @@ def pyecharts(request):
         return HttpResponse(c.render_embed())
 
 
-
 def line_base(request):
     real_time_qps = RealTimeQps.objects.all()
     redis_ins_id = list(set([redis_ins_id.__dict__['redis_running_monitor_id'] for redis_ins_id in real_time_qps]))
