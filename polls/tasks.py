@@ -30,10 +30,10 @@ def get_redis_ins_qps():
         redis_ip = redis_ins_all.values('redis_ip').first()['redis_ip']
         redis_port = redis_ins_all.values('running_ins_port').first()['running_ins_port']
         redis_ins_mem = redis_ins_all.values('redis_ins_mem').first()['redis_ins_mem']
-        print("redis_port{0},{1}".format(redis_port, type(redis_port)))
-        print("redis_ip{0},{1}".format(redis_ip, type(redis_ip)))
-        print("redis_ins_mem{0},{1}".format(redis_ins_mem, type(redis_ins_mem)))
-        print("redis_id{0},{1}".format(redis_id, type(redis_id)))
+        # print("redis_port{0},{1}".format(redis_port, type(redis_port)))
+        # print("redis_ip{0},{1}".format(redis_ip, type(redis_ip)))
+        # print("redis_ins_mem{0},{1}".format(redis_ins_mem, type(redis_ins_mem)))
+        # print("redis_id{0},{1}".format(redis_id, type(redis_id)))
         redis_pyhon_ins = redis.ConnectionPool(host=redis_ip, port=redis_port)
         redis_pool = redis.Redis(connection_pool=redis_pyhon_ins)
         i = 0

@@ -125,16 +125,24 @@ def pyecharts(request):
 
 def line_base(request):
     real_time_qps = RealTimeQps.objects.all()
+    running_ins_time = RunningInsTime.objects.all()
     redis_ins_id = list(set([redis_ins_id.__dict__['redis_running_monitor_id'] for redis_ins_id in real_time_qps]))
     for ins_id in redis_ins_id:
         real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id).order_by('-collect_date')[:60]
+        # redis_ins = real_time_qps.filter(redis_running_monitor_id=ins_id).values('redis_running_monitor_id').first()
+        running_ins = running_ins_time.filter(id=ins_id)
+        running_ins_name = running_ins.values('running_ins_name').first()
+        running_ins_ip = running_ins.values('redis_ip').first()
+        running_ins_port = running_ins.values('running_ins_port').first()
         real_time = [real_time.__dict__['collect_date'] for real_time in real_time_obj]
         redis_qps = [redis_qps.__dict__['redis_qps'] for redis_qps in real_time_obj]
         c = (
             Line()
             .add_xaxis(real_time)
-            .add_yaxis("商家A", redis_qps, is_smooth=True)
-            .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="毕井锐"),
+            .add_yaxis(running_ins_name['running_ins_name'], redis_qps, is_smooth=True)
+            .set_global_opts(title_opts=opts.TitleOpts(title="{0}:{1}".format(running_ins_ip['redis_ip'],
+                                                                              running_ins_port['running_ins_port']),
+                                                       subtitle="Redis QPS图"),
                              toolbox_opts=opts.ToolboxOpts(),
                              datazoom_opts=[opts.DataZoomOpts(), opts.DataZoomOpts(type_="inside")],)
         )
