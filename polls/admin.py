@@ -5,6 +5,12 @@ from django.contrib import admin
 from .models import *
 from django.contrib.admin.models import LogEntry
 
+from jinja2 import Environment, FileSystemLoader
+from pyecharts.globals import CurrentConfig
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
+from pyecharts import options as opts
+from pyecharts.charts import Bar, Line
+
 # Register your models here.
 from .handlers import ApproveRedis
 
@@ -74,6 +80,7 @@ class ChoiceInline(admin.StackedInline):
 class RealTimeQpsInline(admin.StackedInline):
     model = RealTimeQps
     extra = 1
+    list_per_page = 5
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
