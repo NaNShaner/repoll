@@ -75,6 +75,7 @@ class RedisApply(models.Model):
     apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
                                        verbose_name="申请状态")
 
+
     class Meta:
         ordering = ('-pub_date', )
         verbose_name_plural = "Redis实例申请"
@@ -110,7 +111,8 @@ class RedisIns(models.Model):
         (4, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
-    ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
+
+
     # apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
 
     class Meta:
@@ -185,13 +187,20 @@ class RedisConf(models.Model):
     ]
     redis_port = models.IntegerField(default=6379, verbose_name="端口")
     redis_mem = models.CharField(max_length=150, default="64m", verbose_name="内存大小")
-    redis_daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
+    daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
     tcp_backlog = models.IntegerField(default=511, help_text="TCP连接完成队列", verbose_name="tcp-backlog")
     timeout = models.IntegerField(default=0, help_text="客户端闲置多少秒后关闭连接,默认为0,永不关闭", verbose_name="timeout")
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
     loglevel = models.CharField(max_length=50, default="notice", help_text="日志级别", verbose_name="loglevel")
     databases = models.IntegerField(help_text="可用的数据库数，默认值为16个,默认数据库为0", verbose_name="databases", default=16)
     appendonly = models.CharField(max_length=150, help_text="开启append only持久化模式", verbose_name="appendonly", default="yes")
+    redis_dir = models.CharField(max_length=150, help_text="redis工作目录", verbose_name="dir", default="/opt/repoll/")
+    stop_writes_on_bgsave_error = models.CharField(max_length=150, help_text="bgsave出错了不停写",
+                                                   verbose_name="stop-writes-on-bgsave-error", default="no")
+    repl_timeout = models.IntegerField(help_text="master批量数据传输时间或者ping回复时间间隔,默认:60秒",
+                                       verbose_name="repl-timeout", default="60")
+    repl_ping_slave_period = models.IntegerField(help_text="指定slave定期ping master的周期,默认:10秒",
+                                                 verbose_name="repl-ping-slave-period", default=10)
 
     def __str__(self):
         # return self.redis_version
@@ -214,6 +223,7 @@ class RedisConf(models.Model):
 
 
 class ApplyRedisText(models.Model):
+    ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
     apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
     who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")

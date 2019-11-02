@@ -1,0 +1,259 @@
+/Users/bijingrui/PycharmProjects/mysite1
+redis_port32769,<class 'int'>
+redis_ip127.0.0.1,<class 'str'>
+redis_ins_mem4G,<class 'str'>
+redis_id12,<class 'int'>
+2019-10-29 22:43:02,Redis的QPS为2,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38031) None
+2019-10-29 22:43:03,Redis的QPS为2,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38034) None
+2019-10-29 22:43:04,Redis的QPS为3,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38037) None
+2019-10-29 22:43:05,Redis的QPS为3,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38040) None
+2019-10-29 22:43:07,Redis的QPS为2,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38043) None
+2019-10-29 22:43:08,Redis的QPS为4,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38046) None
+2019-10-29 22:43:09,Redis的QPS为3,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38049) None
+2019-10-29 22:43:10,Redis的QPS为4,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38052) None
+2019-10-29 22:43:11,Redis的QPS为4,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38055) None
+2019-10-29 22:43:12,Redis的QPS为3,已用内存28.82M,内存使用率7.21
+RealTimeQps object (38058) None
+2019-10-29 22:43:13,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38060) None
+2019-10-29 22:43:14,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38062) None
+2019-10-29 22:43:15,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38064) None
+2019-10-29 22:43:16,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38066) None
+2019-10-29 22:43:17,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38068) None
+2019-10-29 22:43:18,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38070) None
+2019-10-29 22:43:19,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38072) None
+2019-10-29 22:43:20,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38074) None
+2019-10-29 22:43:21,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38076) None
+2019-10-29 22:43:23,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38078) None
+2019-10-29 22:43:24,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38080) None
+2019-10-29 22:43:25,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38082) None
+2019-10-29 22:43:26,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38084) None
+2019-10-29 22:43:27,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38086) None
+2019-10-29 22:43:28,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38088) None
+2019-10-29 22:43:29,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38090) None
+2019-10-29 22:43:30,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38092) None
+2019-10-29 22:43:31,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38094) None
+2019-10-29 22:43:32,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38096) None
+2019-10-29 22:43:33,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38098) None
+2019-10-29 22:43:34,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38100) None
+2019-10-29 22:43:35,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38102) None
+2019-10-29 22:43:36,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38104) None
+2019-10-29 22:43:37,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38106) None
+2019-10-29 22:43:39,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38108) None
+2019-10-29 22:43:40,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38110) None
+2019-10-29 22:43:41,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38112) None
+2019-10-29 22:43:42,Redis的QPS为4,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38114) None
+2019-10-29 22:43:43,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38116) None
+2019-10-29 22:43:44,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38118) None
+2019-10-29 22:43:45,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38120) None
+2019-10-29 22:43:46,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38122) None
+2019-10-29 22:43:47,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38124) None
+2019-10-29 22:43:48,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38126) None
+2019-10-29 22:43:49,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38128) None
+2019-10-29 22:43:50,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38130) None
+2019-10-29 22:43:51,Redis的QPS为3,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38132) None
+2019-10-29 22:43:53,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38134) None
+2019-10-29 22:43:54,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38136) None
+2019-10-29 22:43:55,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38138) None
+2019-10-29 22:43:56,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38140) None
+2019-10-29 22:43:57,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38142) None
+2019-10-29 22:43:58,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38144) None
+2019-10-29 22:44:00,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38146) None
+2019-10-29 22:44:01,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38148) None
+2019-10-29 22:44:02,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38150) None
+2019-10-29 22:44:03,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38152) None
+2019-10-29 22:44:04,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38154) None
+2019-10-29 22:44:05,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38156) None
+2019-10-29 22:44:06,Redis的QPS为2,已用内存28.80M,内存使用率7.2
+RealTimeQps object (38158) None
+redis_port32769,<class 'int'>
+redis_ip127.0.0.1,<class 'str'>
+redis_ins_mem6G,<class 'str'>
+redis_id15,<class 'int'>
+2019-10-29 22:44:08,Redis的QPS为2,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38160) None
+2019-10-29 22:44:09,Redis的QPS为2,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38162) None
+2019-10-29 22:44:10,Redis的QPS为2,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38164) None
+2019-10-29 22:44:11,Redis的QPS为2,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38166) None
+2019-10-29 22:44:21,Redis的QPS为2,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38168) None
+2019-10-29 22:44:23,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38169) None
+2019-10-29 22:44:24,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38170) None
+2019-10-29 22:44:25,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38171) None
+2019-10-29 22:44:26,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38172) None
+2019-10-29 22:44:27,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38173) None
+2019-10-29 22:44:28,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38174) None
+2019-10-29 22:44:30,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38175) None
+2019-10-29 22:44:31,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38176) None
+2019-10-29 22:44:32,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38177) None
+2019-10-29 22:44:34,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38178) None
+2019-10-29 22:44:35,Redis的QPS为1,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38179) None
+2019-10-29 22:44:37,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38180) None
+2019-10-29 22:44:38,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38181) None
+2019-10-29 22:44:39,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38182) None
+2019-10-29 22:44:40,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38183) None
+2019-10-29 22:44:41,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38184) None
+2019-10-29 22:44:42,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38185) None
+2019-10-29 22:44:44,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38186) None
+2019-10-29 22:44:45,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38187) None
+2019-10-29 22:44:46,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38188) None
+2019-10-29 22:44:47,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38189) None
+2019-10-29 22:44:48,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38190) None
+2019-10-29 22:44:49,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38191) None
+2019-10-29 22:44:50,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38192) None
+2019-10-29 22:44:52,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38193) None
+2019-10-29 22:44:53,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38194) None
+2019-10-29 22:44:54,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38195) None
+2019-10-29 22:44:55,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38196) None
+2019-10-29 22:44:56,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38197) None
+2019-10-29 22:44:57,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38198) None
+2019-10-29 22:44:59,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38199) None
+2019-10-29 22:45:00,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38200) None
+2019-10-29 22:45:01,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38201) None
+2019-10-29 22:45:02,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38202) None
+2019-10-29 22:45:03,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38203) None
+2019-10-29 22:45:04,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38204) None
+2019-10-29 22:45:05,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38205) None
+2019-10-29 22:45:07,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38206) None
+2019-10-29 22:45:08,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38207) None
+2019-10-29 22:45:09,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38208) None
+2019-10-29 22:45:10,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38209) None
+2019-10-29 22:45:11,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38210) None
+2019-10-29 22:45:12,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38211) None
+2019-10-29 22:45:13,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38212) None
+2019-10-29 22:45:15,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38213) None
+2019-10-29 22:45:16,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38214) None
+2019-10-29 23:05:37,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38215) None
+2019-10-29 23:05:39,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38216) None
+2019-10-29 23:05:40,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38217) None
+2019-10-29 23:05:41,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38218) None
+2019-10-29 23:05:42,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38219) None
+2019-10-29 23:05:43,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38220) None
+2019-10-29 23:05:44,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38221) None
+2019-10-29 23:05:45,Redis的QPS为3,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38222) None
+2019-10-29 23:05:46,Redis的QPS为2,已用内存28.78M,内存使用率4.8
+RealTimeQps object (38223) None
+�存28.80M,内存使用率4.8
+RealTimeQps object (38165) None
+2019-10-29 22:44:21,Redis的QPS为3,已用内存28.80M,内存使用率4.8
+RealTimeQps object (38167) None
+�存使用率4.8
+RealTimeQps object (38050) None
+2019-10-29 22:43:10,Redis的QPS为4,已用内存28.82M,内存使用率4.8
+RealTimeQps object (38053) None
+2019-10-29 22:43:11,Redis的QPS为4,已用内存28.82M,内存使用率4.8
+RealTimeQps object (38056) None

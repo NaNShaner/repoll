@@ -4,6 +4,8 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from .models import *
 from django.contrib.admin.models import LogEntry
+from django.forms import CheckboxSelectMultiple
+
 
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
@@ -18,6 +20,7 @@ from .handlers import ApproveRedis
 class MyAdminSite(admin.AdminSite):
     site_header = 'Redis云管系统'  # 此处设置页面显示标题
     site_title = '运维管理'  # 此处设置页面头部标题
+    index_title = 'repoll'
 
 
 admin.site = MyAdminSite(name='management')
@@ -149,9 +152,16 @@ class RedisApplyAdmin(admin.ModelAdmin):
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
+
+    # def show_all_ip(self, obj):
+    #     a = [a.ip for a in Ipaddr.objects.all()]
+    #     print(a)
+    #     return [a.ip for a in Ipaddr.objects.all()]
+
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'approval_user', 'ins_status'
+                    'pub_date', 'approval_user', 'ins_status',
+                    # 'show_all_ip'
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']

@@ -5,7 +5,9 @@ import redis
 from django.dispatch import receiver
 from django.core.signals import request_finished
 from django.forms.models import model_to_dict
-from django.http import HttpResponse
+import paramiko
+import os
+import logging
 import time
 # 针对model 的signal
 from django.dispatch import receiver
@@ -50,8 +52,9 @@ def my_model_handler(sender, **kwargs):
             redis_ip = redis_text_split[0]
             redis_port = redis_text_split[1]
             redis_mem = redis_text_split[2]
-            if redis_ip in all_redis_ip:
-                print("{0}在Redis云管列表中...".format(redis_ip))
+            if redis_ip not in all_redis_ip:
+                print("{0}不在Redis云管列表中...".format(redis_ip))
+                raise ValueError("{0}不在Redis云管列表中...".format(redis_ip))
         except ValueError as e:
             print(e)
 
@@ -59,8 +62,6 @@ def my_model_handler(sender, **kwargs):
     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
     redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
     redis_ins_type = redis_ins_obj_type['redis_type']
-    # print(redis_ins_obj_name, redis_ins_type)
-    # print('Saved: {}'.format(kwargs['instance'].__dict__))
     a = RedisStandalone(redis_ins=redis_ins_obj,
                         redis_ins_name=redis_ins_obj_name,
                         redis_ins_type=redis_ins_type,
@@ -68,6 +69,7 @@ def my_model_handler(sender, **kwargs):
                         redis_ip=redis_ip,
                         redis_port=redis_port)
     a.saved_redis_running_ins()
+    a.create_redis_conf_file()
 
 
 def get_redis_conf(redis_type):
@@ -78,6 +80,32 @@ def get_redis_conf(redis_type):
     """
     obj = RedisConf.objects.all().filter(redis_type=redis_type)
     return obj
+
+def do_telnet(Host, commands):
+    """
+    Telnet远程登录：Windows客户端连接Linux服务器
+    :param Host:
+    :param commands:
+    :return:
+    """
+    try:
+        # 创建SSH对象
+        ssh = paramiko.SSHClient()
+        # 允许连接不在know_hosts文件中的主机
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # 第一次登录的认证信息
+        private_key = paramiko.RSAKey.from_private_key_file('/Users/bijingrui/.ssh/id_rsa')
+        # 连接服务器
+        ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+        # 执行命令
+        stdin, stdout, stderr = ssh.exec_command(commands)
+        # 获取命令结果
+        res, err = stdout.read(), stderr.read()
+        result = res if res else err
+        # 关闭连接
+        ssh.close()
+        return result
+    except Exception as e:
+        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
 
 
 class RedisStandalone:
@@ -104,58 +132,17 @@ class RedisStandalone:
         obj.save()
         return True
 
-    # def get_redis_ins_qps(self):
-    #     running_ins_names = RunningInsTime.objects.all()
-    #     # running_ins_time_id = RunningInsTime.objects.all().filter(running_ins_name=)
-    #     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
-    #     for redis_name in all_redis_names:
-    #         redis_ins_all = running_ins_names.filter(running_ins_name=redis_name)
-    #         redis_ins = running_ins_names.get(running_ins_name=redis_name)
-    #         # redis_id = redis_ins_all.values('id').first()['id']
-    #         redis_ip = redis_ins_all.values('redis_ip').first()['redis_ip']
-    #         redis_port = redis_ins_all.values('running_ins_port').first()['running_ins_port']
-    #         redis_ins_mem = redis_ins_all.values('redis_ins_mem').first()['redis_ins_mem']
-    #         print("redis_port{0}:{1}".format(redis_port, type(redis_port)))
-    #         print("redis_ip{0}:{1}".format(redis_ip, type(redis_ip)))
-    #         print("redis_ins_mem{0};{1}".format(redis_ins_mem, type(redis_ins_mem)))
-    #         redis_pyhon_ins = redis.ConnectionPool(host=redis_ip, port=redis_port)
-    #         redis_pool = redis.Redis(connection_pool=redis_pyhon_ins)
-    #         qps = redis_pool.info()
-    #         used_memory_human = qps['used_memory_human']
-    #         redis_ins_used_mem = mem_unit_chage(used_memory_human) / mem_unit_chage(redis_ins_mem)
-    #         time.sleep(1)
-    #         print("{0},Redis的QPS为{1},已用内存{2},内存使用率{3}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
-    #                                                           qps['instantaneous_ops_per_sec'],
-    #                                                           used_memory_human,
-    #                                                           float('%.2f' % redis_ins_used_mem)))
-    #         real_time_qps_obj = RealTimeQps(redis_used_mem=used_memory_human,
-    #                                         redis_qps=qps['instantaneous_ops_per_sec'],
-    #                                         redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
-    #                                         collect_date=timezone.now,
-    #                                         redis_running_monitor=redis_ins)
-    #         real_time_qps_obj.save()
-    #         print(real_time_qps_obj)
+    def create_redis_conf_file(self):
+        redis_conf = get_redis_conf(self.redis_ins_type)
+        all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
+        redis_dir = all_redis_conf[0]['redis_dir']
+        conf_file_name = "conf/" + str(self.redis_port)
+        redis_conf_file = os.path.join(redis_dir, conf_file_name)
+        create_conf_file = "touch " + redis_conf_file
+        ex_create_conf_file = do_telnet(self.redis_ip, create_conf_file)
 
+        print(ex_create_conf_file)
 
-    # def saved_redis_qps(self):
-    #     count = 0
-    #     for i in range(0, count+1):
-    #         r = RedisWatch(redis_ins_ip=self.redis_ip, redis_ins_port=self.redis_port)
-    #         time.sleep(1)
-    #         count += 1
-    #         yield r.get_redis_ins_qps()
-        # r = RedisWatch(redis_ins_ip=self.redis_ip, redis_ins_port=self.redis_port)
-        # return r.get_redis_ins_qps()
-
-
-# @receiver(request_finished)
-# def my_callback(sender, **kwargs):
-#     print("Request finished!")
-#
-#
-# @receiver(pre_save, sender=RedisIns)
-# def my_handler(sender, **kwargs):
-#     print("Hello World!!!")
 
 # def log(log_type, msg=None, asset=None, new_asset=None, request=None):
 #     """

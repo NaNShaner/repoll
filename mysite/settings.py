@@ -32,7 +32,7 @@ ALLOWED_HOSTS = [u'172.20.10.5', u'127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    'simpleui',
+    # 'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -107,10 +107,10 @@ DATABASES = {
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        'HOST': '172.20.10.5',
-        'PORT': '3306',
-        # 'HOST': '127.0.0.1',
-        # 'PORT': '32768',
+        # 'HOST': '172.20.10.5',
+        # 'PORT': '3306',
+        'HOST': '127.0.0.1',
+        'PORT': '32768',
     }
 }
 
@@ -168,13 +168,14 @@ USE_TZ = False
 STATIC_URL = '/static/'
 
 
-STATIC_ROOT = os.path.join(BASE_DIR, '/static/')
-
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    os.path.join(BASE_DIR, 'static/'),
 ]
-# print(STATICFILES_DIRS)
-print(BASE_DIR)
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'polls/static/')
+print("BASE_DIR: {0}".format(BASE_DIR))
+print("STATIC_ROOT: {0}".format(STATIC_ROOT))
+print("STATICFILES_DIRS: {0}".format(STATICFILES_DIRS))
 
 
 CRONJOBS = [
