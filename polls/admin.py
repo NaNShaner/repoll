@@ -63,10 +63,14 @@ class RedisVersionAdmin(admin.ModelAdmin):
     search_fields = ['who_apply']
 
 
-class RedisConfAdmin(admin.ModelAdmin):
+class RedisConfControlAdmin(admin.ModelAdmin):
     list_display = ['redis_version', 'who_apply', 'pub_date']
     list_filter = ['redis_version']
     search_fields = ['who_apply']
+
+
+class RedisConfAdmin(admin.ModelAdmin):
+    list_display = ['id', 'redis_version']
 
 
 class RedisModelAdmin(admin.ModelAdmin):

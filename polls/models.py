@@ -75,7 +75,6 @@ class RedisApply(models.Model):
     apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
                                        verbose_name="申请状态")
 
-
     class Meta:
         ordering = ('-pub_date', )
         verbose_name_plural = "Redis实例申请"
@@ -97,6 +96,7 @@ class RedisIns(models.Model):
         ("Redis-Cluster", "Redis-Cluster"),
         ("Redis-Sentinel", "Redis-Sentinel")
     ]
+    redis_version = models.CharField(max_length=150, null=True, verbose_name="Redis 版本", default="3.0.6")
     redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
@@ -143,19 +143,7 @@ class RedisIns(models.Model):
         )
 
 
-class RedisVersion(models.Model):
-    redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
-                                     default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
-    pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply = models.CharField(max_length=60, default=User, verbose_name="版本发布人")
 
-    def __str__(self):
-        return self.redis_version
-
-    class Meta:
-        ordering = ('-pub_date', )
-        verbose_name = "RedisVersion"
-        verbose_name_plural = "Redis版本视图"
 
 
 class RedisModel(models.Model):
@@ -175,25 +163,24 @@ class RedisModel(models.Model):
 
 
 class RedisConf(models.Model):
-    redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
-                                      to_field='redis_type_models',
-                                      on_delete=models.CASCADE)
-    redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
-    pub_date = models.DateTimeField("配置发布时间")
-    who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
+    redis_version = models.CharField(max_length=150, verbose_name="Redis版本", default="3.0.6")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
     choice_list = [
         (0, '无效'),
         (1, "有效")
     ]
-    redis_port = models.IntegerField(default=6379, verbose_name="端口")
-    redis_mem = models.CharField(max_length=150, default="64m", verbose_name="内存大小")
     daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
     tcp_backlog = models.IntegerField(default=511, help_text="TCP连接完成队列", verbose_name="tcp-backlog")
     timeout = models.IntegerField(default=0, help_text="客户端闲置多少秒后关闭连接,默认为0,永不关闭", verbose_name="timeout")
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
     loglevel = models.CharField(max_length=50, default="notice", help_text="日志级别", verbose_name="loglevel")
     databases = models.IntegerField(help_text="可用的数据库数，默认值为16个,默认数据库为0", verbose_name="databases", default=16)
-    appendonly = models.CharField(max_length=150, help_text="开启append only持久化模式", verbose_name="appendonly", default="yes")
     redis_dir = models.CharField(max_length=150, help_text="redis工作目录", verbose_name="dir", default="/opt/repoll/")
     stop_writes_on_bgsave_error = models.CharField(max_length=150, help_text="bgsave出错了不停写",
                                                    verbose_name="stop-writes-on-bgsave-error", default="no")
@@ -201,15 +188,135 @@ class RedisConf(models.Model):
                                        verbose_name="repl-timeout", default="60")
     repl_ping_slave_period = models.IntegerField(help_text="指定slave定期ping master的周期,默认:10秒",
                                                  verbose_name="repl-ping-slave-period", default=10)
+    repl_disable_tcp_nodelay = models.CharField(max_length=150, help_text="是否禁用socket的NO_DELAY,默认关闭，影响主从延迟",
+                                                verbose_name="repl-disable-tcp-nodelay", default="no")
+    repl_backlog_size = models.CharField(max_length=150, help_text="复制缓存区,默认:1mb,配置为:10Mb",
+                                         verbose_name="repl-backlog-size", default="10M")
+    repl_backlog_ttl = models.IntegerField(help_text="master在没有Slave的情况下释放BACKLOG的时间多久:默认:3600,配置为:7200", verbose_name="repl-backlog-ttl", default=7200)
+    slave_serve_stale_data = models.CharField(max_length=150,
+                                              help_text="当slave服务器和master服务器失去连接后，或者当数据正在复制传输的时候，"
+                                                        "如果此参数值设置“yes”，slave服务器可以继续接受客户端的请求",
+                                              verbose_name="slave-serve-stale-data", default="yes")
+    slave_read_only = models.CharField(max_length=150,
+                                       help_text="slave服务器节点是否只读,cluster的slave节点默认读写都不可用,需要调用readonly开启可读模式",
+                                       verbose_name="slave-read-only", default="yes")
+    slave_priority = models.IntegerField(help_text="slave的优先级,影响sentinel/cluster晋升master操作,0永远不晋升",
+                                         verbose_name="slave-priority", default=100)
+    lua_time_limit = models.IntegerField(help_text="Lua脚本最长的执行时间，单位为毫秒", verbose_name="lua-time-limit", default=5000)
+    slowlog_log_slower_than = models.IntegerField(help_text="慢查询被记录的阀值,默认10毫秒", verbose_name="slowlog-log-slower-than", default=10000)
+    slowlog_max_len = models.IntegerField(help_text="最多记录慢查询的条数", verbose_name="slowlog-max-len", default=128)
+    hash_max_ziplist_entries = models.IntegerField(help_text="hash数据结构优化参数",
+                                                   verbose_name="hash-max-ziplist-entries", default=512)
+    hash_max_ziplist_value = models.IntegerField(help_text="hash数据结构优化参数",
+                                                 verbose_name="hash-max-ziplist-value", default=64)
+    list_max_ziplist_entries = models.IntegerField(help_text="list数据结构优化参数",
+                                                   verbose_name="list-max-ziplist-entries", default=512)
+    list_max_ziplist_value = models.IntegerField(help_text="list数据结构优化参数",
+                                                 verbose_name="list-max-ziplist-value", default=64)
+    set_max_intset_entries = models.IntegerField(help_text="set数据结构优化参数",
+                                                 verbose_name="set-max-intset-entriesr", default=512)
+    zset_max_ziplist_entries = models.IntegerField(help_text="zset数据结构优化参数",
+                                                   verbose_name="zset-max-ziplist-entries", default=128)
+    zset_max_ziplist_value = models.IntegerField(help_text="zset数据结构优化参数",
+                                                 verbose_name="zset-max-ziplist-value", default=64)
+    activerehashing = models.CharField(max_length=150, help_text="是否激活重置哈希,默认:yes",
+                                       verbose_name="activerehashing", default="yes")
+    client_output_buffer_limit_d_normal = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(客户端)",
+                                                          verbose_name="client-output-buffer-limit normal", default="0 0 0")
+    client_output_buffer_limit_d_slave = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(复制)",
+                                                         verbose_name="client-output-buffer-limit slave", default="512mb 128mb 60")
+    client_output_buffer_limit_d_pubsub = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(发布订阅)",
+                                                          verbose_name="client-output-buffer-limit pubsub", default="32mb 8mb 60")
+    hz = models.IntegerField(help_text="执行后台task数量,默认:10", verbose_name="hz", default=10)
+    port = models.CharField(max_length=150, help_text="端口", verbose_name="port", default="%port%")
+    maxmemory = models.CharField(max_length=150, help_text="当前实例最大可用内存", verbose_name="maxmemory", default="%dmb%")
+    maxmemory_policy = models.CharField(max_length=150, help_text="内存不够时,淘汰策略,默认:volatile-lru",
+                                        verbose_name="maxmemory-policy", default="volatile-lru")
+    appendonly = models.CharField(max_length=150, help_text="开启append only持久化模式",
+                                  verbose_name="appendonly", default="yes")
+    appendfsync = models.CharField(max_length=150, help_text="默认:aof每秒同步一次",
+                                   verbose_name="appendfsync", default="everysec")
+    appendfilename = models.CharField(max_length=150, help_text="aof文件名称,默认:appendonly-{port}.aof",
+                                      verbose_name="appendfilename", default="appendonly-%port%.aof")
+    dbfilename = models.CharField(max_length=150, help_text="RDB文件默认名称,默认dump-{port}.rdb",
+                                  verbose_name="dbfilename", default="dump-%port%.rdb")
+    aof_rewrite_incremental_fsync = models.CharField(max_length=150,
+                                                     help_text="aof rewrite过程中,是否采取增量文件同步策略,默认:yes",
+                                                     verbose_name="aof-rewrite-incremental-fsync", default="yes")
+    no_appendfsync_on_rewrite = models.CharField(max_length=150,
+                                                 help_text="是否在后台aof文件rewrite期间调用fsync,默认调用,修改为yes,防止可能fsync阻塞,但可能丢失rewrite期间的数据",
+                                                 verbose_name="no-appendfsync-on-rewrite", default="yes")
+    auto_aof_rewrite_min_size = models.CharField(max_length=150, help_text="触发rewrite的aof文件最小阀值,默认64m",
+                                                 verbose_name="auto-aof-rewrite-min-size", default="64m")
+    auto_aof_rewrite_percentage = models.CharField(max_length=150, help_text="Redis重写aof文件的比例条件,默认从100开始,统一机器下不同实例按4%递减",
+                                                   verbose_name="auto-aof-rewrite-percentage", default="%d")
+    rdbcompression = models.CharField(max_length=150, help_text="rdb是否压缩", verbose_name="rdbcompression", default="yes")
+    rdbchecksum = models.CharField(max_length=150, help_text="rdb校验和", verbose_name="rdbchecksum", default="yes")
+    repl_diskless_sync = models.CharField(max_length=150, help_text="开启无盘复制", verbose_name="repl-diskless-sync", default="no")
+    repl_diskless_sync_delay = models.IntegerField(help_text="无盘复制延时", verbose_name="repl-diskless-sync-delay", default=5)
+    save_d_900 = models.IntegerField(help_text="900秒有一次修改做bgsave", verbose_name="save 900", default=1)
+    save_d_300 = models.IntegerField(help_text="rdb校验和", verbose_name="save 300", default=10)
+    save_d_60 = models.IntegerField(help_text="60秒有10000次修改做bgsave", verbose_name="save 60", default=10000)
+    maxclients = models.IntegerField(help_text="客户端最大连接数", verbose_name="maxclients", default=10000)
+    hll_sparse_max_bytes = models.IntegerField(help_text="HyperLogLog稀疏表示限制设置", verbose_name="hll-sparse-max-bytes", default=3000)
+    min_slaves_to_write = models.IntegerField(help_text="当slave数量小于min-slaves-to-write，且延迟小于等于min-slaves-max-lag时， master停止写入操作",
+                                              verbose_name="min-slaves-to-write", default=0)
+    min_slaves_max_lag = models.IntegerField(help_text="当slave服务器和master服务器失去连接后，或者当数据正在复制传输的时候，如果此参数值设置yes，slave服务器可以继续接受客户端的请求",
+                                             verbose_name="min-slaves-max-lag", default=10)
+    aof_load_truncated = models.CharField(max_length=150, help_text="客户端最大连接数", verbose_name="aof-load-truncated", default="yes")
+    notify_keyspace_events = models.CharField(max_length=150, help_text="keyspace事件通知功能", blank=True,
+                                              verbose_name="notify-keyspace-events", null=True, default="")
 
     def __str__(self):
         # return self.redis_version
-        return "配置添加成功"
+        return self.redis_version
+
+    class Meta:
+        verbose_name_plural = "Redis配置信息"
+
+
+class RedisVersion(models.Model):
+    redis_version = models.ForeignKey(RedisConf, on_delete=models.CASCADE)
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    # redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
+    #                                  default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
+    pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
+    who_apply = models.CharField(max_length=60, default=User, verbose_name="版本发布人")
+
+    def __str__(self):
+        return "Redis版本添加成功"
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name_plural = "Redis配置信息"
+        verbose_name = "RedisVersion"
+        verbose_name_plural = "Redis版本视图"
 
+
+# class RedisConfControl(models.Model):
+#     redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
+#                                       to_field='redis_type_models',
+#                                       on_delete=models.CASCADE)
+#     redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
+#     pub_date = models.DateTimeField("配置发布时间")
+#     who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
+#     choice_list = [
+#         (0, '无效'),
+#         (1, "有效")
+#     ]
+#     redis_conf = models.ForeignKey(RedisConf, on_delete=models.CASCADE)
+#
+#     def __str__(self):
+#         # return self.redis_version
+#         return "Redis配置版本控制"
+#
+#     class Meta:
+#         verbose_name_plural = "Redis配置版本控制"
 
 # class RedisRunningIns(models.Model):
 #     running_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")

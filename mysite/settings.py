@@ -32,7 +32,7 @@ ALLOWED_HOSTS = [u'172.20.10.5', u'127.0.0.1']
 # Application definition
 
 INSTALLED_APPS = [
-    # 'simpleui',
+    'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -173,10 +173,6 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'polls/static/')
-print("BASE_DIR: {0}".format(BASE_DIR))
-print("STATIC_ROOT: {0}".format(STATIC_ROOT))
-print("STATICFILES_DIRS: {0}".format(STATICFILES_DIRS))
-
 
 CRONJOBS = [
     # ('* * * * *', 'polls.tasks.get_redis_ins_qps',

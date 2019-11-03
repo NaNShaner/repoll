@@ -7,6 +7,7 @@ from django.core.signals import request_finished
 from django.forms.models import model_to_dict
 import paramiko
 import os
+import subprocess
 import logging
 import time
 # 针对model 的signal
@@ -81,6 +82,7 @@ def get_redis_conf(redis_type):
     obj = RedisConf.objects.all().filter(redis_type=redis_type)
     return obj
 
+
 def do_telnet(Host, commands):
     """
     Telnet远程登录：Windows客户端连接Linux服务器
@@ -108,6 +110,32 @@ def do_telnet(Host, commands):
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
 
 
+def do_scp(Host, local_file, remote_file):
+    """
+    Telnet远程登录：Windows客户端连接Linux服务器
+    :param Host:
+    :param commands:
+    :return:
+    """
+    try:
+        # 创建SSH对象
+        ssh = paramiko.SSHClient()
+        # 允许连接不在know_hosts文件中的主机
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # 第一次登录的认证信息
+        private_key = paramiko.RSAKey.from_private_key_file('/Users/bijingrui/.ssh/id_rsa')
+        # 连接服务器
+        ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+        # 执行命令
+        client = paramiko.Transport(Host)
+        client.connect(username="root", pkey=private_key)
+        sftp = paramiko.SFTPClient.from_transport(client)
+        sftp.put(local_file, remote_file)
+        client.close()
+        print("ok")
+    except Exception as e:
+        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
+
+
 class RedisStandalone:
 
     def __init__(self, redis_ins, redis_ins_name, redis_ins_type, redis_ins_mem, redis_ip, redis_port):
@@ -119,7 +147,7 @@ class RedisStandalone:
         self.redis_port = redis_port
 
     def standalone_conf(self):
-        redis_conf = get_redis_conf(redis_type="Redis-Standalone")
+        redis_conf = get_redis_conf(redis_type=self.redis_ins_type)
         return redis_conf
 
     def saved_redis_running_ins(self):
@@ -136,12 +164,15 @@ class RedisStandalone:
         redis_conf = get_redis_conf(self.redis_ins_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
         redis_dir = all_redis_conf[0]['redis_dir']
-        conf_file_name = "conf/" + str(self.redis_port)
-        redis_conf_file = os.path.join(redis_dir, conf_file_name)
-        create_conf_file = "touch " + redis_conf_file
-        ex_create_conf_file = do_telnet(self.redis_ip, create_conf_file)
-
-        print(ex_create_conf_file)
+        conf_file_name = "/Users/bijingrui/PycharmProjects/mysite1/templates/" + str(self.redis_port) + ".conf"
+        with open(conf_file_name, 'w+') as f:
+            for k, v in all_redis_conf[0].items():
+                if k != 'id' and k != 'redis_version' and k != 'redis_type':
+                    if isinstance(v, str) or isinstance(v, int):
+                        f.write(k + " " + str(v) + "\n")
+        # print(do_telnet(self.redis_ip, "ls -trl /opt/"))
+        do_scp(self.redis_ip, conf_file_name, redis_dir + "conf/" + str(self.redis_port))
+        return True
 
 
 # def log(log_type, msg=None, asset=None, new_asset=None, request=None):
