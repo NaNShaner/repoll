@@ -1,4 +1,3 @@
-
 from .models import models
 from polls.models import *
 import redis
@@ -10,6 +9,7 @@ import os
 import subprocess
 import logging
 import time
+from .tasks import mem_unit_chage
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save, pre_save
@@ -136,6 +136,26 @@ def do_scp(Host, local_file, remote_file):
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
 
 
+def regx_redis_conf(key, value, port, maxmemory):
+    if isinstance(key, str):
+        try:
+            if "_" in key:
+                key = key.replace("_", "-")
+                return key, value
+            elif "%port%" in str(value):
+                value = value.replace("%port%", port)
+                return key, value
+            elif "%dmb%" in str(value):
+                value = value.replace("%dmb%", str(maxmemory))
+                return key, value
+            elif "%d" in str(value):
+                value = value.replace("%d", "100%")
+                return key, value
+        except ValueError as e:
+            pass
+    return key, value
+
+
 class RedisStandalone:
 
     def __init__(self, redis_ins, redis_ins_name, redis_ins_type, redis_ins_mem, redis_ip, redis_port):
@@ -169,6 +189,7 @@ class RedisStandalone:
             for k, v in all_redis_conf[0].items():
                 if k != 'id' and k != 'redis_version' and k != 'redis_type':
                     if isinstance(v, str) or isinstance(v, int):
+                        k, v = regx_redis_conf(key=k, value=v, port=self.redis_port, maxmemory=mem_unit_chage(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
         # print(do_telnet(self.redis_ip, "ls -trl /opt/"))
         do_scp(self.redis_ip, conf_file_name, redis_dir + "conf/" + str(self.redis_port))
