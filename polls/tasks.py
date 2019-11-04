@@ -50,8 +50,7 @@ def get_redis_ins_qps():
                                             redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
                                             collect_date=timezone.now,
                                             redis_running_monitor=redis_ins)
-            save_status = real_time_qps_obj.save()
-            print(real_time_qps_obj, save_status)
+            real_time_qps_obj.save()
             i += 1
 
 

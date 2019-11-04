@@ -18,7 +18,6 @@ urlpatterns = [
     path(r'pyecharts/', views.pyecharts, name='pyecharts'),
     path(r'line/', views.line_base, name='line_base'),
     path(r'reids_api.html', views.redis_exec, name='redis_exec'),
-    path(r'form/', views.form, name='form'),
     path(r'your-name/', views.return_name, name='return_name'),
     # path(r'file/', views.run_nginx_log, name='run_nginx_log'),
     path(r'test_api/', views.test_api, name='test_api'),
