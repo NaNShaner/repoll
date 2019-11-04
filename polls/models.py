@@ -181,7 +181,7 @@ class RedisConf(models.Model):
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
     loglevel = models.CharField(max_length=50, default="notice", help_text="日志级别", verbose_name="loglevel")
     databases = models.IntegerField(help_text="可用的数据库数，默认值为16个,默认数据库为0", verbose_name="databases", default=16)
-    redis_dir = models.CharField(max_length=150, help_text="redis工作目录", verbose_name="dir", default="/opt/repoll/")
+    dir = models.CharField(max_length=150, help_text="redis工作目录", verbose_name="dir", default="/opt/repoll/")
     stop_writes_on_bgsave_error = models.CharField(max_length=150, help_text="bgsave出错了不停写",
                                                    verbose_name="stop-writes-on-bgsave-error", default="no")
     repl_timeout = models.IntegerField(help_text="master批量数据传输时间或者ping回复时间间隔,默认:60秒",
@@ -221,11 +221,11 @@ class RedisConf(models.Model):
                                                  verbose_name="zset-max-ziplist-value", default=64)
     activerehashing = models.CharField(max_length=150, help_text="是否激活重置哈希,默认:yes",
                                        verbose_name="activerehashing", default="yes")
-    client_output_buffer_limit_d_normal = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(客户端)",
+    clientOutputBufferLimitNormal = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(客户端)",
                                                           verbose_name="client-output-buffer-limit normal", default="0 0 0")
-    client_output_buffer_limit_d_slave = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(复制)",
+    clientOutputBufferLimitSlave = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(复制)",
                                                          verbose_name="client-output-buffer-limit slave", default="512mb 128mb 60")
-    client_output_buffer_limit_d_pubsub = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(发布订阅)",
+    clientOutputBufferLimitPubsub = models.CharField(max_length=150, help_text="客户端输出缓冲区限制(发布订阅)",
                                                           verbose_name="client-output-buffer-limit pubsub", default="32mb 8mb 60")
     hz = models.IntegerField(help_text="执行后台task数量,默认:10", verbose_name="hz", default=10)
     port = models.CharField(max_length=150, help_text="端口", verbose_name="port", default="%port%")
@@ -254,9 +254,9 @@ class RedisConf(models.Model):
     rdbchecksum = models.CharField(max_length=150, help_text="rdb校验和", verbose_name="rdbchecksum", default="yes")
     repl_diskless_sync = models.CharField(max_length=150, help_text="开启无盘复制", verbose_name="repl-diskless-sync", default="no")
     repl_diskless_sync_delay = models.IntegerField(help_text="无盘复制延时", verbose_name="repl-diskless-sync-delay", default=5)
-    save_d_900 = models.IntegerField(help_text="900秒有一次修改做bgsave", verbose_name="save 900", default=1)
-    save_d_300 = models.IntegerField(help_text="rdb校验和", verbose_name="save 300", default=10)
-    save_d_60 = models.IntegerField(help_text="60秒有10000次修改做bgsave", verbose_name="save 60", default=10000)
+    save900 = models.IntegerField(help_text="900秒有一次修改做bgsave", verbose_name="save 900", default=1)
+    save300 = models.IntegerField(help_text="rdb校验和", verbose_name="save 300", default=10)
+    save60 = models.IntegerField(help_text="60秒有10000次修改做bgsave", verbose_name="save 60", default=10000)
     maxclients = models.IntegerField(help_text="客户端最大连接数", verbose_name="maxclients", default=10000)
     hll_sparse_max_bytes = models.IntegerField(help_text="HyperLogLog稀疏表示限制设置", verbose_name="hll-sparse-max-bytes", default=3000)
     min_slaves_to_write = models.IntegerField(help_text="当slave数量小于min-slaves-to-write，且延迟小于等于min-slaves-max-lag时， master停止写入操作",

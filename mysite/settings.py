@@ -175,8 +175,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'polls/static/')
 
 CRONJOBS = [
-    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-    #  '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
     ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-     '>> /django/redis_qps.log'),
+     '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
+    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
+    #  '>> /django/redis_qps.log'),
 ]

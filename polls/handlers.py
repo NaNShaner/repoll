@@ -131,9 +131,10 @@ def do_scp(Host, local_file, remote_file):
         sftp = paramiko.SFTPClient.from_transport(client)
         sftp.put(local_file, remote_file)
         client.close()
-        print("ok")
+        return True
     except Exception as e:
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
+    return False
 
 
 def regx_redis_conf(key, value, port, maxmemory):
@@ -148,11 +149,31 @@ def regx_redis_conf(key, value, port, maxmemory):
             elif "%dmb%" in str(value):
                 value = value.replace("%dmb%", str(maxmemory))
                 return key, value
-            elif "%d" in str(value):
-                value = value.replace("%d", "100%")
+            elif "%percentage%" in str(value):
+                value = value.replace("%percentage%", "100%")
                 return key, value
+            elif "save900" in key:
+                key = key.replace("save900", "save 900 ")
+                return key, value
+            elif "save300" in key:
+                key = key.replace("save300", "save 900 ")
+                return key, value
+            elif "save60" in key:
+                key = key.replace("save60", "save 900 ")
+                return key, value
+            elif "clientOutputBufferLimitNormal" in key:
+                key = key.replace("clientOutputBufferLimitNormal", "client-output-buffer-limit normal")
+                return key, value
+            elif "clientOutputBufferLimitSlave" in key:
+                key = key.replace("clientOutputBufferLimitSlave", "client-output-buffer-limit slave")
+                return key, value
+            elif "clientOutputBufferLimitPubsub" in key:
+                key = key.replace("clientOutputBufferLimitPubsub", "client-output-buffer-limit pubsub")
+                return key, value
+            print(key, value)
         except ValueError as e:
             pass
+    print(key, value)
     return key, value
 
 
@@ -183,7 +204,7 @@ class RedisStandalone:
     def create_redis_conf_file(self):
         redis_conf = get_redis_conf(self.redis_ins_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
-        redis_dir = all_redis_conf[0]['redis_dir']
+        redis_dir = all_redis_conf[0]['dir']
         conf_file_name = "/Users/bijingrui/PycharmProjects/mysite1/templates/" + str(self.redis_port) + ".conf"
         with open(conf_file_name, 'w+') as f:
             for k, v in all_redis_conf[0].items():
@@ -192,7 +213,10 @@ class RedisStandalone:
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port, maxmemory=mem_unit_chage(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
         # print(do_telnet(self.redis_ip, "ls -trl /opt/"))
-        do_scp(self.redis_ip, conf_file_name, redis_dir + "conf/" + str(self.redis_port))
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf"):
+            print("文件分发成功")
+        else:
+            print("文件分发失败")
         return True
 
 
