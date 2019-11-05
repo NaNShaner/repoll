@@ -16,6 +16,7 @@ urlpatterns = [
     # path('<str:apptrye>/', views.run_scan_tomcat, name='run_scan_tomcat'),
     # path('<int:year>/<int:month>/<slug:slug>/', views.url_test, name='url_test'),
     path(r'pyecharts/', views.pyecharts, name='pyecharts'),
+    path('redis_qps/<str:ins_id>/', views.redis_qps, name='redis_qps'),
     path(r'line/', views.line_base, name='line_base'),
     path(r'reids_api.html', views.redis_exec, name='redis_exec'),
     path(r'your-name/', views.return_name, name='return_name'),

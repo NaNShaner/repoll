@@ -180,7 +180,12 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
-    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    def buttons(self, obj):
+        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
+        return format_html(button_html)
+    buttons.short_description = "QPS监控趋势图"
+
+    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem', 'buttons']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     inlines = [RealTimeQpsInline]
