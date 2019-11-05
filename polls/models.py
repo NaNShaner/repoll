@@ -266,6 +266,8 @@ class RedisConf(models.Model):
     aof_load_truncated = models.CharField(max_length=150, help_text="客户端最大连接数", verbose_name="aof-load-truncated", default="yes")
     notify_keyspace_events = models.CharField(max_length=150, help_text="keyspace事件通知功能", blank=True,
                                               verbose_name="notify-keyspace-events", null=True, default="")
+    logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
+                               verbose_name="logfile", default="/opt/repoll/")
 
     def __str__(self):
         # return self.redis_version

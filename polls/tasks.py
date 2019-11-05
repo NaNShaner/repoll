@@ -58,6 +58,6 @@ def mem_unit_chage(mem):
     memory = mem[0:-1]
     type = mem[-1]
     if type == 'g' or 'G':
-        return float(memory)*1024
+        return int(float(memory)*1024)
     else:
-        return float(memory)
+        return int(float(memory))

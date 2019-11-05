@@ -70,7 +70,12 @@ def my_model_handler(sender, **kwargs):
                         redis_ip=redis_ip,
                         redis_port=redis_port)
     a.saved_redis_running_ins()
-    a.create_redis_conf_file()
+    if a.create_redis_conf_file():
+        redis_start = RedisStartClass(host=redis_ip, redis_server_ctl="/opt/repoll/redis/src/redis-server " + "/opt/repoll/conf/" + str(redis_port) + ".conf &")
+        if redis_start.start_server():
+            print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+        else:
+            print("Redis 启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
 
 
 def get_redis_conf(redis_type):
@@ -83,7 +88,7 @@ def get_redis_conf(redis_type):
     return obj
 
 
-def do_telnet(Host, commands):
+def do_command(Host, commands):
     """
     Telnet远程登录：Windows客户端连接Linux服务器
     :param Host:
@@ -108,6 +113,7 @@ def do_telnet(Host, commands):
         return result
     except Exception as e:
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
+    return False
 
 
 def do_scp(Host, local_file, remote_file):
@@ -147,7 +153,7 @@ def regx_redis_conf(key, value, port, maxmemory):
                 value = value.replace("%port%", port)
                 return key, value
             elif "%dmb%" in str(value):
-                value = value.replace("%dmb%", str(maxmemory))
+                value = value.replace("%dmb%", str(maxmemory) + "m")
                 return key, value
             elif "%percentage%" in str(value):
                 value = value.replace("%percentage%", "100%")
@@ -160,6 +166,9 @@ def regx_redis_conf(key, value, port, maxmemory):
                 return key, value
             elif "save60" in key:
                 key = key.replace("save60", "save 900 ")
+                return key, value
+            elif "logfile" in key:
+                value = value.replace("/opt/repoll/", "/opt/repoll/logs/{0}.log".format(port))
                 return key, value
             elif "clientOutputBufferLimitNormal" in key:
                 key = key.replace("clientOutputBufferLimitNormal", "client-output-buffer-limit normal")
@@ -217,6 +226,7 @@ class RedisStandalone:
             print("文件分发成功")
         else:
             print("文件分发失败")
+            return False
         return True
 
 
@@ -237,6 +247,19 @@ class RedisStandalone:
 #         event.user = request.user
 #     # 更多日志类型.....
 #     event.save()
+
+
+class RedisStartClass:
+
+    def __init__(self, host, redis_server_ctl):
+        self.redis_server_ctl = redis_server_ctl
+        self.host = host
+
+    def start_server(self):
+        if do_command(self.host, self.redis_server_ctl):
+            return True
+        else:
+            return False
 
 
 class ApproveRedis:
