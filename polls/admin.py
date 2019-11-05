@@ -162,30 +162,67 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     #     print(a)
     #     return [a.ip for a in Ipaddr.objects.all()]
 
+    def ins_status_color(self, obj):
+        ins_status = ''
+        ins_choice = [
+            (0, "已上线"),
+            (1, "已下线"),
+            (2, "未审批"),
+            (3, "已审批"),
+            (4, "已拒绝"),
+        ]
+        if obj.ins_status == 0:
+            color = 'red'
+            ins_status = ins_choice[obj.ins_status][1]
+        elif obj.ins_status == 1:
+            color = 'green'
+            ins_status = ins_choice[obj.ins_status][1]
+        elif obj.ins_status == 2:
+            color = 'blue'
+            ins_status = ins_choice[obj.ins_status][1]
+        elif obj.ins_status == 3:
+            color = 'green'
+            ins_status = ins_choice[obj.ins_status][1]
+        elif obj.ins_status == 4:
+            color = 'blue'
+            ins_status = ins_choice[obj.ins_status][1]
+        else:
+            color = ''
+        return format_html(
+            '<font size="5" face="arial" color="{0}">{1}</font>',
+            color,
+            ins_status,
+        )
+    ins_status_color.short_description = u'实例状态'
+
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'approval_user', 'ins_status',
+                    'pub_date', 'approval_user', 'ins_status_color', 'ins_status'
                     # 'show_all_ip'
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
     inlines = [ChoiceInline]
-
     # def colored_status(self, request):
     #     pass
-    #
+
     def return_message(self, request, queryset, mem=None):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
-    def buttons(self, obj):
+    def redis_qps(self, obj):
         button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
         return format_html(button_html)
-    buttons.short_description = "QPS监控趋势图"
+    redis_qps.short_description = "QPS监控趋势图"
 
-    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem', 'buttons']
+    def action(self, obj):
+        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
+        return format_html(button_html)
+    action.short_description = "操作"
+
+    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_qps']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     inlines = [RealTimeQpsInline]
