@@ -14,7 +14,7 @@ from pyecharts import options as opts
 from pyecharts.charts import Bar, Line
 
 # Register your models here.
-from .handlers import ApproveRedis
+from .handlers import ApproveRedis, RedisStartClass
 
 
 class MyAdminSite(admin.AdminSite):
@@ -194,6 +194,8 @@ class RedisApprovalAdmin(admin.ModelAdmin):
             ins_status,
         )
     ins_status_color.short_description = u'实例状态'
+
+
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',

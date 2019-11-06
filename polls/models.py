@@ -362,6 +362,16 @@ class RunningInsTime(models.Model):
     def __str__(self):
         return self.running_ins_name
 
+    # def ping_pong(self, obj):
+    #     redis_ping_pong = RedisStartClass(host=obj.redis_ip,
+    #                                       redis_server_ctl="/opt/repoll/redis/src/redis-cli -p {0} ping".format(obj.running_ins_port))
+    #     if redis_ping_pong:
+    #         return True
+    #     else:
+    #         return False
+    # ping_pong.boolean = True
+    # ping_pong.short_description = 'Redis 运行状态'
+
     class Meta:
         verbose_name = "Redis Running Ins"
         verbose_name_plural = "Redis已运行实例"

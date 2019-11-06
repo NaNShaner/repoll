@@ -105,12 +105,14 @@ def do_command(Host, commands):
         ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
         # 执行命令
         stdin, stdout, stderr = ssh.exec_command(commands)
+        command_result = ssh.exec_command(commands)
         # 获取命令结果
         res, err = stdout.read(), stderr.read()
         result = res if res else err
         # 关闭连接
         ssh.close()
-        return result
+
+        return command_result.recv_exit_status(), result
     except Exception as e:
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
     return False
@@ -256,7 +258,7 @@ class RedisStartClass:
         self.host = host
 
     def start_server(self):
-        if do_command(self.host, self.redis_server_ctl):
+        if do_command(self.host, self.redis_server_ctl)[0] == 0:
             return True
         else:
             return False
