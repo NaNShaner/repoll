@@ -5,7 +5,7 @@
 from django.urls import path
 from . import views
 from django.conf.urls import url, include
-
+from polls.apis import RedisStop
 
 app_name = 'polls'
 urlpatterns = [
@@ -18,6 +18,7 @@ urlpatterns = [
     path(r'pyecharts/', views.pyecharts, name='pyecharts'),
     path('redis_qps/<str:ins_id>/', views.redis_qps, name='redis_qps'),
     path(r'line/', views.line_base, name='line_base'),
+    path(r'apis/redis-stop/<str:ins_id>/', RedisStop),
     path(r'reids_api.html', views.redis_exec, name='redis_exec'),
     path(r'your-name/', views.return_name, name='return_name'),
     # path(r'file/', views.run_nginx_log, name='run_nginx_log'),

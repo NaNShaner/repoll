@@ -47,7 +47,7 @@ class RedisAdmin(admin.ModelAdmin):
         js = ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js",)
 
 
-class logEntryAdmin(admin.ModelAdmin):
+class LogEntryAdmin(admin.ModelAdmin):
     list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
 
 
@@ -195,8 +195,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
         )
     ins_status_color.short_description = u'实例状态'
 
-
-
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'approval_user', 'ins_status_color', 'ins_status'
@@ -220,7 +218,7 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
     redis_qps.short_description = "QPS监控趋势图"
 
     def action(self, obj):
-        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
+        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">启动</a>""".format(obj.id)
         return format_html(button_html)
     action.short_description = "操作"
 
@@ -236,7 +234,7 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
     search_fields = ['collect_date']
 
 
-admin.site.register(LogEntry, logEntryAdmin)
+admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)

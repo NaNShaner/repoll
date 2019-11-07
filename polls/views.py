@@ -142,6 +142,7 @@ def redis_qps(request, ins_id):
 #     b.save()
 #     return HttpResponse(b)
 
+
 @api_view(http_method_names=['GET', 'POST'])
 def redis_exec(request):
     appname = request.GET.get('appName')

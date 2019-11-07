@@ -19,8 +19,9 @@ from django.contrib import admin
 
 from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
-from polls.models import RedisInfo
+from polls.models import RedisInfo, RunningInsTime
 from polls.views import favicon
+
 
 
 # Serializers define the API representation.
@@ -36,6 +37,12 @@ class RedisSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date'] or "__all__"
 
 
+class RunningInsTimeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = RunningInsTime
+        fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+
+
 # ViewSets define the view behavior.
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -47,9 +54,15 @@ class RedisViewSet(viewsets.ModelViewSet):
     serializer_class = RedisSerializer
 
 
+class RunningInsTimeSet(viewsets.ModelViewSet):
+    queryset = RunningInsTime.objects.all()
+    serializer_class = RunningInsTimeSerializer
+
+
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 router.register(r'redis', RedisViewSet)
+router.register(r'redis_ins', RunningInsTimeSet)
 
 
 urlpatterns = [
