@@ -17,7 +17,7 @@ class RunningInsTimeSerializer(serializers.ModelSerializer):
         fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem'] or '__all__'
 
 
-@api_view(['GET'])  # 装饰器，使得 book 函数具有 api_view 的相关方法
+@api_view(['GET'])
 def RedisStop(request, ins_id):
     running_ins_time = RunningInsTime.objects.all() # Book 的全部数据
     running_ins = running_ins_time.filter(id=ins_id)

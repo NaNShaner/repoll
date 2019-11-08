@@ -40,6 +40,12 @@ work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def my_model_handler(sender, **kwargs):
+    """
+    触发器，前端页面在完成审批后自动触发
+    :param sender:
+    :param kwargs:
+    :return:
+    """
     redis_ip = ''
     redis_port = ''
     redis_apply_ip = Ipaddr.objects.all()
@@ -58,7 +64,6 @@ def my_model_handler(sender, **kwargs):
                 raise ValueError("{0}不在Redis云管列表中...".format(redis_ip))
         except ValueError as e:
             print(e)
-
     redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
     redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
@@ -147,6 +152,14 @@ def do_scp(Host, local_file, remote_file):
 
 
 def regx_redis_conf(key, value, port, maxmemory):
+    """
+    对于redis的配置进行格式化，部分k，v需要进行替换
+    :param key: redis.conf文件中的配置项
+    :param value: redis.conf文件中的配置项的值
+    :param port: Redis的端口
+    :param maxmemory: Redis的最大内存
+    :return:
+    """
     if isinstance(key, str):
         try:
             if "_" in key:
@@ -224,7 +237,6 @@ class RedisStandalone:
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port, maxmemory=mem_unit_chage(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
-        # print(do_telnet(self.redis_ip, "ls -trl /opt/"))
         if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf"):
             print("文件分发成功")
         else:
@@ -270,7 +282,7 @@ class RedisStartClass:
 
 class ApproveRedis:
     """
-    审批资产并上线。
+    审批Redis并写入待上线列表中。
     """
     def __init__(self, request, asset_id):
         self.request = request
@@ -286,16 +298,15 @@ class ApproveRedis:
 
     def _server_upline(self):
         # 在实际的生产环境中，下面的操作应该是原子性的整体事务，任何一步出现异常，所有操作都要回滚。
-        asset = self.create_asset()  # 创建一条资产并返回资产对象。注意要和待审批区的资产区分开。
+        asset = self.create_asset()
         print(asset)
         return True
 
     def create_asset(self):
         """
-        创建Redis实例并上线
+        创建Redis实例并上线，利用request.user自动获取当前管理人员的信息，作为审批人添加到Redis实例数据中。
         :return:
         """
-        # 利用request.user自动获取当前管理人员的信息，作为审批人添加到Redis实例数据中。
         try:
             if not RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name):
                 asset = RedisIns.objects.create(redis_ins_name=self.new_asset.apply_ins_name,
@@ -347,7 +358,6 @@ class ApproveRedis:
 
     def redis_apply_status_update(self):
         RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
-        # obj.save()
         return True
 
 
