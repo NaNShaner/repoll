@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import models
-
 # Create your models here.
-import datetime
 from django.db import models
 from django.utils import timezone
-from django import forms
 from django.utils.html import format_html
-#from captcha.fields import CaptchaField
 from django.contrib.auth.models import User
-from django.utils.encoding import force_bytes
 
 
 class Ipaddr(models.Model):

@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from .models import *
 from django.contrib.admin.models import LogEntry
+from django.contrib.auth.models import User
 from jinja2 import Environment, FileSystemLoader
 from .handlers import ApproveRedis
 from pyecharts.globals import CurrentConfig
@@ -33,6 +34,10 @@ class RedisAdmin(admin.ModelAdmin):
 
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
+
+
+class UserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'password', 'email', 'is_staff'] or '__all__'
 
 
 class IpaddrAdmin(admin.ModelAdmin):
@@ -217,6 +222,7 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
+admin.site.register(User, UserAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
