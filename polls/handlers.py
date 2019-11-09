@@ -76,7 +76,7 @@ def my_model_handler(sender, **kwargs):
                         redis_port=redis_port)
     a.saved_redis_running_ins()
     if a.create_redis_conf_file():
-        redis_start = RedisStartClass(host=redis_ip, redis_server_ctl="/opt/repoll/redis/src/redis-server " + "/opt/repoll/conf/" + str(redis_port) + ".conf &")
+        redis_start = RedisStartClass(host=redis_ip, redis_server_ctl="/opt/repoll/redis/src/redis-server " + "/opt/repoll/conf/" + str(redis_port) + ".conf")
         if redis_start.start_server():
             print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
         else:
@@ -272,7 +272,6 @@ class RedisStartClass:
 
     def start_server(self):
         do_command_result = do_command(self.host, self.redis_server_ctl)
-        print("haha = = {0}".format(do_command_result))
         if do_command_result:
             if do_command_result[0] == 0:
                 return True
@@ -288,19 +287,6 @@ class ApproveRedis:
         self.request = request
         self.asset_id = asset_id
         self.new_asset = RedisApply.objects.get(id=asset_id)
-        # self.data = json.loads(self.new_asset.data)
-
-    # def asset_upline(self):
-    #     # 为以后的其它类型资产扩展留下接口
-    #     func = getattr(self, "asset_upline")
-    #     ret = func()
-    #     return ret
-
-    def _server_upline(self):
-        # 在实际的生产环境中，下面的操作应该是原子性的整体事务，任何一步出现异常，所有操作都要回滚。
-        asset = self.create_asset()
-        print(asset)
-        return True
 
     def create_asset(self):
         """
@@ -327,7 +313,7 @@ class ApproveRedis:
 
     def deny_create(self):
         """
-
+        Redis审批拒绝，设置拒绝标志位
         :return:
         """
         try:
@@ -357,6 +343,10 @@ class ApproveRedis:
         return asset
 
     def redis_apply_status_update(self):
+        """
+        更新申请状态
+        :return:
+        """
         RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
         return True
 

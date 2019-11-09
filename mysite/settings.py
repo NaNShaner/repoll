@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'rest_framework',
     'django_crontab',
-    # 'captcha',
 ]
 
 
@@ -51,7 +50,7 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         # 适用于添加身份验证和权限以后
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticated'
     ]
 }
 
@@ -59,7 +58,6 @@ MIDDLEWARE = [
     # 配置全站redis缓存
     # 'django.middleware.cache.UpdateCacheMiddleware',
     # 'django.middleware.cache.FetchFromCacheMiddleware',
-
 
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -76,7 +74,6 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR, 'templates')],
-        # 'DIRS': [os.path.join(BASE_DIR, '/templates/polls')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -95,20 +92,12 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'django',
         'USER': 'root',
         'PASSWORD': 'Pass@word',
-        # 'HOST': '172.20.10.5',
-        # 'PORT': '3306',
         'HOST': '127.0.0.1',
         'PORT': '32768',
     }
@@ -176,7 +165,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'polls/static/')
 
 CRONJOBS = [
     ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-     '> /Users/bijingrui/PycharmProjects/mysite1/redis_qps.log'),
-    # ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-    #  '>> /django/redis_qps.log'),
+     '> {0}/redis_qps.log'.format(BASE_DIR)),
 ]

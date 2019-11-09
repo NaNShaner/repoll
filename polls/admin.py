@@ -4,17 +4,10 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from .models import *
 from django.contrib.admin.models import LogEntry
-from django.forms import CheckboxSelectMultiple
-
-
 from jinja2 import Environment, FileSystemLoader
+from .handlers import ApproveRedis
 from pyecharts.globals import CurrentConfig
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
-from pyecharts import options as opts
-from pyecharts.charts import Bar, Line
-
-# Register your models here.
-from .handlers import ApproveRedis, RedisStartClass
 
 
 class MyAdminSite(admin.AdminSite):
@@ -35,16 +28,7 @@ class RedisAdmin(admin.ModelAdmin):
         ('Redis类型', {'fields': ['redis_type','pub_date']}),
         ('Redis信息', {'fields': ['host_ip', 'redis_port']}),
     ]
-    # inlines = [RedisInline]
     save_on_top = False
-
-    class Media:
-        css = {
-            'all': (
-                "https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css",
-            ),
-        }
-        js = ("https://cdn.bootcss.com/bootstrap/4.0.0-beta.2/js/bootstrap.bundle.js",)
 
 
 class LogEntryAdmin(admin.ModelAdmin):
@@ -104,7 +88,6 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
-    # date_hierarchy = 'go_time'
     actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
 
     def approve_selected_new_assets(self, request, queryset):
@@ -119,7 +102,6 @@ class RedisApplyAdmin(admin.ModelAdmin):
         success_upline_number = 0
         try:
             for asset_id in selected:
-                # print(selected)
                 obj = ApproveRedis(request, asset_id)
                 create_redis_ins = obj.create_asset()
                 if create_redis_ins:
@@ -144,7 +126,6 @@ class RedisApplyAdmin(admin.ModelAdmin):
         deny_upline_number = 0
         try:
             for asset_id in selected:
-                # print(selected)
                 obj = ApproveRedis(request, asset_id)
                 deny_redis_ins = obj.deny_create()
                 if deny_redis_ins:
@@ -156,11 +137,6 @@ class RedisApplyAdmin(admin.ModelAdmin):
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
-
-    # def show_all_ip(self, obj):
-    #     a = [a.ip for a in Ipaddr.objects.all()]
-    #     print(a)
-    #     return [a.ip for a in Ipaddr.objects.all()]
 
     def ins_status_color(self, obj):
         ins_status = ''
@@ -204,8 +180,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
     inlines = [ChoiceInline]
-    # def colored_status(self, request):
-    #     pass
 
     def return_message(self, request, queryset, mem=None):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
@@ -217,12 +191,20 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
         return format_html(button_html)
     redis_qps.short_description = "QPS监控趋势图"
 
-    def action(self, obj):
-        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">启动</a>""".format(obj.id)
+    def redis_stop(self, obj):
+        button_html = """<a class="changelink" href="/polls/apis/redis-start/{0}/">启动</a>""".format(obj.id)
+        print(button_html)
         return format_html(button_html)
-    action.short_description = "操作"
+    redis_stop.short_description = "启动"
 
-    list_display = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_qps']
+    def redis_start(self, obj):
+        button_html = """<a class="changelink" href="/polls/apis/redis-stop/{0}/">停止</a>""".format(obj.id)
+        return format_html(button_html)
+    redis_start.short_description = "停止"
+
+    list_display = ['id', 'running_ins_name', 'redis_type',
+                    'redis_ip', 'running_ins_port', 'redis_ins_mem',
+                    'redis_qps', 'redis_start', 'redis_stop']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     inlines = [RealTimeQpsInline]

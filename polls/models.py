@@ -175,7 +175,7 @@ class RedisConf(models.Model):
         (0, '无效'),
         (1, "有效")
     ]
-    daemonize = models.CharField(max_length=30, default="no", verbose_name="是否守护进程")
+    daemonize = models.CharField(max_length=30, default="yes", verbose_name="daemonize")
     tcp_backlog = models.IntegerField(default=511, help_text="TCP连接完成队列", verbose_name="tcp-backlog")
     timeout = models.IntegerField(default=0, help_text="客户端闲置多少秒后关闭连接,默认为0,永不关闭", verbose_name="timeout")
     tcp_keepalive = models.IntegerField(default=60, help_text="检测客户端是否健康周期,默认关闭", verbose_name="tcp-keepalive")
@@ -300,37 +300,6 @@ class RedisVersion(models.Model):
         verbose_name_plural = "Redis版本视图"
 
 
-# class RedisConfControl(models.Model):
-#     redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
-#                                       to_field='redis_type_models',
-#                                       on_delete=models.CASCADE)
-#     redis_version = models.ForeignKey(RedisVersion, on_delete=models.CASCADE)
-#     pub_date = models.DateTimeField("配置发布时间")
-#     who_apply = models.CharField(max_length=50, verbose_name="配置发布人")
-#     choice_list = [
-#         (0, '无效'),
-#         (1, "有效")
-#     ]
-#     redis_conf = models.ForeignKey(RedisConf, on_delete=models.CASCADE)
-#
-#     def __str__(self):
-#         # return self.redis_version
-#         return "Redis配置版本控制"
-#
-#     class Meta:
-#         verbose_name_plural = "Redis配置版本控制"
-
-# class RedisRunningIns(models.Model):
-#     running_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
-#     redis_type = models.OneToOneField(RedisModel, default=RedisModel.choice_list[0][1], unique=True,
-#                                       to_field='redis_type_models',
-#                                       on_delete=models.CASCADE)
-#     device_mem = models.CharField(max_length=200, verbose_name="内存使用情况")
-#
-#     class Meta:
-#         verbose_name_plural = "Redis监控实例"
-
-
 class ApplyRedisText(models.Model):
     ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
@@ -355,22 +324,12 @@ class RunningInsTime(models.Model):
     ]
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
-    running_ins_port = models.IntegerField(null=True, verbose_name="端口")
+    running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
 
     def __str__(self):
         return self.running_ins_name
-
-    # def ping_pong(self, obj):
-    #     redis_ping_pong = RedisStartClass(host=obj.redis_ip,
-    #                                       redis_server_ctl="/opt/repoll/redis/src/redis-cli -p {0} ping".format(obj.running_ins_port))
-    #     if redis_ping_pong:
-    #         return True
-    #     else:
-    #         return False
-    # ping_pong.boolean = True
-    # ping_pong.short_description = 'Redis 运行状态'
 
     class Meta:
         verbose_name = "Redis Running Ins"

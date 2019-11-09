@@ -23,7 +23,6 @@ from polls.models import RedisInfo, RunningInsTime
 from polls.views import favicon
 
 
-
 # Serializers define the API representation.
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
