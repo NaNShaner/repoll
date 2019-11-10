@@ -99,7 +99,7 @@ def do_command(host, commands, private_key_file=None, user_name=None, user_passw
     登录远端服务器执行命令
     :param host: 远端主机
     :param commands:  到远端执行的命令
-    :param user_name: 登录到远端的服务名
+    :param user_name: 登录到远端的用户名
     :param private_key_file: 秘钥路径
     :param user_password: 用户密码
     :return:
@@ -147,6 +147,7 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None,
     :param remote_file: 远端存放路径
     :param private_key_file: 秘钥路径
     :param user_password: 用户密码
+    :param user_name: 远端用户名
     :return:
     """
     try:
