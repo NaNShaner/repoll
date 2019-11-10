@@ -94,7 +94,7 @@ def get_redis_conf(redis_type):
     return obj
 
 
-def do_command(Host, commands):
+def do_command(Host, commands, private_key_file=None, user_password=None):
     """
     Telnet远程登录：Windows客户端连接Linux服务器
     :param Host:
@@ -106,30 +106,44 @@ def do_command(Host, commands):
         ssh = paramiko.SSHClient()
         # 允许连接不在know_hosts文件中的主机
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # 第一次登录的认证信息
-        private_key = paramiko.RSAKey.from_private_key_file('/Users/bijingrui/.ssh/id_rsa')
-        # 连接服务器
-        ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
-        # 执行命令
-        stdin, stdout, stderr = ssh.exec_command(commands)
-
-        # 获取命令结果
-        res, err = stdout.read(), stderr.read()
-        command_exit_result = res if res else err
-        command_exit_status = stdout.channel.recv_exit_status()
-        # 关闭连接
-        ssh.close()
-
-        return command_exit_status, command_exit_result
+        if private_key_file:
+            private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
+            # 连接服务器
+            ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+            # 执行命令
+            stdin, stdout, stderr = ssh.exec_command(commands)
+            # 获取命令结果
+            res, err = stdout.read(), stderr.read()
+            command_exit_result = res if res else err
+            command_exit_status = stdout.channel.recv_exit_status()
+            # 关闭连接
+            ssh.close()
+            return command_exit_status, command_exit_result
+        else:
+            # 连接服务器
+            ssh.connect(hostname=Host, port=22, username="root", password=user_password)
+            # 执行命令
+            stdin, stdout, stderr = ssh.exec_command(commands)
+            # 获取命令结果
+            res, err = stdout.read(), stderr.read()
+            command_exit_result = res if res else err
+            command_exit_status = stdout.channel.recv_exit_status()
+            # 关闭连接
+            ssh.close()
+            return command_exit_status, command_exit_result
     except Exception as e:
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
     return False
 
 
-def do_scp(Host, local_file, remote_file, private_key_file=None, user_password=None):
+def do_scp(host, local_file, remote_file, private_key_file=None, user_password=None):
     """
-    Telnet远程登录：Windows客户端连接Linux服务器
-    :param Host:
-    :param commands:
+
+    :param host:
+    :param local_file:
+    :param remote_file:
+    :param private_key_file:
+    :param user_password:
     :return:
     """
     try:
@@ -139,9 +153,9 @@ def do_scp(Host, local_file, remote_file, private_key_file=None, user_password=N
         if private_key_file:
             private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             # 连接服务器
-            ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+            ssh.connect(hostname=host, port=22, username="root", pkey=private_key)
             # 执行命令
-            client = paramiko.Transport(Host)
+            client = paramiko.Transport(host)
             client.connect(username="root", pkey=private_key)
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
@@ -149,16 +163,16 @@ def do_scp(Host, local_file, remote_file, private_key_file=None, user_password=N
             return True
         else:
             # 连接服务器
-            ssh.connect(hostname=Host, port=22, username="root", password=user_password)
+            ssh.connect(hostname=host, port=22, username="root", password=user_password)
             # 执行命令
-            client = paramiko.Transport(Host)
+            client = paramiko.Transport(host)
             client.connect(username="root", password=user_password)
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
             client.close()
             return True
     except Exception as e:
-        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
+        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(host, e))
     return False
 
 
