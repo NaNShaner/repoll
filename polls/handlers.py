@@ -125,7 +125,7 @@ def do_command(Host, commands):
     return False
 
 
-def do_scp(Host, local_file, remote_file):
+def do_scp(Host, local_file, remote_file, private_key_file=None, user_password=None):
     """
     Telnet远程登录：Windows客户端连接Linux服务器
     :param Host:
@@ -136,16 +136,27 @@ def do_scp(Host, local_file, remote_file):
         ssh = paramiko.SSHClient()
         # 允许连接不在know_hosts文件中的主机
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # 第一次登录的认证信息
-        private_key = paramiko.RSAKey.from_private_key_file('/Users/bijingrui/.ssh/id_rsa')
-        # 连接服务器
-        ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
-        # 执行命令
-        client = paramiko.Transport(Host)
-        client.connect(username="root", pkey=private_key)
-        sftp = paramiko.SFTPClient.from_transport(client)
-        sftp.put(local_file, remote_file)
-        client.close()
-        return True
+        if private_key_file:
+            private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
+            # 连接服务器
+            ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+            # 执行命令
+            client = paramiko.Transport(Host)
+            client.connect(username="root", pkey=private_key)
+            sftp = paramiko.SFTPClient.from_transport(client)
+            sftp.put(local_file, remote_file)
+            client.close()
+            return True
+        else:
+            # 连接服务器
+            ssh.connect(hostname=Host, port=22, username="root", password=user_password)
+            # 执行命令
+            client = paramiko.Transport(Host)
+            client.connect(username="root", password=user_password)
+            sftp = paramiko.SFTPClient.from_transport(client)
+            sftp.put(local_file, remote_file)
+            client.close()
+            return True
     except Exception as e:
         logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
     return False
@@ -235,7 +246,7 @@ class RedisStandalone:
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port, maxmemory=mem_unit_chage(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
-        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf"):
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf", user_password="Pass@word"):
             print("文件分发成功")
         else:
             print("文件分发失败")
