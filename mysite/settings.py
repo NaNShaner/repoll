@@ -167,3 +167,12 @@ CRONJOBS = [
     ('* * * * *', 'polls.tasks.get_redis_ins_qps',
      '> {0}/redis_qps.log'.format(BASE_DIR)),
 ]
+
+# 关闭simpleui统计分析上报信息。
+SIMPLEUI_ANALYSIS = False
+
+# 离线模式
+SIMPLEUI_STATIC_OFFLINE = True
+
+# 关闭simpleui的版本信息展示
+SIMPLEUI_HOME_INFO = False

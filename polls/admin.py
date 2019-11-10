@@ -4,20 +4,17 @@ from __future__ import unicode_literals
 from django.contrib import admin
 from .models import *
 from django.contrib.admin.models import LogEntry
-from django.contrib.auth.models import User
 from jinja2 import Environment, FileSystemLoader
 from .handlers import ApproveRedis
 from pyecharts.globals import CurrentConfig
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
 
+# 此处设置页面显示标题
+admin.site.site_header = 'Redis云管系统'
 
-class MyAdminSite(admin.AdminSite):
-    site_header = 'Redis云管系统'  # 此处设置页面显示标题
-    site_title = '运维管理'  # 此处设置页面头部标题
-    index_title = 'repoll'
-
-
-admin.site = MyAdminSite(name='management')
+# 此处设置页面头部标题
+admin.site.site_title = 'Redis云管系统'
+admin.site.index_title = 'Repoll'
 
 
 class RedisAdmin(admin.ModelAdmin):
@@ -37,7 +34,7 @@ class LogEntryAdmin(admin.ModelAdmin):
 
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ['username', 'password', 'email', 'is_staff'] or '__all__'
+    list_display = ['username', 'password', 'email', 'is_staff', 'is_active']
 
 
 class IpaddrAdmin(admin.ModelAdmin):
@@ -79,14 +76,33 @@ class RealTimeQpsInline(admin.StackedInline):
     list_per_page = 5
 
 
+class ApplyRedisInfoAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        """函数作用：使当前登录的用户只能看到自己负责的实例"""
+        qs = super(ApplyRedisInfoAdmin, self).get_queryset(request)
+        result = qs.filter(create_user=request.user)
+        if request.user.is_superuser:
+            return qs
+        return result
+
+    def get_user(self, request):
+        return request.user
+
+    list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
+                    'redis_mem', 'sys_author', 'area',
+                    'pub_date', 'create_user', 'apply_status']
+    list_filter = ['redis_type']
+    search_fields = ['area']
+
+
 class RedisApplyAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
-        """函数作用：使当前登录的用户只能看到自己负责的服务器"""
+        """函数作用：使当前登录的用户只能看到自己负责的实例"""
         qs = super(RedisApplyAdmin, self).get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(user=RedisApply.objects.filter(approval_user=request.user))
+        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
@@ -143,43 +159,43 @@ class RedisApplyAdmin(admin.ModelAdmin):
 
 class RedisApprovalAdmin(admin.ModelAdmin):
 
-    def ins_status_color(self, obj):
-        ins_status = ''
-        ins_choice = [
-            (0, "已上线"),
-            (1, "已下线"),
-            (2, "未审批"),
-            (3, "已审批"),
-            (4, "已拒绝"),
-        ]
-        if obj.ins_status == 0:
-            color = 'red'
-            ins_status = ins_choice[obj.ins_status][1]
-        elif obj.ins_status == 1:
-            color = 'green'
-            ins_status = ins_choice[obj.ins_status][1]
-        elif obj.ins_status == 2:
-            color = 'blue'
-            ins_status = ins_choice[obj.ins_status][1]
-        elif obj.ins_status == 3:
-            color = 'green'
-            ins_status = ins_choice[obj.ins_status][1]
-        elif obj.ins_status == 4:
-            color = 'blue'
-            ins_status = ins_choice[obj.ins_status][1]
-        else:
-            color = ''
-        return format_html(
-            '<font size="5" face="arial" color="{0}">{1}</font>',
-            color,
-            ins_status,
-        )
-    ins_status_color.short_description = u'实例状态'
+    # def ins_status_color(self, obj):
+    #     ins_status = ''
+    #     ins_choice = [
+    #         (0, "已上线"),
+    #         (1, "已下线"),
+    #         (2, "未审批"),
+    #         (3, "已审批"),
+    #         (4, "已拒绝"),
+    #     ]
+    #     if obj.ins_status == 0:
+    #         color = 'red'
+    #         ins_status = ins_choice[obj.ins_status][1]
+    #     elif obj.ins_status == 1:
+    #         color = 'green'
+    #         ins_status = ins_choice[obj.ins_status][1]
+    #     elif obj.ins_status == 2:
+    #         color = 'blue'
+    #         ins_status = ins_choice[obj.ins_status][1]
+    #     elif obj.ins_status == 3:
+    #         color = 'green'
+    #         ins_status = ins_choice[obj.ins_status][1]
+    #     elif obj.ins_status == 4:
+    #         color = 'blue'
+    #         ins_status = ins_choice[obj.ins_status][1]
+    #     else:
+    #         color = ''
+    #     return format_html(
+    #         '<font size="5" face="arial" color="{0}">{1}</font>',
+    #         color,
+    #         ins_status,
+    #     )
+    # ins_status_color.short_description = u'实例状态'
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'approval_user', 'ins_status_color', 'ins_status'
-                    # 'show_all_ip'
+                    'pub_date', 'approval_user', 'ins_status'
+                    # 'show_all_ip', 'ins_status_color'
                     ]
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
@@ -198,7 +214,6 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
 
     def redis_stop(self, obj):
         button_html = """<a class="changelink" href="/polls/apis/redis-start/{0}/">启动</a>""".format(obj.id)
-        print(button_html)
         return format_html(button_html)
     redis_stop.short_description = "启动"
 
@@ -222,8 +237,10 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
-admin.site.register(User, UserAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
+# 申请
+admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
+# 审批
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
 admin.site.register(RedisVersion, RedisVersionAdmin)

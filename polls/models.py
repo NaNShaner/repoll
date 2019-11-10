@@ -27,6 +27,43 @@ class Ipaddr(models.Model):
         verbose_name_plural = "资源池服务器列表"
 
 
+class ApplyRedisInfo(models.Model):
+    apply_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
+    ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
+    type_choice = [
+        ("Redis-Standalone", "Redis-Standalone"),
+        ("Redis-Cluster", "Redis-Cluster"),
+        ("Redis-Sentinel", "Redis-Sentinel")
+    ]
+    redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
+    redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
+    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    area = models.CharField(max_length=50, verbose_name="机房")
+    pub_date = models.DateTimeField('申请时间', default=timezone.now)
+    user = User.objects.all()
+    user_list = [u.__dict__['username'] for u in user]
+    user_choice = zip(user_list, user_list)
+
+    create_user = models.CharField(max_length=150, choices=user_choice, null=True, verbose_name="申请人", default="")
+    status_choice = [
+        (0, "申请中"),
+    ]
+    apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
+                                       verbose_name="申请状态")
+
+    class Meta:
+        ordering = ('-pub_date', )
+        verbose_name_plural = "Redis实例申请"
+
+    def __str__(self):
+        return self.apply_ins_name
+
+    # def save(self, *args, **kwargs):
+    #     a = args
+    #     b = kwargs
+    #     print(a,b)
+
+
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
     type_choice = [
@@ -71,7 +108,7 @@ class RedisApply(models.Model):
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name_plural = "Redis实例申请"
+        verbose_name_plural = "Redis实例审批"
 
     def __str__(self):
         return self.apply_ins_name
@@ -80,11 +117,6 @@ class RedisApply(models.Model):
 class RedisIns(models.Model):
     redis_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
-    # type_choice = [
-    #     (0, "哨兵"),
-    #     (1, "集群"),
-    #     (2, "单机")
-    # ]
     type_choice = [
         ("Redis-Standalone", "Redis-Standalone"),
         ("Redis-Cluster", "Redis-Cluster"),
@@ -106,13 +138,10 @@ class RedisIns(models.Model):
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
 
-
-    # apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
-
     class Meta:
         ordering = ('-pub_date', )
         verbose_name = "Redis Approve"
-        verbose_name_plural = "Redis审批信息"
+        verbose_name_plural = "Redis上线配置"
 
     def __str__(self):
         return self.redis_ins_name
@@ -135,9 +164,6 @@ class RedisIns(models.Model):
             color,
             self.ins_status,
         )
-
-
-
 
 
 class RedisModel(models.Model):
@@ -340,7 +366,6 @@ class RealTimeQps(models.Model):
     class Meta:
         verbose_name = "Redis Monitor"
         verbose_name_plural = "Redis监控信息"
-
 
 
 

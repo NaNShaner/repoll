@@ -1,45 +1,19 @@
-from .models import models
-from polls.models import *
-import redis
+from .models import *
 from django.dispatch import receiver
-from django.core.signals import request_finished
-from django.forms.models import model_to_dict
 import paramiko
-import os
-import subprocess
 import logging
-import time
 from .tasks import mem_unit_chage
 # 针对model 的signal
 from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 
 # 定义信号
 import django.dispatch
 work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 
-# def create_signal(request, redis_text):
-#     print("我已经做完了工作。现在我发送一个信号出去，给那些指定的接收器。")
-#
-#     # 发送信号，将请求的url地址和时间一并传递过去
-#     work_done.send(create_signal, request=request, redis_text=redis_text)
-#     return HttpResponse("200,ok")
-#
-#
-# @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
-# def model_per_saved(sender, **kwargs):
-#     redis_text = kwargs['instance'].apply_text
-#     work_done.send(create_signal, redis_text=redis_text)
-#
-#
-# @receiver(work_done, sender=create_signal)
-# def my_callback(sender, **kwargs):
-#     print("我在%s时间收到来自%s的信号" % (kwargs['redis_text'], sender))
-
-
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
-def my_model_handler(sender, **kwargs):
+def apply_redis_text_handler(sender, **kwargs):
     """
     触发器，前端页面在完成审批后自动触发
     :param sender:
@@ -81,6 +55,33 @@ def my_model_handler(sender, **kwargs):
             print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
         else:
             print("Redis 启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+
+
+@receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
+def apply_redis_info_handler(sender, **kwargs):
+    redis_ins_id = kwargs['instance'].apply_ins_name
+    redis_ins_obj = ApplyRedisInfo.objects.filter(apply_ins_name=redis_ins_id)
+
+    redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
+    redis_ins_obj_name = redis_ins_obj.values('apply_ins_name').first()
+    redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
+    ins_disc = redis_ins_obj.values('ins_disc').first()
+    sys_author = redis_ins_obj.values('sys_author').first()
+    pub_date = redis_ins_obj.values('pub_date').first()
+    create_user = redis_ins_obj.values('create_user').first()
+    apply_status = redis_ins_obj.values('apply_status').first()
+    area = redis_ins_obj.values('area').first()
+    obj = RedisApply(apply_ins_name=redis_ins_obj_name['apply_ins_name'],
+                     ins_disc=ins_disc['ins_disc'],
+                     redis_type=redis_ins_obj_type['redis_type'],
+                     redis_mem=redis_ins_obj_mem['redis_mem'],
+                     sys_author=sys_author['sys_author'],
+                     area=area['area'],
+                     pub_date=pub_date['pub_date'],
+                     create_user=create_user['create_user'],
+                     apply_status=apply_status['apply_status']
+                     )
+    obj.save()
 
 
 def get_redis_conf(redis_type):
@@ -132,7 +133,6 @@ def do_scp(Host, local_file, remote_file):
     :return:
     """
     try:
-        # 创建SSH对象
         ssh = paramiko.SSHClient()
         # 允许连接不在know_hosts文件中的主机
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())  # 第一次登录的认证信息
@@ -195,10 +195,8 @@ def regx_redis_conf(key, value, port, maxmemory):
             elif "clientOutputBufferLimitPubsub" in key:
                 key = key.replace("clientOutputBufferLimitPubsub", "client-output-buffer-limit pubsub")
                 return key, value
-            print(key, value)
         except ValueError as e:
             pass
-    print(key, value)
     return key, value
 
 
@@ -243,25 +241,6 @@ class RedisStandalone:
             print("文件分发失败")
             return False
         return True
-
-
-# def log(log_type, msg=None, asset=None, new_asset=None, request=None):
-#     """
-#     记录日志
-#     """
-#     event = models.EventLog()
-#     if log_type == "upline":
-#         event.name = "%s <%s> ：  上线" % (asset.name, asset.sn)
-#         event.asset = asset
-#         event.detail = "资产成功上线！"
-#         event.user = request.user
-#     elif log_type == "approve_failed":
-#         event.name = "%s <%s> ：  审批失败" % (new_asset.asset_type, new_asset.sn)
-#         event.new_asset = new_asset
-#         event.detail = "审批失败！\n%s" % msg
-#         event.user = request.user
-#     # 更多日志类型.....
-#     event.save()
 
 
 class RedisStartClass:
