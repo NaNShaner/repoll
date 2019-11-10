@@ -94,11 +94,14 @@ def get_redis_conf(redis_type):
     return obj
 
 
-def do_command(Host, commands, private_key_file=None, user_password=None):
+def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
     """
-    Telnet远程登录：Windows客户端连接Linux服务器
-    :param Host:
-    :param commands:
+    登录远端服务器执行命令
+    :param host: 远端主机
+    :param commands:  到远端执行的命令
+    :param user_name: 登录到远端的服务名
+    :param private_key_file: 秘钥路径
+    :param user_password: 用户密码
     :return:
     """
     try:
@@ -109,7 +112,7 @@ def do_command(Host, commands, private_key_file=None, user_password=None):
         if private_key_file:
             private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             # 连接服务器
-            ssh.connect(hostname=Host, port=22, username="root", pkey=private_key)
+            ssh.connect(hostname=host, port=22, username=user_name, pkey=private_key)
             # 执行命令
             stdin, stdout, stderr = ssh.exec_command(commands)
             # 获取命令结果
@@ -121,7 +124,7 @@ def do_command(Host, commands, private_key_file=None, user_password=None):
             return command_exit_status, command_exit_result
         else:
             # 连接服务器
-            ssh.connect(hostname=Host, port=22, username="root", password=user_password)
+            ssh.connect(hostname=host, port=22, username=user_name, password=user_password)
             # 执行命令
             stdin, stdout, stderr = ssh.exec_command(commands)
             # 获取命令结果
@@ -132,18 +135,18 @@ def do_command(Host, commands, private_key_file=None, user_password=None):
             ssh.close()
             return command_exit_status, command_exit_result
     except Exception as e:
-        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(Host, e))
+        logging.info("{0}, ssh登陆失败，错误信息为{1}".format(host, e))
     return False
 
 
-def do_scp(host, local_file, remote_file, private_key_file=None, user_password=None):
+def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None, user_password=None):
     """
-
-    :param host:
-    :param local_file:
-    :param remote_file:
-    :param private_key_file:
-    :param user_password:
+    拷贝redis的配置文件到指定的服务器中指定目录中
+    :param host: 远端主机
+    :param local_file:  本地redis的配置文件路径
+    :param remote_file: 远端存放路径
+    :param private_key_file: 秘钥路径
+    :param user_password: 用户密码
     :return:
     """
     try:
@@ -153,20 +156,20 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_password=N
         if private_key_file:
             private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username="root", pkey=private_key)
+            ssh.connect(hostname=host, port=22, username=user_name, pkey=private_key)
             # 执行命令
             client = paramiko.Transport(host)
-            client.connect(username="root", pkey=private_key)
+            client.connect(username=user_name, pkey=private_key)
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
             client.close()
             return True
         else:
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username="root", password=user_password)
+            ssh.connect(hostname=host, port=22, username=user_name, password=user_password)
             # 执行命令
             client = paramiko.Transport(host)
-            client.connect(username="root", password=user_password)
+            client.connect(username=user_name, password=user_password)
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
             client.close()
@@ -260,7 +263,8 @@ class RedisStandalone:
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port, maxmemory=mem_unit_chage(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
-        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf", user_password="Pass@word"):
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf",
+                  user_name="root", user_password="Pass@word"):
             print("文件分发成功")
         else:
             print("文件分发失败")
@@ -275,7 +279,7 @@ class RedisStartClass:
         self.host = host
 
     def start_server(self):
-        do_command_result = do_command(self.host, self.redis_server_ctl)
+        do_command_result = do_command(self.host, self.redis_server_ctl, user_name="root", user_password="Pass@word")
         if do_command_result:
             if do_command_result[0] == 0:
                 return True
