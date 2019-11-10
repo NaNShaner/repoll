@@ -3,10 +3,10 @@
 
 ## 项目简介
 ### 主要功能（当前功能）
-Redis的申请、审批、配置上线
-Redis的监控、启动以及停止操作平台化管理
-权限管理依赖django 框架
-![image](https://wx3.sinaimg.cn/orj360/c3a1741dgy1g8taht4nsoj227s14mwlf.jpg)
+- Redis的申请、审批、配置上线
+- Redis的监控、启动以及停止操作平台化管理
+- 权限管理依赖django 框架
+![image](https://wx1.sinaimg.cn/mw690/c3a1741dgy1g8tava52m0j21my0u0wlf.jpg)
 
 # 环境依赖
 - python3
