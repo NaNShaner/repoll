@@ -22,7 +22,7 @@
 - apt-get install python3-dev
 
 # 部署步骤
-待后续细化补充
+* 安装完成环境依依赖
 
 # Todo list
 - 支持哨兵模式和集群模式
