@@ -6,7 +6,7 @@
 #	- 2. create default directories and authorize;
 #	- 3. @usage: sh repoll-init.sh [username]
 # @author: NaNShaner
-# @time:
+# @time: 191111
 ###########################################################################
 
 # If the variable is empty, exit
