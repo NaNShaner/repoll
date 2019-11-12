@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from .models import RealTimeQps, RunningInsTime
-
+import os
 # pyecharts
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
 from django.http import HttpResponse
-CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
 from pyecharts import options as opts
 from pyecharts.charts import Line
-
-
+HTML_TEM_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("{0}/polls/static".format(HTML_TEM_DIR)))
 # Create your views here.
+
 
 # echarts
 def redis_qps(request, ins_id):
