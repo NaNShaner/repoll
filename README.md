@@ -23,6 +23,12 @@
 
 # 部署步骤
 * 安装完成环境依依赖
+* 执行以下命令完成simpleui的静态资源离线可访问
+python3 manage.py  collectstatic
+* 开启redis的qps监控执行以下命令
+python3 manage.py crontab add
+
+
 
 # Todo list
 - 支持哨兵模式和集群模式

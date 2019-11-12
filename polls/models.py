@@ -31,7 +31,7 @@ class ApplyRedisInfo(models.Model):
     apply_ins_name = models.CharField(max_length=50, unique=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
-        ("Redis-Standalone", "Redis-Standalone"),
+        ("Redis-", "Redis-Standalone"),
         ("Redis-Cluster", "Redis-Cluster"),
         ("Redis-Sentinel", "Redis-Sentinel")
     ]
@@ -323,7 +323,15 @@ class RedisVersion(models.Model):
 class ApplyRedisText(models.Model):
     ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
-    apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
+    apply_text = models.TextField(max_length=250, verbose_name="实例详情",
+                                  blank=True, null=True, help_text="具体规则如下: </br>"
+                                                                   "1. standalone类型：</br>"
+                                                                   "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
+                                                                   "2. sentinel类型：</br>"
+                                                                   "masterIp:masterPort:memSize(M):slaveIp:slavePort</br>"
+                                                                   "sentinelIp1</br>"
+                                                                   "sentinelIp2</br>"
+                                                                   "sentinelIp3")
     who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 

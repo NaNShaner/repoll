@@ -23,7 +23,7 @@ class RedisAdmin(admin.ModelAdmin):
     search_fields = ['redis_type']
     fieldsets = [
         ('所属系统', {'fields': ['sys_type']}),
-        ('Redis类型', {'fields': ['redis_type','pub_date']}),
+        ('Redis类型', {'fields': ['redis_type', 'pub_date']}),
         ('Redis信息', {'fields': ['host_ip', 'redis_port']}),
     ]
     save_on_top = False
