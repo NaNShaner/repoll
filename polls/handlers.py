@@ -2,7 +2,7 @@ from .models import *
 from django.dispatch import receiver
 import paramiko
 import logging
-from .tasks import mem_unit_chage
+from .scheduled import mem_unit_chage
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save
