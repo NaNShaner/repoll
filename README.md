@@ -17,7 +17,7 @@
 - pip3 install redis
 - pip3 install paramiko
 - pip3 install pyecharts(pyecharts-1.5.1)
-
+- pip install django-simpleui
 - apt-get install python-dev default-libmysqlclient-dev
 - apt-get install python3-dev
 
@@ -28,7 +28,10 @@ python3 manage.py  collectstatic
 * 开启redis的qps监控执行以下命令
 python3 manage.py crontab add
 
-
+# 标准化申请流程
+* 分配普通用户权限（dev或者ops角色）
+* 领导层进行审批（boss角色）
+* 管理员（dba角色）进行配置上线
 
 # Todo list
 - 支持哨兵模式和集群模式

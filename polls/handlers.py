@@ -287,6 +287,19 @@ class RedisStartClass:
             return False
 
 
+class RedisModelStartClass:
+
+    def __init__(self, model_type, redis_host, redis_port):
+        if model_type == "Redis-Sentinel":
+            self.model_type = "s"
+        elif model_type == "Redis-Cluster":
+            self.model_type = "c"
+        else:
+            self.model_type = None
+        self.redis_host = redis_host
+        self.redis_port = redis_port
+
+
 class ApproveRedis:
     """
     审批Redis并写入待上线列表中。
