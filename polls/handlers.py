@@ -6,10 +6,14 @@ from .scheduled import mem_unit_chage
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+import os
 
 # 定义信号
 import django.dispatch
 work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
+
+# 定义项目绝对路径
+TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
@@ -257,7 +261,7 @@ class RedisStandalone:
         redis_conf = get_redis_conf(self.redis_ins_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
         redis_dir = all_redis_conf[0]['dir']
-        conf_file_name = "/Users/bijingrui/PycharmProjects/mysite1/templates/" + str(self.redis_port) + ".conf"
+        conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(self.redis_port) + ".conf"
         with open(conf_file_name, 'w+') as f:
             for k, v in all_redis_conf[0].items():
                 if k != 'id' and k != 'redis_version' and k != 'redis_type':
@@ -286,6 +290,19 @@ class RedisStartClass:
                 return True
         else:
             return False
+
+
+class RedisModelStartClass:
+
+    def __init__(self, model_type, redis_host, redis_port):
+        if model_type == "Redis-Sentinel":
+            self.model_type = "s"
+        elif model_type == "Redis-Cluster":
+            self.model_type = "c"
+        else:
+            self.model_type = None
+        self.redis_host = redis_host
+        self.redis_port = redis_port
 
 
 class ApproveRedis:
@@ -351,13 +368,25 @@ class ApproveRedis:
             return e
         return asset
 
-    def redis_apply_status_update(self):
+    def redis_apply_status_update(self, statu):
         """
-        更新申请状态
+        更新审批状态
+        :param statu: 3为已审批， 4为已拒绝
         :return:
         """
-        RedisApply.objects.filter(id=self.asset_id).update(apply_status=1)
+        RedisApply.objects.filter(id=self.asset_id).update(apply_status=statu)
+        ApplyRedisInfo.objects.filter(apply_ins_name=self.new_asset.apply_ins_name).update(apply_status=statu)
         return True
+
+    @property
+    def redis_ins_name(self):
+        """
+        返回redis实例名称
+        :return:
+        """
+        return self.new_asset.apply_ins_name
+
+
 
 
 

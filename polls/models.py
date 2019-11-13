@@ -46,9 +46,14 @@ class ApplyRedisInfo(models.Model):
 
     create_user = models.CharField(max_length=150, choices=user_choice, null=True, verbose_name="申请人", default="")
     status_choice = [
-        (0, "申请中"),
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未审批"),
+        (3, "已审批"),
+        (4, "已拒绝"),
+        (5, "申请中"),
     ]
-    apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
+    apply_status = models.IntegerField(choices=status_choice, default=status_choice[5][0], blank=True, null=True,
                                        verbose_name="申请状态")
 
     class Meta:
@@ -99,11 +104,14 @@ class RedisApply(models.Model):
     pub_date = models.DateTimeField('申请时间', default=timezone.now)
     create_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
     status_choice = [
-        (0, "申请中"),
-        (1, "已审批"),
-        (2, "已拒绝"),
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未审批"),
+        (3, "已审批"),
+        (4, "已拒绝"),
+        (5, "申请中"),
     ]
-    apply_status = models.IntegerField(choices=status_choice, default=status_choice[0][0], blank=True, null=True,
+    apply_status = models.IntegerField(choices=status_choice, default=status_choice[5][0], blank=True, null=True,
                                        verbose_name="申请状态")
 
     class Meta:
@@ -297,6 +305,33 @@ class RedisConf(models.Model):
         verbose_name_plural = "Redis配置信息"
 
 
+class RedisSentienlConf(models.Model):
+    port = models.CharField(max_length=150, help_text="sentinel实例端口", verbose_name="port", default="%port%")
+    dir = models.CharField(max_length=150, help_text="工作目录", verbose_name="dir", default="/opt/repoll/")
+    sentinel_monitor = models.CharField(max_length=150,
+                                        help_text="master名称定义和最少参与监控的sentinel数,格式:masterName ip port num",
+                                        verbose_name="sentinel monitor",
+                                        default="%masterName_ip_port_num%")
+    sentinel_down_after_milliseconds = models.CharField(max_length=150,
+                                                        help_text="Sentinel判定服务器断线的毫秒数",
+                                                        verbose_name="sentinel down-after-milliseconds",
+                                                        default="%s 20000%")
+    sentinel_failover_timeout = models.CharField(max_length=150,
+                                                 help_text="故障迁移超时时间,默认:3分钟",
+                                                 verbose_name="sentinel failover-timeout",
+                                                 default="%s 180000%")
+    sentinel_parallel_syncs = models.CharField(max_length=150,
+                                               help_text="在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1",
+                                               verbose_name="sentinel parallel-syncs",
+                                               default="%s 1%")
+
+    def __str__(self):
+        return "Sentinel 配置成功"
+
+    class Meta:
+        verbose_name_plural = "Redis Sentinel配置信息"
+
+
 class RedisVersion(models.Model):
     redis_version = models.ForeignKey(RedisConf, on_delete=models.CASCADE)
     choice_list = [
@@ -321,9 +356,17 @@ class RedisVersion(models.Model):
 
 
 class ApplyRedisText(models.Model):
-    ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
+    # ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
-    apply_text = models.TextField(max_length=250, verbose_name="实例详情", blank=True, null=True)
+    apply_text = models.TextField(max_length=250, verbose_name="实例详情",
+                                  blank=True, null=True, help_text="具体规则如下: </br>"
+                                                                   "1. standalone类型：</br>"
+                                                                   "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
+                                                                   "2. sentinel类型：</br>"
+                                                                   "masterIp:masterPort:memSize(M):slaveIp:slavePort</br>"
+                                                                   "sentinelIp1</br>"
+                                                                   "sentinelIp2</br>"
+                                                                   "sentinelIp3")
     who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 
