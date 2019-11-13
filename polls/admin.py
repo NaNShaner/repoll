@@ -94,6 +94,8 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
     list_filter = ['redis_type']
     search_fields = ['area']
 
+    readonly_fields = ['apply_status', ]
+
 
 class RedisApplyAdmin(admin.ModelAdmin):
 
@@ -128,9 +130,9 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 if create_redis_ins:
                     success_upline_number += 1
                     self.message_user(request, "成功批准  %s  个新Redis实例上线！" % success_upline_number)
-                    obj.redis_apply_status_update()
+                    obj.redis_apply_status_update(statu=3)
                 else:
-                    self.message_user(request, "实例为 {0} 的实例上线失败".format(queryset))
+                    self.message_user(request, "实例为 {0} 的实例上线失败，已存在上线实例，请检查".format(obj.redis_ins_name))
         except ValueError as e:
             self.message_user(request, "实例为 {0} 的实例上线失败，原因为{1}".format(queryset, e))
     approve_selected_new_assets.short_description = "批准选择的Redis实例"
@@ -151,6 +153,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 deny_redis_ins = obj.deny_create()
                 if deny_redis_ins:
                     deny_upline_number += 1
+                    obj.redis_apply_status_update(statu=4)
                     self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
         except ValueError as e:
             self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
@@ -201,6 +204,9 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
     inlines = [ChoiceInline]
+
+    # 审核项有且只能有一条记录
+    ChoiceInline.max_num = 1
 
     def return_message(self, request, queryset, mem=None):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))

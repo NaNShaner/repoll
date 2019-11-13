@@ -40,9 +40,9 @@ class RedisScheduled(object):
 def mem_unit_chage(mem):
     memory = mem[0:-1]
     type = mem[-1]
-    if type == 'g' or 'G':
+    if type == 'g' and 'G':
         return int(float(memory)*1024)
-    elif type == 'k' or 'K':
+    elif type == 'k' and 'K':
         return int(float(memory)/1024)
     else:
         return int(float(memory))
