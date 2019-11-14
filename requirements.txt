@@ -1,4 +1,4 @@
-Django==2.0
+Django==2.0.12
 Jinja2==2.10.1
 pyecharts==1.5.1
 paramiko==2.6.0
