@@ -322,9 +322,9 @@ class RedisStartClass:
 
 class RedisModelStartClass:
 
-    def __init__(self, model_type, redis_sentinel_ip, redis_sentinel_port,
-                 redis_sentinel_num, sentinel_down_after_milliseconds, redis_master_ip,
-                 redis_master_port, sentinel_failover_timeout, sentinel_parallel_syncs,
+    def __init__(self, model_type, redis_master_ip, redis_master_port,
+                 redis_sentinel_ip=None, redis_sentinel_port=None, redis_sentinel_num=None,
+                 sentinel_down_after_milliseconds=None, sentinel_failover_timeout=None, sentinel_parallel_syncs=None,
                  redis_master_name=None):
         self.model_type = model_type
         if self.model_type == "Redis-Standalone":
