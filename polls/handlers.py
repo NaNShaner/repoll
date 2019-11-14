@@ -94,7 +94,12 @@ def get_redis_conf(redis_type):
     :param redis_type:
     :return:
     """
-    obj = RedisConf.objects.all().filter(redis_type=redis_type)
+    if redis_type == 'Redis-Standalone':
+        obj = RedisConf.objects.all().filter(redis_type=redis_type)
+    elif redis_type == 'Redis-Sentinel':
+        obj = RedisSentienlConf.objects.all().filter(redis_type=redis_type)
+    else:
+        obj = None
     return obj
 
 
@@ -184,13 +189,14 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None,
     return False
 
 
-def regx_redis_conf(key, value, port, maxmemory):
+def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
     """
     对于redis的配置进行格式化，部分k，v需要进行替换
     :param key: redis.conf文件中的配置项
     :param value: redis.conf文件中的配置项的值
     :param port: Redis的端口
     :param maxmemory: Redis的最大内存
+    :param kwargs: 需要修改的配置文件的kv
     :return:
     """
     if isinstance(key, str):
@@ -228,6 +234,24 @@ def regx_redis_conf(key, value, port, maxmemory):
             elif "clientOutputBufferLimitPubsub" in key:
                 key = key.replace("clientOutputBufferLimitPubsub", "client-output-buffer-limit pubsub")
                 return key, value
+            elif "sentinel_monitor" in key:
+                key = key.replace("sentinel_monitor", "sentinel monitor ")
+                value = value.replace("%masterName_ip_port_num%",
+                                      " {0} {1} {2} {3}".format(kwargs['masterName'], kwargs['masterIp'],
+                                                                kwargs['masterPort'], kwargs['sentienlNum'],))
+                return key, value
+            elif "sentinel_down_after_milliseconds" in key:
+                key = key.replace("sentinel_down_after_milliseconds ", "sentinel down-after-milliseconds ")
+                value = value.replace("%s 20000% ", "{0} 20000".format(kwargs['sentinel_down_after_milliseconds']))
+                return key, value
+            elif "sentinel_failover_timeout" in key:
+                key = key.replace("sentinel_failover_timeout ", "sentinel failover-timeout ")
+                value = value.replace("%s 180000% ", "{0} 180000".format(kwargs['sentinel_failover_timeout']))
+                return key, value
+            elif "sentinel_parallel_syncs" in key:
+                key = key.replace("sentinel_parallel_syncs ", "sentinel parallel-syncs ")
+                value = value.replace("%s 1% ", "{0} 1".format(kwargs['sentinel_parallel_syncs']))
+                return key, value
         except ValueError as e:
             pass
     return key, value
@@ -258,6 +282,11 @@ class RedisStandalone:
         return True
 
     def create_redis_conf_file(self):
+        """
+        创建redis实例的配置文件，并分发到资源池服务器指定的目录下。分发文件支持ssh免密和用户密码校验
+        使用用户密码校验目前是硬编码，后续优化支持读库
+        :return:
+        """
         redis_conf = get_redis_conf(self.redis_ins_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
         redis_dir = all_redis_conf[0]['dir']
@@ -294,15 +323,54 @@ class RedisStartClass:
 
 class RedisModelStartClass:
 
-    def __init__(self, model_type, redis_host, redis_port):
-        if model_type == "Redis-Sentinel":
-            self.model_type = "s"
-        elif model_type == "Redis-Cluster":
-            self.model_type = "c"
+    def __init__(self, model_type, redis_master_ip, redis_master_port,
+                 redis_sentinel_ip=None, redis_sentinel_port=None, redis_sentinel_num=None,
+                 sentinel_down_after_milliseconds=None, sentinel_failover_timeout=None, sentinel_parallel_syncs=None,
+                 redis_master_name=None):
+        self.model_type = model_type
+        if self.model_type == "Redis-Standalone":
+            self.redis_master_name = redis_master_name
+            self.redis_sentinel_ip = redis_sentinel_ip
+            self.redis_sentinel_port = redis_sentinel_port
+            self.redis_sentinel_num = redis_sentinel_num
+            self.sentinel_down_after_milliseconds = sentinel_down_after_milliseconds
+            self.sentinel_failover_timeout = sentinel_failover_timeout
+            self.sentinel_parallel_syncs = sentinel_parallel_syncs
+        self.redis_master_ip = redis_master_ip
+        self.redis_master_port = redis_master_port
+
+    def create_sentienl_conf_file(self):
+        """
+        创建redis 哨兵实例的配置文件，并分发到资源池服务器指定的目录下。分发文件支持ssh免密和用户密码校验
+        使用用户密码校验目前是硬编码，后续优化支持读库
+        :return:
+        """
+        redis_conf = get_redis_conf(self.model_type)
+        all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
+        conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(self.redis_sentinel_port) + "-sentienl.conf"
+        conf_modify = {
+            "masterName": self.redis_master_name,
+            "masterIp": self.redis_master_ip,
+            "masterPort": self.redis_master_port,
+            "sentienlNum": self.redis_sentinel_num,
+            "sentinel_down_after_milliseconds": self.sentinel_down_after_milliseconds,
+            "sentinel_failover_timeout": self.sentinel_failover_timeout,
+            "sentinel_parallel_syncs": self.sentinel_parallel_syncs
+        }
+        with open(conf_file_name, 'w+') as f:
+            for k, v in all_redis_conf[0].items():
+                if k != 'id':
+                    if isinstance(v, str) or isinstance(v, int):
+                        k, v = regx_redis_conf(key=k, value=v, port=self.redis_sentinel_port, kwargs=conf_modify)
+                        f.write(k + " " + str(v) + "\n")
+        if do_scp(self.redis_sentinel_ip, conf_file_name,
+                  "/opt/repoll/conf/" + str(self.redis_sentinel_port) + "-sentienl.conf",
+                  user_name="root", user_password="Pass@word"):
+            print("文件分发成功")
         else:
-            self.model_type = None
-        self.redis_host = redis_host
-        self.redis_port = redis_port
+            print("文件分发失败")
+            return False
+        return True
 
 
 class ApproveRedis:
