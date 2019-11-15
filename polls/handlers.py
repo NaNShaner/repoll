@@ -427,7 +427,7 @@ class ApproveRedis:
                     )
             else:
                 RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(ins_status=RedisIns.ins_choice[3][0])
-                RedisApply.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(
+                RedisApply.objects.filter(apply_ins_name=self.new_asset.apply_ins_name).update(
                     apply_status=RedisApply.status_choice[2][0]
                 )
                 return True
