@@ -363,7 +363,7 @@ class ApplyRedisText(models.Model):
                                                                    "1. standalone类型：</br>"
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
                                                                    "2. sentinel类型：</br>"
-                                                                   "masterIp:masterPort:memSize(M):slaveIp:slavePort</br>"
+                                                                   "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
                                                                    "sentinelIp1</br>"
                                                                    "sentinelIp2</br>"
                                                                    "sentinelIp3")

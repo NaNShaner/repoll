@@ -26,39 +26,41 @@ def apply_redis_text_handler(sender, **kwargs):
     """
     redis_ip = ''
     redis_port = ''
-    redis_apply_ip = Ipaddr.objects.all()
+
     redis_ins_id = kwargs['instance'].redis_ins_id
     redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
-    all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
+    redis_ins_type = redis_ins_obj.values('redis_type').first()['redis_type']
     redis_text = kwargs['instance'].apply_text
-    if isinstance(redis_text, str):
-        try:
-            redis_text_split = redis_text.split(":")
-            redis_ip = redis_text_split[0]
-            redis_port = redis_text_split[1]
-            redis_mem = redis_text_split[2]
-            if redis_ip not in all_redis_ip:
-                print("{0}不在Redis云管列表中...".format(redis_ip))
-                raise ValueError("{0}不在Redis云管列表中...".format(redis_ip))
-        except ValueError as e:
-            print(e)
-    redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
+    redis_apply_text_split = redis_apply_text(redis_text, redis_type=redis_ins_type)
     redis_ins_obj_name = redis_ins_obj.values('redis_ins_name').first()
     redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
-    redis_ins_type = redis_ins_obj_type['redis_type']
-    a = RedisStandalone(redis_ins=redis_ins_obj,
-                        redis_ins_name=redis_ins_obj_name,
-                        redis_ins_type=redis_ins_type,
-                        redis_ins_mem=redis_ins_obj_mem,
-                        redis_ip=redis_ip,
-                        redis_port=redis_port)
-    a.saved_redis_running_ins()
-    if a.create_redis_conf_file():
-        redis_start = RedisStartClass(host=redis_ip, redis_server_ctl="/opt/repoll/redis/src/redis-server " + "/opt/repoll/conf/" + str(redis_port) + ".conf")
-        if redis_start.start_server():
-            print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
-        else:
-            print("Redis 启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+    if redis_ins_type == 'Redis-Standalone':
+        redis_ip = redis_apply_text_split['redis_ip']
+        redis_port = redis_apply_text_split['redis_port']
+        a = RedisStandalone(redis_ins=redis_ins_obj,
+                            redis_ins_name=redis_ins_obj_name,
+                            redis_ins_type=redis_ins_type,
+                            redis_ins_mem=redis_apply_text_split['redis_mem'],
+                            redis_ip=redis_ip,
+                            redis_port=redis_port)
+        a.saved_redis_running_ins()
+        if a.create_redis_conf_file():
+            redis_start = RedisStartClass(host=redis_ip,
+                                          redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" + str(redis_port) + ".conf")
+            if redis_start.start_server():
+                print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+            else:
+                print("Redis 启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+    elif redis_ins_type == 'Redis-Sentinel':
+        b = RedisModelStartClass(model_type='Redis-Sentinel',
+                                 redis_master_ip_port=redis_apply_text_split['redis_master_ip_port'],
+                                 redis_slave_ip_port=redis_apply_text_split['redis_apply_text_split'],
+                                 redis_master_name=redis_apply_text_split['redis_master_name'],
+                                 redis_sentinel_ip_port=redis_apply_text_split['redis_sentinel_ip_port'],
+                                 redis_sentinel_num=redis_apply_text_split['redis_sentinel_num'],
+                                 sentinel_down_after_milliseconds=30000,
+                                 sentinel_failover_timeout=180000,
+                                 sentinel_parallel_syncs=1)
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -101,6 +103,53 @@ def get_redis_conf(redis_type):
     else:
         obj = None
     return obj
+
+
+def redis_apply_text(apply_text, redis_type):
+    redis_apply_ip = Ipaddr.objects.all()
+    all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
+    try:
+        if isinstance(apply_text, str) and redis_type == 'Redis-Standalone':
+            redis_text_split = apply_text.split(":")
+            apply_text_dict = {
+                'redis_ip':  redis_text_split[0],
+                'redis_port': redis_text_split[1],
+                'redis_mem': redis_text_split[2]
+            }
+            if apply_text_dict['redis_ip'] not in all_redis_ip:
+                print("{0}不在Redis云管列表中...".format(apply_text_dict['redis_ip']))
+                raise ValueError("{0}不在Redis云管列表中...".format(apply_text_dict['redis_ip']))
+            return apply_text_dict
+        if redis_type == 'Redis-Sentinel':
+            try:
+                all_line = apply_text.split('\n')
+                redis_ins = all_line.pop(0)
+                all_redis_ins = redis_ins.split(":")
+                redis_mem = all_redis_ins.pop(2)
+                redis_maser_name = all_redis_ins.pop(2)
+                all_redis_ins_ip = all_redis_ins[::2]
+                all_redis_ins_port = all_redis_ins[1::2]
+                all_redis_ins_ip_port = dict(zip(all_redis_ins_ip, all_redis_ins_port))
+                for i in all_redis_ins_ip:
+                    for p in all_redis_ins_port:
+                        all_redis_ins_ip_port = dict(i=p)
+                redis_sentinel = [redis_sentinel for redis_sentinel in redis_ins]
+                apply_text_dict = {
+                    'model_type': 'Redis-Sentinel',
+                    'redis_master_ip_port': all_redis_ins_ip_port.pop(0),
+                    'redis_maser_name': redis_maser_name,
+                    'redis_sentinel_ip_port': redis_sentinel,
+                    'redis_sentienl_num': len(redis_sentinel) - 1,
+                    'redis_slave_ip': all_redis_ins_ip_port,
+                    'redis_mem': redis_mem
+                }
+                return apply_text_dict
+            except ValueError as e:
+                pass
+
+
+    except ValueError as e:
+        print(e)
 
 
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
@@ -156,6 +205,7 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None,
     :param remote_file: 远端存放路径
     :param private_key_file: 秘钥路径
     :param user_password: 用户密码
+    :param user_name: 用户名
     :return:
     """
     try:
@@ -245,11 +295,11 @@ def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
                 return key, value
             elif "sentinel_failover_timeout" in key:
                 key = key.replace("sentinel_failover_timeout ", "sentinel failover-timeout ")
-                value = value.replace("%s 180000% ", "{0} 180000".format(kwargs['sentinel_failover_timeout']))
+                value = value.replace("%s 180000% ", "{0} 180000".format(kwargs['masterName']))
                 return key, value
             elif "sentinel_parallel_syncs" in key:
                 key = key.replace("sentinel_parallel_syncs ", "sentinel parallel-syncs ")
-                value = value.replace("%s 1% ", "{0} 1".format(kwargs['sentinel_parallel_syncs']))
+                value = value.replace("%s 1% ", "{0} 1".format(kwargs['masterName']))
                 return key, value
         except ValueError as e:
             pass
@@ -262,7 +312,7 @@ class RedisStandalone:
         self.redis_ins_ip = [r.__dict__ for r in redis_ins]
         self.redis_ins_name = redis_ins_name['redis_ins_name']
         self.redis_ins_type = redis_ins_type
-        self.redis_ins_mem = redis_ins_mem['redis_mem']
+        self.redis_ins_mem = redis_ins_mem
         self.redis_ip = redis_ip
         self.redis_port = redis_port
 
@@ -322,21 +372,25 @@ class RedisStartClass:
 
 class RedisModelStartClass:
 
-    def __init__(self, model_type, redis_master_ip, redis_master_port,
-                 redis_sentinel_ip=None, redis_sentinel_port=None, redis_sentinel_num=None,
-                 sentinel_down_after_milliseconds=None, sentinel_failover_timeout=None, sentinel_parallel_syncs=None,
-                 redis_master_name=None):
+    def __init__(self, model_type, redis_master_ip_port, redis_sentinel_ip_port, redis_slave_ip_port, redis_master_name, redis_mem,
+                 redis_sentinel_num, sentinel_down_after_milliseconds=None, sentinel_failover_timeout=None,
+                 sentinel_parallel_syncs=None):
         self.model_type = model_type
-        if self.model_type == "Redis-Standalone":
-            self.redis_master_name = redis_master_name
-            self.redis_sentinel_ip = redis_sentinel_ip
-            self.redis_sentinel_port = redis_sentinel_port
-            self.redis_sentinel_num = redis_sentinel_num
+        self.redis_master_name = redis_master_name
+        self.redis_sentinel_ip_port = redis_sentinel_ip_port
+        self.redis_slave_ip_port = redis_slave_ip_port
+        self.redis_mem = redis_mem
+        self.redis_sentinel_num = redis_sentinel_num
+        if sentinel_down_after_milliseconds:
             self.sentinel_down_after_milliseconds = sentinel_down_after_milliseconds
+        if sentinel_failover_timeout:
             self.sentinel_failover_timeout = sentinel_failover_timeout
+        if sentinel_parallel_syncs:
             self.sentinel_parallel_syncs = sentinel_parallel_syncs
-        self.redis_master_ip = redis_master_ip
-        self.redis_master_port = redis_master_port
+        if isinstance(redis_master_ip_port, dict) and len(redis_master_ip_port) == 1:
+            for k, v in redis_master_ip_port.items():
+                self.redis_master_ip = k
+                self.redis_master_port = v
 
     def create_sentienl_conf_file(self):
         """
@@ -346,29 +400,31 @@ class RedisModelStartClass:
         """
         redis_conf = get_redis_conf(self.model_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
-        conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(self.redis_sentinel_port) + "-sentienl.conf"
-        conf_modify = {
-            "masterName": self.redis_master_name,
-            "masterIp": self.redis_master_ip,
-            "masterPort": self.redis_master_port,
-            "sentienlNum": self.redis_sentinel_num,
-            "sentinel_down_after_milliseconds": self.sentinel_down_after_milliseconds,
-            "sentinel_failover_timeout": self.sentinel_failover_timeout,
-            "sentinel_parallel_syncs": self.sentinel_parallel_syncs
-        }
-        with open(conf_file_name, 'w+') as f:
-            for k, v in all_redis_conf[0].items():
-                if k != 'id':
-                    if isinstance(v, str) or isinstance(v, int):
-                        k, v = regx_redis_conf(key=k, value=v, port=self.redis_sentinel_port, kwargs=conf_modify)
-                        f.write(k + " " + str(v) + "\n")
-        if do_scp(self.redis_sentinel_ip, conf_file_name,
-                  "/opt/repoll/conf/" + str(self.redis_sentinel_port) + "-sentienl.conf",
-                  user_name="root", user_password="Pass@word"):
-            print("文件分发成功")
-        else:
-            print("文件分发失败")
-            return False
+        for sentenl in self.redis_sentinel_ip_port:
+            if isinstance(sentenl, str):
+                redis_sentinel_ip, redis_sentinel_port = sentenl.split(":")
+                conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(redis_sentinel_port) + "-sentienl.conf"
+                conf_modify = {
+                    "masterName": self.redis_master_name,
+                    "masterIp": self.redis_master_ip,
+                    "masterPort": self.redis_master_port,
+                    "sentienlNum": self.redis_sentinel_num,
+                    # "sentinel_down_after_milliseconds": self.sentinel_down_after_milliseconds,
+                    # "sentinel_failover_timeout": self.sentinel_failover_timeout,
+                    # "sentinel_parallel_syncs": self.sentinel_parallel_syncs
+                }
+                with open(conf_file_name, 'w+') as f:
+                    for k, v in all_redis_conf[0].items():
+                        if k != 'id':
+                            if isinstance(v, str) or isinstance(v, int):
+                                k, v = regx_redis_conf(key=k, value=v, port=redis_sentinel_port, kwargs=conf_modify)
+                                f.write(k + " " + str(v) + "\n")
+                if do_scp(redis_sentinel_ip, conf_file_name,
+                          "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf",
+                          user_name="root", user_password="Pass@word"):
+                    print("文件分发成功")
+                else:
+                    print("文件分发失败")
         return True
 
 

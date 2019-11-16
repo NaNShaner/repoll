@@ -74,7 +74,7 @@ init() {
 # install redis
 installRedis() {
 
-	yum install -y gcc
+	apt install -y gcc
 	mkdir -p ${redisDir} && cd ${redisDir}
 	wget http://download.redis.io/releases/${redisTarGz} && mv ${redisTarGz} redis.tar.gz && tar zxvf redis.tar.gz --strip-component=1
 	make && make install

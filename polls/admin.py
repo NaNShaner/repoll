@@ -93,6 +93,7 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
+    list_per_page = 15
 
     readonly_fields = ['apply_status', ]
 
@@ -111,6 +112,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
+    list_per_page = 15
     actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
 
     def approve_selected_new_assets(self, request, queryset):
@@ -204,6 +206,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
     inlines = [ChoiceInline]
+    list_per_page = 15
 
     # 审核项有且只能有一条记录
     ChoiceInline.max_num = 1
