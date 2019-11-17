@@ -54,13 +54,16 @@ def apply_redis_text_handler(sender, **kwargs):
     elif redis_ins_type == 'Redis-Sentinel':
         b = RedisModelStartClass(model_type='Redis-Sentinel',
                                  redis_master_ip_port=redis_apply_text_split['redis_master_ip_port'],
-                                 redis_slave_ip_port=redis_apply_text_split['redis_apply_text_split'],
+                                 redis_slave_ip_port=redis_apply_text_split['redis_slave_ip_port'],
                                  redis_master_name=redis_apply_text_split['redis_master_name'],
                                  redis_sentinel_ip_port=redis_apply_text_split['redis_sentinel_ip_port'],
                                  redis_sentinel_num=redis_apply_text_split['redis_sentinel_num'],
                                  sentinel_down_after_milliseconds=30000,
                                  sentinel_failover_timeout=180000,
-                                 sentinel_parallel_syncs=1)
+                                 sentinel_parallel_syncs=1,
+                                 redis_mem=redis_apply_text_split['redis_mem'])
+        create_sentinel_conf_file = b.create_sentienl_conf_file()
+        print(create_sentinel_conf_file)
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -99,7 +102,7 @@ def get_redis_conf(redis_type):
     if redis_type == 'Redis-Standalone':
         obj = RedisConf.objects.all().filter(redis_type=redis_type)
     elif redis_type == 'Redis-Sentinel':
-        obj = RedisSentienlConf.objects.all().filter(redis_type=redis_type)
+        obj = RedisSentienlConf.objects.all().filter()
     else:
         obj = None
     return obj
@@ -122,25 +125,29 @@ def redis_apply_text(apply_text, redis_type):
             return apply_text_dict
         if redis_type == 'Redis-Sentinel':
             try:
-                all_line = apply_text.split('\n')
+                all_line = apply_text.split('\r\n')
                 redis_ins = all_line.pop(0)
                 all_redis_ins = redis_ins.split(":")
                 redis_mem = all_redis_ins.pop(2)
-                redis_maser_name = all_redis_ins.pop(2)
+                redis_master_name = all_redis_ins.pop(2)
                 all_redis_ins_ip = all_redis_ins[::2]
                 all_redis_ins_port = all_redis_ins[1::2]
-                all_redis_ins_ip_port = dict(zip(all_redis_ins_ip, all_redis_ins_port))
+                # all_redis_ins_ip_port = dict(zip(all_redis_ins_ip, all_redis_ins_port))
+                redis_master_ip_port = {all_redis_ins_ip.pop(0): all_redis_ins_port.pop(0)}
+                redis_slave_ip_port_list = []
                 for i in all_redis_ins_ip:
                     for p in all_redis_ins_port:
-                        all_redis_ins_ip_port = dict(i=p)
+                        redis_ins_ip_port_dict = {}
+                        redis_ins_ip_port_dict[i] = p
+                        redis_slave_ip_port_list.append(redis_ins_ip_port_dict)
                 redis_sentinel = [redis_sentinel for redis_sentinel in redis_ins]
                 apply_text_dict = {
                     'model_type': 'Redis-Sentinel',
-                    'redis_master_ip_port': all_redis_ins_ip_port.pop(0),
-                    'redis_maser_name': redis_maser_name,
-                    'redis_sentinel_ip_port': redis_sentinel,
-                    'redis_sentienl_num': len(redis_sentinel) - 1,
-                    'redis_slave_ip': all_redis_ins_ip_port,
+                    'redis_master_ip_port': redis_master_ip_port,
+                    'redis_master_name': redis_master_name,
+                    'redis_sentinel_ip_port': filter(None, all_line),
+                    'redis_sentinel_num': len(redis_sentinel) - 1,
+                    'redis_slave_ip_port': list(set(redis_slave_ip_port_list)),
                     'redis_mem': redis_mem
                 }
                 return apply_text_dict
@@ -285,9 +292,12 @@ def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
                 return key, value
             elif "sentinel_monitor" in key:
                 key = key.replace("sentinel_monitor", "sentinel monitor ")
+                a = "%masterName_ip_port_num%", " {0} {1} {2} {3}".format(kwargs['masterName'], kwargs['masterIp'],
+                                                                kwargs['masterPort'], kwargs['sentienlNum'])
+                print("==={0}===".format(a))
                 value = value.replace("%masterName_ip_port_num%",
                                       " {0} {1} {2} {3}".format(kwargs['masterName'], kwargs['masterIp'],
-                                                                kwargs['masterPort'], kwargs['sentienlNum'],))
+                                                                kwargs['masterPort'], kwargs['sentienlNum']))
                 return key, value
             elif "sentinel_down_after_milliseconds" in key:
                 key = key.replace("sentinel_down_after_milliseconds ", "sentinel down-after-milliseconds ")
@@ -415,9 +425,10 @@ class RedisModelStartClass:
                 }
                 with open(conf_file_name, 'w+') as f:
                     for k, v in all_redis_conf[0].items():
-                        if k != 'id':
+                        if k != 'id' and k != 'redis-type':
                             if isinstance(v, str) or isinstance(v, int):
-                                k, v = regx_redis_conf(key=k, value=v, port=redis_sentinel_port, kwargs=conf_modify)
+                                k, v = regx_redis_conf(key=k, value=v,
+                                                       port=redis_sentinel_port, kwargs=conf_modify)
                                 f.write(k + " " + str(v) + "\n")
                 if do_scp(redis_sentinel_ip, conf_file_name,
                           "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf",
@@ -425,6 +436,7 @@ class RedisModelStartClass:
                     print("文件分发成功")
                 else:
                     print("文件分发失败")
+                    return False
         return True
 
 

@@ -306,6 +306,11 @@ class RedisConf(models.Model):
 
 
 class RedisSentienlConf(models.Model):
+    choice_list = [
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
     port = models.CharField(max_length=150, help_text="sentinel实例端口", verbose_name="port", default="%port%")
     dir = models.CharField(max_length=150, help_text="工作目录", verbose_name="dir", default="/opt/repoll/")
     sentinel_monitor = models.CharField(max_length=150,

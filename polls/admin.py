@@ -245,6 +245,10 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
     search_fields = ['collect_date']
 
 
+class RedisSentienlConfAdmin(admin.ModelAdmin):
+    list_display = ['id', 'redis_type']
+
+
 admin.site.register(LogEntry, LogEntryAdmin)
 admin.site.register(Ipaddr, IpaddrAdmin)
 # 申请
@@ -257,3 +261,4 @@ admin.site.register(RedisConf, RedisConfAdmin)
 admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
 admin.site.register(RealTimeQps, RealTimeQpsAdmin)
+admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
