@@ -139,15 +139,16 @@ def redis_apply_text(apply_text, redis_type):
                     for p in all_redis_ins_port:
                         redis_ins_ip_port_dict = {}
                         redis_ins_ip_port_dict[i] = p
-                        redis_slave_ip_port_list.append(redis_ins_ip_port_dict)
-                redis_sentinel = [redis_sentinel for redis_sentinel in redis_ins]
+                        if {i: p} not in redis_slave_ip_port_list:
+                            redis_slave_ip_port_list.append(redis_ins_ip_port_dict)
+                redis_sentinel = [redis_sentinel for redis_sentinel in all_line if redis_sentinel != '']
                 apply_text_dict = {
                     'model_type': 'Redis-Sentinel',
                     'redis_master_ip_port': redis_master_ip_port,
                     'redis_master_name': redis_master_name,
-                    'redis_sentinel_ip_port': filter(None, all_line),
+                    'redis_sentinel_ip_port': redis_sentinel,
                     'redis_sentinel_num': len(redis_sentinel) - 1,
-                    'redis_slave_ip_port': list(set(redis_slave_ip_port_list)),
+                    'redis_slave_ip_port': redis_slave_ip_port_list,
                     'redis_mem': redis_mem
                 }
                 return apply_text_dict
@@ -290,26 +291,23 @@ def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
             elif "clientOutputBufferLimitPubsub" in key:
                 key = key.replace("clientOutputBufferLimitPubsub", "client-output-buffer-limit pubsub")
                 return key, value
-            elif "sentinel_monitor" in key:
-                key = key.replace("sentinel_monitor", "sentinel monitor ")
-                a = "%masterName_ip_port_num%", " {0} {1} {2} {3}".format(kwargs['masterName'], kwargs['masterIp'],
-                                                                kwargs['masterPort'], kwargs['sentienlNum'])
-                print("==={0}===".format(a))
+            elif "sentinelMonitor" in key:
+                key = key.replace(key, "sentinel monitor ")
                 value = value.replace("%masterName_ip_port_num%",
-                                      " {0} {1} {2} {3}".format(kwargs['masterName'], kwargs['masterIp'],
-                                                                kwargs['masterPort'], kwargs['sentienlNum']))
+                                      " {0} {1} {2} {3}".format(kwargs['kwargs']['masterName'], kwargs['kwargs']['masterIp'],
+                                                                kwargs['kwargs']['masterPort'], kwargs['kwargs']['sentienlNum']))
                 return key, value
-            elif "sentinel_down_after_milliseconds" in key:
-                key = key.replace("sentinel_down_after_milliseconds ", "sentinel down-after-milliseconds ")
-                value = value.replace("%s 20000% ", "{0} 20000".format(kwargs['sentinel_down_after_milliseconds']))
+            elif "sentinelDownAfterMilliseconds" in key:
+                key = key.replace(key, "sentinel down-after-milliseconds ")
+                value = value.replace(value, " {0} 20000".format(kwargs['kwargs']['masterName']))
                 return key, value
-            elif "sentinel_failover_timeout" in key:
-                key = key.replace("sentinel_failover_timeout ", "sentinel failover-timeout ")
-                value = value.replace("%s 180000% ", "{0} 180000".format(kwargs['masterName']))
+            elif "sentinelFailoverTimeout" in key:
+                key = key.replace(key, "sentinel failover-timeout ")
+                value = value.replace(value, " {0} 180000".format(kwargs['kwargs']['masterName']))
                 return key, value
-            elif "sentinel_parallel_syncs" in key:
-                key = key.replace("sentinel_parallel_syncs ", "sentinel parallel-syncs ")
-                value = value.replace("%s 1% ", "{0} 1".format(kwargs['masterName']))
+            elif "sentinelParallelSyncs" in key:
+                key = key.replace(key, "sentinel parallel-syncs ")
+                value = value.replace(value, " {0} 1".format(kwargs['kwargs']['masterName']))
                 return key, value
         except ValueError as e:
             pass
@@ -425,7 +423,7 @@ class RedisModelStartClass:
                 }
                 with open(conf_file_name, 'w+') as f:
                     for k, v in all_redis_conf[0].items():
-                        if k != 'id' and k != 'redis-type':
+                        if k != 'id' and k != 'redis_type':
                             if isinstance(v, str) or isinstance(v, int):
                                 k, v = regx_redis_conf(key=k, value=v,
                                                        port=redis_sentinel_port, kwargs=conf_modify)
