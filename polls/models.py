@@ -306,24 +306,29 @@ class RedisConf(models.Model):
 
 
 class RedisSentienlConf(models.Model):
+    choice_list = [
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
     port = models.CharField(max_length=150, help_text="sentinel实例端口", verbose_name="port", default="%port%")
     dir = models.CharField(max_length=150, help_text="工作目录", verbose_name="dir", default="/opt/repoll/")
-    sentinel_monitor = models.CharField(max_length=150,
-                                        help_text="master名称定义和最少参与监控的sentinel数,格式:masterName ip port num",
-                                        verbose_name="sentinel monitor",
-                                        default="%masterName_ip_port_num%")
-    sentinel_down_after_milliseconds = models.CharField(max_length=150,
-                                                        help_text="Sentinel判定服务器断线的毫秒数",
-                                                        verbose_name="sentinel down-after-milliseconds",
-                                                        default="%s 20000%")
-    sentinel_failover_timeout = models.CharField(max_length=150,
-                                                 help_text="故障迁移超时时间,默认:3分钟",
-                                                 verbose_name="sentinel failover-timeout",
-                                                 default="%s 180000%")
-    sentinel_parallel_syncs = models.CharField(max_length=150,
-                                               help_text="在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1",
-                                               verbose_name="sentinel parallel-syncs",
-                                               default="%s 1%")
+    sentinelMonitor = models.CharField(max_length=150,
+                                       help_text="master名称定义和最少参与监控的sentinel数,格式:masterName ip port num",
+                                       verbose_name="sentinel monitor",
+                                       default="%masterName_ip_port_num%")
+    sentinelDownAfterMilliseconds = models.CharField(max_length=150,
+                                                     help_text="Sentinel判定服务器断线的毫秒数",
+                                                     verbose_name="sentinel down-after-milliseconds",
+                                                     default="%s 20000%")
+    sentinelFailoverTimeout = models.CharField(max_length=150,
+                                               help_text="故障迁移超时时间,默认:3分钟",
+                                               verbose_name="sentinel failover-timeout",
+                                               default="%s 180000%")
+    sentinelParallelSyncs = models.CharField(max_length=150,
+                                             help_text="在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1",
+                                             verbose_name="sentinel parallel-syncs",
+                                             default="%s 1%")
 
     def __str__(self):
         return "Sentinel 配置成功"
@@ -363,7 +368,7 @@ class ApplyRedisText(models.Model):
                                                                    "1. standalone类型：</br>"
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
                                                                    "2. sentinel类型：</br>"
-                                                                   "masterIp:masterPort:memSize(M):slaveIp:slavePort</br>"
+                                                                   "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
                                                                    "sentinelIp1</br>"
                                                                    "sentinelIp2</br>"
                                                                    "sentinelIp3")
