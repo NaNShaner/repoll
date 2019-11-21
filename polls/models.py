@@ -43,7 +43,6 @@ class ApplyRedisInfo(models.Model):
     user = User.objects.all()
     user_list = [u.__dict__['username'] for u in user]
     user_choice = zip(user_list, user_list)
-
     create_user = models.CharField(max_length=150, choices=user_choice, null=True, verbose_name="申请人", default="")
     status_choice = [
         (0, "已上线"),
@@ -352,7 +351,7 @@ class RedisVersion(models.Model):
     # redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
     #                                  default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply = models.CharField(max_length=60, default=User, verbose_name="版本发布人")
+    who_apply = models.CharField(max_length=60, default="", verbose_name="版本发布人")
 
     def __str__(self):
         return "Redis版本添加成功"
@@ -375,7 +374,7 @@ class ApplyRedisText(models.Model):
                                                                    "sentinelIp1</br>"
                                                                    "sentinelIp2</br>"
                                                                    "sentinelIp3")
-    who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")
+    who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 
     def __str__(self):
