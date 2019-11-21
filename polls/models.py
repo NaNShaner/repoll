@@ -311,6 +311,7 @@ class RedisSentienlConf(models.Model):
     ]
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
+    daemonize = models.CharField(max_length=30, default="yes", verbose_name="daemonize")
     port = models.CharField(max_length=150, help_text="sentinel实例端口", verbose_name="port", default="%port%")
     dir = models.CharField(max_length=150, help_text="工作目录", verbose_name="dir", default="/opt/repoll/")
     sentinelMonitor = models.CharField(max_length=150,
@@ -329,6 +330,8 @@ class RedisSentienlConf(models.Model):
                                              help_text="在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1",
                                              verbose_name="sentinel parallel-syncs",
                                              default="%s 1%")
+    logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
+                               verbose_name="logfile", default="/opt/repoll/")
 
     def __str__(self):
         return "Sentinel 配置成功"

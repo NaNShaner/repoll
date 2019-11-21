@@ -65,7 +65,13 @@ def apply_redis_text_handler(sender, **kwargs):
                                  redis_mem=redis_apply_text_split['redis_mem'])
         create_sentinel_conf_file = b.create_sentienl_conf_file()
         create_master_slave_file = b.create_maser_slave_conf()
-        print(create_sentinel_conf_file, create_master_slave_file)
+        if create_sentinel_conf_file and create_master_slave_file:
+            start_master = b.start_redis_master()
+            if start_master:
+                start_slave = b.start_slave_master()
+                if start_slave:
+                    start_sentinel = b.start_sentinel_master()
+                    print("start sentinel start ok")
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -551,8 +557,9 @@ class RedisModelStartClass:
                 redis_sentinel_ip, redis_sentinel_port = sentinel.split(":")
                 redis_sentinel_start = RedisStartClass(host=redis_sentinel_ip,
                                                        redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
-                                                                        str(redis_sentinel_port) + "-sentienl.conf --sentienl")
-                start_result_dict["{0}:{1}".format(redis_sentinel_ip, redis_sentinel_port)] = redis_sentinel_start
+                                                                        str(redis_sentinel_port) + "-sentienl.conf --sentinel")
+                redis_sentinel_start_result = redis_sentinel_start.start_server()
+                start_result_dict["{0}:{1}".format(redis_sentinel_ip, redis_sentinel_port)] = redis_sentinel_start_result
         return start_result_dict
 
 
