@@ -49,11 +49,27 @@ DATABASES = {
     }
 }
 ```
+* 注释部分配置（防止数据库初始化报错）
+```bash
+# 在models.py中注释 User 的导入，如不注释使数据库初始化报错
+    # from django.contrib.auth.models import User
+# 在models.py中注释 ApplyRedisInfo 类下的如下几行
+
+    # user = User.objects.all()
+    # user_list = [u.__dict__['username'] for u in user]
+    # user_choice = zip(user_list, user_list)
+    # create_user = models.CharField(max_length=150, choices=user_choice, null=True, verbose_name="申请人", default="")
+
+# 在admin.py中的 ApplyRedisInfoAdmin 类下注释如下一行
+    # 'create_user'
+
+```
 * 初始化数据库
 ```bash
 python3 manage.py makemigrations
 python3 manage.py migrate
 ```
+* 数据库初始化完成后，去除上一步所配置的注释，再执行一次初始化数据库
 * Django调试模式配置本级服务器IP
 ```bash
 vi /django/repoll/mysite/settings.py
