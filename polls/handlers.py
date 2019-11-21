@@ -19,7 +19,7 @@ TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
 def apply_redis_text_handler(sender, **kwargs):
     """
-    触发器，前端页面在完成审批后自动触发
+    触发器，前端页面在审批完后自动触发
     :param sender:
     :param kwargs:
     :return:
@@ -70,6 +70,12 @@ def apply_redis_text_handler(sender, **kwargs):
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
 def apply_redis_info_handler(sender, **kwargs):
+    """
+    ApplyRedisInfo模型被保持时触发执行
+    :param sender:
+    :param kwargs:
+    :return:
+    """
     redis_ins_id = kwargs['instance'].apply_ins_name
     redis_ins_obj = ApplyRedisInfo.objects.filter(apply_ins_name=redis_ins_id)
 
@@ -111,6 +117,12 @@ def get_redis_conf(redis_type):
 
 
 def redis_apply_text(apply_text, redis_type):
+    """
+    解析审批页面中输入的文本信息，并格式化输出
+    :param apply_text: 审批页面中输入的原始文本信息
+    :param redis_type: redis的运行模式，目前支持Standalone和Sentinel
+    :return: 返回格式化后的文本信息dict
+    """
     redis_apply_ip = Ipaddr.objects.all()
     all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
     try:
@@ -319,7 +331,7 @@ class RedisStandalone:
     def __init__(self, redis_ins, redis_ins_name, redis_ins_type, redis_ins_mem, redis_ip, redis_port,
                  master_name=None, master_ip_port=None):
         """
-
+        单个redis的实例进行配置文件生成、配置文件分发、进程启动
         :param redis_ins:
         :param redis_ins_name:
         :param redis_ins_type:
@@ -342,10 +354,18 @@ class RedisStandalone:
             self.master_name = None
 
     def standalone_conf(self):
+        """
+        获取Redis的standalone的所有配置项
+        :return:
+        """
         redis_conf = get_redis_conf(redis_type=self.redis_ins_type)
         return redis_conf
 
     def saved_redis_running_ins(self):
+        """
+        将上线实例写入数据库
+        :return:
+        """
         obj = RunningInsTime(running_ins_name=self.redis_ins_name,
                              redis_type=self.redis_ins_type,
                              redis_ins_mem=self.redis_ins_mem,
@@ -387,6 +407,11 @@ class RedisStandalone:
 class RedisStartClass:
 
     def __init__(self, host, redis_server_ctl):
+        """
+        远程登录服务器，执行命令。包括Redis的起、停
+        :param host:
+        :param redis_server_ctl:
+        """
         self.redis_server_ctl = redis_server_ctl
         self.host = host
 
@@ -404,6 +429,20 @@ class RedisModelStartClass:
     def __init__(self, model_type, redis_ins, redis_master_ip_port, redis_sentinel_ip_port, redis_slave_ip_port,
                  redis_master_name, redis_mem, redis_sentinel_num, sentinel_down_after_milliseconds=None,
                  sentinel_failover_timeout=None, sentinel_parallel_syncs=None):
+        """
+        非standalone模式的redis的实例配置文件生成、文件分发、实例启动
+        :param model_type: 运行模式
+        :param redis_ins: RedisIns 数据库qureySet
+        :param redis_master_ip_port: 哨兵模式master的ip和port，输入数据类型str
+        :param redis_sentinel_ip_port: 哨兵模式sentinel的ip和port，输入数据类型list
+        :param redis_slave_ip_port: 哨兵模式slave的ip和port，输入数据类型list
+        :param redis_master_name: 哨兵模式的mastername
+        :param redis_mem: redis实例的最大内存
+        :param redis_sentinel_num: 哨兵模式在多少个哨兵进行投票
+        :param sentinel_down_after_milliseconds:
+        :param sentinel_failover_timeout:
+        :param sentinel_parallel_syncs:
+        """
         self.model_type = model_type
         self.redis_ins = redis_ins
         redis_ins_query = [r.__dict__ for r in redis_ins]
@@ -432,9 +471,9 @@ class RedisModelStartClass:
         """
         redis_conf = get_redis_conf(self.model_type)
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
-        for sentenl in self.redis_sentinel_ip_port:
-            if isinstance(sentenl, str):
-                redis_sentinel_ip, redis_sentinel_port = sentenl.split(":")
+        for sentinel in self.redis_sentinel_ip_port:
+            if isinstance(sentinel, str):
+                redis_sentinel_ip, redis_sentinel_port = sentinel.split(":")
                 conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(redis_sentinel_port) + "-sentienl.conf"
                 conf_modify = {
                     "masterName": self.redis_master_name,
@@ -462,6 +501,10 @@ class RedisModelStartClass:
         return True
 
     def create_maser_slave_conf(self):
+        """
+        创建master和slave的配置文件
+        :return:
+        """
         a = RedisStandalone(redis_ins=self.redis_ins,
                             redis_ins_name=self.redis_ins_name,
                             redis_ins_type='Redis-Standalone',
@@ -483,6 +526,34 @@ class RedisModelStartClass:
                 a.create_redis_conf_file()
         return True
 
+    def start_redis_master(self):
+        redis_master_start = RedisStartClass(host=self.redis_master_ip,
+                                             redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
+                                             str(self.redis_master_port) + ".conf")
+        start_result = redis_master_start.start_server()
+        return start_result
+
+    def start_slave_master(self):
+        start_result_dict = {}
+        for slave_ip_port in self.redis_slave_ip_port:
+            for slave_ip, slave_port in slave_ip_port.items():
+                redis_master_start = RedisStartClass(host=slave_ip,
+                                                     redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
+                                                     str(slave_port) + ".conf")
+                start_result = redis_master_start.start_server()
+                start_result_dict["{0}:{1}".format(slave_ip, slave_port)] = start_result
+        return start_result_dict
+
+    def start_sentinel_master(self):
+        start_result_dict = {}
+        for sentinel in self.redis_sentinel_ip_port:
+            if isinstance(sentinel, str):
+                redis_sentinel_ip, redis_sentinel_port = sentinel.split(":")
+                redis_sentinel_start = RedisStartClass(host=redis_sentinel_ip,
+                                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
+                                                                        str(redis_sentinel_port) + "-sentienl.conf --sentienl")
+                start_result_dict["{0}:{1}".format(redis_sentinel_ip, redis_sentinel_port)] = redis_sentinel_start
+        return start_result_dict
 
 
 class ApproveRedis:
