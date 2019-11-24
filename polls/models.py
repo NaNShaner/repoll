@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
 from django.contrib.auth.models import User
+from .tools import redis_apply_text
 
 
 class Ipaddr(models.Model):
@@ -373,7 +374,9 @@ class ApplyRedisText(models.Model):
                                                                    "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
                                                                    "sentinelIp1</br>"
                                                                    "sentinelIp2</br>"
-                                                                   "sentinelIp3")
+                                                                   "sentinelIp3",
+                                  error_messages={'required': "不能为空"},
+                                  validators=[redis_apply_text])
     who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 

@@ -73,7 +73,6 @@ class ChoiceInline(admin.StackedInline):
 class RealTimeQpsInline(admin.StackedInline):
     model = RealTimeQps
     extra = 1
-    list_per_page = 5
 
 
 class ApplyRedisInfoAdmin(admin.ModelAdmin):
@@ -99,6 +98,34 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisApplyAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
     def get_queryset(self, request):
         """函数作用：使当前登录的用户只能看到自己负责的实例"""
@@ -157,12 +184,50 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     deny_upline_number += 1
                     obj.redis_apply_status_update(statu=4)
                     self.message_user(request, "已拒绝  %s  个新Redis实例上线！" % deny_upline_number)
+                else:
+                    self.message_user(request, "操作实例为 {0} 的实例失败，已存在上线实例，请检查".format(obj.redis_ins_name))
         except ValueError as e:
             self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, e))
     deny_selected_new_assets.short_description = "拒绝选择的Redis实例"
 
 
 class RedisApprovalAdmin(admin.ModelAdmin):
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisApprovalAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
+    def get_queryset(self, request):
+        """函数作用：使当前登录的用户只能看到自己负责的实例"""
+        qs = super(RedisApprovalAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
     # def ins_status_color(self, obj):
     #     ins_status = ''
@@ -216,6 +281,23 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
+
+    def has_add_permission(self, request):
+        # 禁用添加按钮
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        # 禁用删除按钮
+        return False
+
+    def get_actions(self, request):
+        # 在actions中去掉‘删除’操作
+        actions = super(RunningInsTimeAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
     def redis_qps(self, obj):
         button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
         return format_html(button_html)
@@ -237,12 +319,15 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     inlines = [RealTimeQpsInline]
+    RealTimeQpsInline.max_num = 15
+    list_per_page = 15
 
 
 class RealTimeQpsAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_running_monitor', 'collect_date', 'redis_used_mem', 'redis_qps', 'redis_ins_used_mem']
     list_filter = ['redis_running_monitor']
     search_fields = ['collect_date']
+    list_per_page = 15
 
 
 class RedisSentienlConfAdmin(admin.ModelAdmin):
