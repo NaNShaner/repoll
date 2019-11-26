@@ -102,6 +102,4 @@ def redis_apply_text(apply_text, redis_type=None):
                         port_check = int(port)
                 except Exception as e:
                     raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))
-        raise ValidationError(format_html(return_text))
-
-
+        # raise ValidationError(format_html(return_text))

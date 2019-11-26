@@ -63,11 +63,6 @@ class ApplyRedisInfo(models.Model):
     def __str__(self):
         return self.apply_ins_name
 
-    # def save(self, *args, **kwargs):
-    #     a = args
-    #     b = kwargs
-    #     print(a,b)
-
 
 class RedisInfo(models.Model):
     sys_type = models.CharField(max_length=5, unique=True)
