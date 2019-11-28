@@ -282,21 +282,21 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
 
-    def has_add_permission(self, request):
-        # 禁用添加按钮
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        # 禁用删除按钮
-        return False
-
-    def get_actions(self, request):
-        # 在actions中去掉‘删除’操作
-        actions = super(RunningInsTimeAdmin, self).get_actions(request)
-        if request.user.username[0].upper() != 'J':
-            if 'delete_selected' in actions:
-                del actions['delete_selected']
-        return actions
+    # def has_add_permission(self, request):
+    #     # 禁用添加按钮
+    #     return False
+    #
+    # def has_delete_permission(self, request, obj=None):
+    #     # 禁用删除按钮
+    #     return False
+    #
+    # def get_actions(self, request):
+    #     # 在actions中去掉‘删除’操作
+    #     actions = super(RunningInsTimeAdmin, self).get_actions(request)
+    #     if request.user.username[0].upper() != 'J':
+    #         if 'delete_selected' in actions:
+    #             del actions['delete_selected']
+    #     return actions
 
     def redis_qps(self, obj):
         button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)

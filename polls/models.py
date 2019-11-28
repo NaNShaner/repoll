@@ -383,6 +383,34 @@ class ApplyRedisText(models.Model):
         verbose_name_plural = "实例审批"
 
 
+class RunningInsStandalone(models.Model):
+    # running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
+    redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
+
+
+class RunningInsSentinel(models.Model):
+    running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
+    redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    running_ins_standalone = models.ForeignKey(RunningInsStandalone, on_delete=models.CASCADE, null=True)
+
+
 class RunningInsTime(models.Model):
     running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
     choice_list = [
@@ -395,6 +423,19 @@ class RunningInsTime(models.Model):
     running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
+    command_hit_rate = models.IntegerField(default=0, null=True, verbose_name="命中率")
+    running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
+    ins_choice = [
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未审批"),
+        (3, "已审批"),
+        (4, "已拒绝"),
+    ]
+    ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0],
+                                     null=True, blank=True, verbose_name="实例状态")
+    running_ins_standalone = models.OneToOneField(RunningInsStandalone, on_delete=models.CASCADE, null=True)
+    running_ins_sentinel = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.running_ins_name
