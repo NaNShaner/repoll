@@ -434,8 +434,8 @@ class RunningInsTime(models.Model):
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0],
                                      null=True, blank=True, verbose_name="实例状态")
-    running_ins_standalone = models.OneToOneField(RunningInsStandalone, on_delete=models.CASCADE, null=True)
-    running_ins_sentinel = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE, null=True)
+    # running_ins_standalone = models.OneToOneField(RunningInsStandalone, on_delete=models.CASCADE, null=True)
+    # running_ins_sentinel = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.running_ins_name

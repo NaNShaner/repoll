@@ -84,14 +84,25 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
             return qs
         return result
 
-    def get_user(self, request):
-        return request.user
+    def save_model(self, request, obj, form, change):
+        """
+        隐藏前端页面申请用户字段，后台自动添加用户入库
+        :param request: 当前wsgi
+        :param obj:
+        :param form:
+        :param change:
+        :return:
+        """
+        obj.create_user = request.user
+        super().save_model(request, obj, form, change)
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'create_user', 'apply_status']
+                    'pub_date', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
+    # 不可见字段
+    exclude = ['create_user']
     list_per_page = 15
 
     readonly_fields = ['apply_status', ]
@@ -281,8 +292,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(admin.ModelAdmin):
-
-    # def has_add_permission(self, request):
     #     # 禁用添加按钮
     #     return False
     #
@@ -313,14 +322,29 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
         return format_html(button_html)
     redis_start.short_description = "停止"
 
+    # def changelist_view(self, request, extra_context=None):
+    #     self.list_display = ['id', 'running_ins_name', 'redis_type',
+    #                     'redis_ip', 'running_ins_port', 'redis_ins_mem',
+    #                     'redis_qps', 'redis_start', 'redis_stop']
+    #     return super(RunningInsTimeAdmin, self).changelist_view(request, extra_context=None)
+
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'redis_ip', 'running_ins_port', 'redis_ins_mem',
                     'redis_qps', 'redis_start', 'redis_stop']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
-    inlines = [RealTimeQpsInline]
+    # inlines = [RealTimeQpsInline]
     RealTimeQpsInline.max_num = 15
     list_per_page = 15
+    fieldsets = (
+        ('Redis实例详情', {
+            'fields': ('running_ins_name', 'redis_type', 'redis_ins_mem')
+        }),
+        ('Advanced options', {
+            'classes': ('collapse',),
+            'fields': ('redis_ins_mem', 'running_ins_sentinel', ),
+        }),
+    )
 
 
 class RealTimeQpsAdmin(admin.ModelAdmin):
