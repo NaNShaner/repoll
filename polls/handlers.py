@@ -318,12 +318,22 @@ class RedisStandalone:
         将上线实例写入数据库
         :return:
         """
-        obj = RunningInsTime(running_ins_name=self.redis_ins_name,
-                             redis_type=self.redis_ins_type,
-                             redis_ins_mem=self.redis_ins_mem,
-                             redis_ip=self.redis_ip,
-                             running_ins_port=self.redis_port
-                             )
+        obj_runningins = RunningInsTime(running_ins_name=self.redis_ins_name,
+                                        redis_type=self.redis_ins_type,
+                                        redis_ins_mem=self.redis_ins_mem,
+                                        # redis_ip=self.redis_ip,
+                                        # running_ins_port=self.redis_port
+                                        )
+        obj_runningins.save()
+        obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name)
+        obj = RunningInsStandalone(running_ins_name=self.redis_ins_name,
+                                   redis_type=self.redis_ins_type,
+                                   redis_ins_mem=self.redis_ins_mem,
+                                   redis_ip=self.redis_ip,
+                                   running_ins_port=self.redis_port,
+                                   running_ins_id=obj_runningins_now.id
+                                   )
+
         obj.save()
         return True
 

@@ -22,7 +22,6 @@ def redis_apply_text(apply_text, redis_type=None):
                   "sentinelIp2</br>" \
                   "sentinelIp3"
     if redis_type:
-        redis_type = 'Redis-Standalone'
         if isinstance(apply_text, str) and redis_type == 'Redis-Standalone':
             redis_text_split = apply_text.split(":")
             try:
@@ -94,11 +93,13 @@ def redis_apply_text(apply_text, redis_type=None):
                 all_redis_ins_ip = all_redis_ins[::2]
                 all_redis_ins_port = all_redis_ins[1::2]
                 redis_sentinel = [redis_sentinel for redis_sentinel in all_line if redis_sentinel != '']
+                redis_sentinel_ip = [sentinel_ip.split(":")[0] for sentinel_ip in redis_sentinel]
+                redis_sentinel_port = [sentinel_port.split(":")[1] for sentinel_port in redis_sentinel]
                 try:
-                    all_redis_ip = all_redis_ins_ip + redis_sentinel
+                    all_redis_ip = all_redis_ins_ip + redis_sentinel_ip
                     for ip in all_redis_ip:
                         ip_check = IP(ip)
-                    for port in all_redis_ins_port:
+                    for port in all_redis_ins_port + redis_sentinel_port:
                         port_check = int(port)
                 except Exception as e:
                     raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))

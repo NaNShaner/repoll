@@ -70,6 +70,16 @@ class ChoiceInline(admin.StackedInline):
     extra = 1
 
 
+class RunningInsStandaloneInline(admin.TabularInline):
+    model = RunningInsStandalone
+    readonly_fields = ['running_ins_name', 'redis_type', 'running_ins_port', 'redis_ip', 'redis_ins_mem']
+
+
+class RunningInsSentinelInline(admin.TabularInline):
+    model = RunningInsSentinel
+    readonly_fields = ['running_ins_name', 'redis_type', 'running_ins_port', 'redis_ip', 'redis_ins_mem']
+
+
 class RealTimeQpsInline(admin.StackedInline):
     model = RealTimeQps
     extra = 1
@@ -322,6 +332,24 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
         return format_html(button_html)
     redis_start.short_description = "停止"
 
+    def get_form(self, request, obj=None, **args):
+        defaults = {}
+        b = obj.running_ins_name
+        a = RunningInsStandalone.objects.filter(running_ins_name=obj.running_ins_name)
+        print(a, b)
+        if obj is not None:
+            if obj.redis_type == 'Redis-Standalone':
+                self.inlines = [RunningInsStandaloneInline]  # 设置内联
+                RunningInsStandaloneInline.max_num = 1
+            elif obj.redis_type == 'Redis-Sentinel':
+
+                self.inlines = [RunningInsSentinelInline]
+        else:
+            self.inlines = []  # 如果不是继承，就取消设置
+
+        defaults.update(args)
+        return super(RunningInsTimeAdmin, self).get_form(request, obj, **defaults)
+
     # def changelist_view(self, request, extra_context=None):
     #     self.list_display = ['id', 'running_ins_name', 'redis_type',
     #                     'redis_ip', 'running_ins_port', 'redis_ins_mem',
@@ -329,7 +357,7 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
     #     return super(RunningInsTimeAdmin, self).changelist_view(request, extra_context=None)
 
     list_display = ['id', 'running_ins_name', 'redis_type',
-                    'redis_ip', 'running_ins_port', 'redis_ins_mem',
+                    'command_hit_rate', 'running_time', 'redis_ins_mem',
                     'redis_qps', 'redis_start', 'redis_stop']
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
@@ -339,10 +367,6 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
     fieldsets = (
         ('Redis实例详情', {
             'fields': ('running_ins_name', 'redis_type', 'redis_ins_mem')
-        }),
-        ('Advanced options', {
-            'classes': ('collapse',),
-            'fields': ('redis_ins_mem', 'running_ins_sentinel', ),
         }),
     )
 
@@ -371,3 +395,4 @@ admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
 admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
+admin.site.register(RunningInsStandalone)
