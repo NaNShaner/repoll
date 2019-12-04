@@ -74,6 +74,7 @@ def apply_redis_text_handler(sender, **kwargs):
                 if start_slave:
                     start_sentinel = b.start_sentinel_master()
                     print("start sentinel start ok")
+        b.save_sentinel_redis_ins()
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -517,6 +518,57 @@ class RedisModelStartClass:
                 redis_sentinel_start_result = redis_sentinel_start.start_server()
                 start_result_dict["{0}:{1}".format(redis_sentinel_ip, redis_sentinel_port)] = redis_sentinel_start_result
         return start_result_dict
+
+    def save_sentinel_redis_ins(self):
+        obj_runningins = RunningInsTime(running_ins_name=self.redis_ins_name['redis_ins_name'],
+                                        redis_type=self.model_type,
+                                        redis_ins_mem=self.redis_mem,
+                                        )
+        obj_runningins.save()
+        all_redis_ip_port = []
+        for slave_ip_port in self.redis_slave_ip_port:
+            for slave_ip, slave_port in slave_ip_port.items():
+                slave_ip_port_str = slave_ip + ":" + slave_port
+                all_redis_ip_port.append(slave_ip_port_str)
+        # master_ip_port = self.redis_master_ip + ":" + self.redis_master_port
+        # all_redis_ip_port.append(master_ip_port)
+        obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name['redis_ins_name'])
+        for redis_slave_ip_port in all_redis_ip_port:
+            ip = redis_slave_ip_port.split(":")[0]
+            port = redis_slave_ip_port.split(":")[1]
+            obj = RunningInsSentinel(
+                running_ins_name=self.redis_ins_name['redis_ins_name'],
+                redis_type='Redis-Slave',
+                running_ins_port=port,
+                redis_ip=ip,
+                redis_ins_mem=self.redis_mem,
+                running_ins_standalone_id=obj_runningins_now.id,
+            )
+            obj.save()
+        # for redis_master_ip_port in master_ip_port:
+        #     ip = redis_master_ip_port.split(":")[0]
+        #     port = redis_master_ip_port.split(":")[1]
+        obj = RunningInsSentinel(
+            running_ins_name=self.redis_ins_name['redis_ins_name'],
+            redis_type='Redis-Master',
+            running_ins_port=self.redis_master_port,
+            redis_ip=self.redis_master_ip,
+            redis_ins_mem=self.redis_mem,
+            running_ins_standalone_id=obj_runningins_now.id,
+        )
+        obj.save()
+        for sentinel_ip_port in self.redis_sentinel_ip_port:
+            ip = sentinel_ip_port.split(":")[0]
+            port = sentinel_ip_port.split(":")[1]
+            obj_sentinel = RunningInsSentinel(
+                running_ins_name=self.redis_ins_name['redis_ins_name'],
+                redis_type=self.model_type,
+                running_ins_port=port,
+                redis_ip=ip,
+                running_ins_standalone_id=obj_runningins_now.id,
+            )
+            obj_sentinel.save()
+        return True
 
 
 class ApproveRedis:

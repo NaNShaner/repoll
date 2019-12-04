@@ -384,7 +384,7 @@ class ApplyRedisText(models.Model):
 
 
 class RunningInsTime(models.Model):
-    running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     choice_list = [
         ('Redis-Standalone', 'Redis-Standalone'),
         ('Redis-Cluster', 'Redis-Cluster'),
@@ -440,17 +440,20 @@ class RunningInsStandalone(models.Model):
 
 
 class RunningInsSentinel(models.Model):
-    running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     choice_list = [
         ('Redis-Standalone', 'Redis-Standalone'),
         ('Redis-Cluster', 'Redis-Cluster'),
-        ('Redis-Sentinel', 'Redis-Sentinel')
+        ('Redis-Sentinel', 'Redis-Sentinel'),
+        ('Redis-Master', 'Redis-Master'),
+        ('Redis-Slave', 'Redis-Slave')
     ]
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
     running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
-    running_ins_standalone = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE, null=True)
+    redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
+    running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return ""

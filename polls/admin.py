@@ -72,12 +72,15 @@ class ChoiceInline(admin.StackedInline):
 
 class RunningInsStandaloneInline(admin.TabularInline):
     model = RunningInsStandalone
-    readonly_fields = ['running_ins_name', 'redis_type', 'running_ins_port', 'redis_ip', 'redis_ins_mem']
+    readonly_fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
 
 class RunningInsSentinelInline(admin.TabularInline):
     model = RunningInsSentinel
-    readonly_fields = ['running_ins_name', 'redis_type', 'running_ins_port', 'redis_ip', 'redis_ins_mem']
+    readonly_fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 class RealTimeQpsInline(admin.StackedInline):
@@ -334,16 +337,13 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj=None, **args):
         defaults = {}
-        b = obj.running_ins_name
-        a = RunningInsStandalone.objects.filter(running_ins_name=obj.running_ins_name)
-        print(a, b)
         if obj is not None:
             if obj.redis_type == 'Redis-Standalone':
                 self.inlines = [RunningInsStandaloneInline]  # 设置内联
                 RunningInsStandaloneInline.max_num = 1
             elif obj.redis_type == 'Redis-Sentinel':
-
                 self.inlines = [RunningInsSentinelInline]
+                RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(running_ins_name=obj.running_ins_name))
         else:
             self.inlines = []  # 如果不是继承，就取消设置
 
