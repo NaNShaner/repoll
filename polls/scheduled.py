@@ -30,7 +30,9 @@ class RedisScheduled(object):
                                                 redis_qps=qps['instantaneous_ops_per_sec'],
                                                 redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
                                                 collect_date=timezone.now,
-                                                redis_running_monitor=self.redis_ins)
+                                                redis_running_monitor=self.redis_ins,
+                                                redis_ip=self.redis_ip,
+                                                redis_port=self.redis_port)
                 real_time_qps_obj.save()
                 i += 1
         except ConnectionRefusedError:

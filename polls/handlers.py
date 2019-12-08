@@ -326,16 +326,20 @@ class RedisStandalone:
                                         # running_ins_port=self.redis_port
                                         )
         obj_runningins.save()
-        obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name)
-        obj = RunningInsStandalone(running_ins_name=self.redis_ins_name,
-                                   redis_type=self.redis_ins_type,
-                                   redis_ins_mem=self.redis_ins_mem,
-                                   redis_ip=self.redis_ip,
-                                   running_ins_port=self.redis_port,
-                                   running_ins_id=obj_runningins_now.id
-                                   )
+        try:
+            obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name)
+            obj = RunningInsStandalone(running_ins_name=self.redis_ins_name,
+                                       redis_type=self.redis_ins_type,
+                                       redis_ins_mem=self.redis_ins_mem,
+                                       redis_ip=self.redis_ip,
+                                       running_ins_port=self.redis_port,
+                                       running_ins_id=obj_runningins_now.id
+                                       )
 
-        obj.save()
+            obj.save()
+            RedisIns.objects.filter(redis_ins_name=self.redis_ins_name).update(on_line_status=0)
+        except Exception:
+            pass
         return True
 
     def create_redis_conf_file(self):
@@ -568,6 +572,8 @@ class RedisModelStartClass:
                 running_ins_standalone_id=obj_runningins_now.id,
             )
             obj_sentinel.save()
+
+        RedisIns.objects.filter(redis_ins_name=self.redis_ins_name).update(on_line_status=0)
         return True
 
 

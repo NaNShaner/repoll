@@ -118,7 +118,7 @@ class RedisApply(models.Model):
 
 
 class RedisIns(models.Model):
-    redis_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
+    redis_ins_name = models.CharField(max_length=50, unique=True, null=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         ("Redis-Standalone", "Redis-Standalone"),
@@ -140,10 +140,16 @@ class RedisIns(models.Model):
         (4, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
+    on_line_status_choice = [
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未上线"),
+    ]
+    on_line_status = models.IntegerField(choices=on_line_status_choice, default=on_line_status_choice[2][0], blank=True, verbose_name="上线状态")
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis Approve"
+        verbose_name = "Redis Ins"
         verbose_name_plural = "Redis上线配置"
 
     def __str__(self):
@@ -384,7 +390,7 @@ class ApplyRedisText(models.Model):
 
 
 class RunningInsTime(models.Model):
-    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
+    running_ins_name = models.CharField(max_length=50, unique=True, null=True, verbose_name="应用名称")
     choice_list = [
         ('Redis-Standalone', 'Redis-Standalone'),
         ('Redis-Cluster', 'Redis-Cluster'),
@@ -469,6 +475,12 @@ class RealTimeQps(models.Model):
     redis_qps = models.FloatField(default=0, null=True, verbose_name="Redis QPS")
     redis_ins_used_mem = models.CharField(max_length=50, null=True, verbose_name="Redis内存使用率")
     redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
+    # redis_sentinel_ins_ip = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
+    #                                           to_field='redis_ip', verbose_name="redis_ip", default="")
+    # redis_sentinel_ins_port = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
+    #                                             to_field='running_ins_port', related_name="redis_port", default="")
+    redis_ip = models.GenericIPAddressField(default="", verbose_name="redis_ip", null=False)
+    redis_port = models.IntegerField(default=0, verbose_name="redis_port", null=False)
 
     class Meta:
         verbose_name = "Redis Monitor"

@@ -2,6 +2,10 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
+# from django.utils.safestring import mark_safe
+from inline_actions.admin import InlineActionsMixin
+from inline_actions.admin import InlineActionsModelAdminMixin
+from django.shortcuts import redirect
 from .models import *
 from django.contrib.admin.models import LogEntry
 from jinja2 import Environment, FileSystemLoader
@@ -70,17 +74,57 @@ class ChoiceInline(admin.StackedInline):
     extra = 1
 
 
-class RunningInsStandaloneInline(admin.TabularInline):
+class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsStandalone
-    readonly_fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
-
-
-class RunningInsSentinelInline(admin.TabularInline):
-    model = RunningInsSentinel
-    readonly_fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def redis_start(self, request, obj, parent_obj):
+        button_html = "/polls/apis/redis-start/{0}/{1}/".format('standalone', obj.id)
+        return redirect(button_html)
+
+    def redis_stop(self, request, obj, parent_obj):
+        if isinstance(obj, RunningInsStandalone):
+            button_html = "/polls/apis/redis-stop/{0}/{1}/".format('standalone', obj.id)
+            return redirect(button_html)
+
+    def redis_qps(self, request, obj, parent_obj):
+        button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('standalone', parent_obj.id, obj.redis_ip, obj.running_ins_port)
+        return redirect(button_html)
+
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+
+
+class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
+    model = RunningInsSentinel
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def redis_start(self, request, obj, parent_obj):
+        button_html = "/polls/apis/redis-start/{0}/{1}/".format('sentinel', obj.id)
+        return redirect(button_html)
+
+    def redis_stop(self, request, obj, parent_obj):
+        if isinstance(obj, RunningInsSentinel):
+            button_html = "/polls/apis/redis-stop/{0}/{1}/".format('sentinel', obj.id)
+            return redirect(button_html)
+
+    def redis_qps(self, request, obj, parent_obj):
+        if obj.redis_type != 'Redis-Sentinel':
+            button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('sentinel', parent_obj.id, obj.redis_ip, obj.running_ins_port)
+            return redirect(button_html)
+
+    def get_inline_actions(self, request, obj=None):
+        a = obj.redis_type
+        if obj.redis_type != 'Redis-Sentinel':
+            self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
+        else:
+            self.inline_actions = ['redis_start', 'redis_stop',]
+        return self.inline_actions
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
 
 class RealTimeQpsInline(admin.StackedInline):
@@ -157,6 +201,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
+
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
@@ -288,7 +333,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
-                    'pub_date', 'approval_user', 'ins_status'
+                    'pub_date', 'approval_user', 'ins_status', 'on_line_status'
                     # 'show_all_ip', 'ins_status_color'
                     ]
     list_filter = ['redis_type']
@@ -304,7 +349,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
 
-class RunningInsTimeAdmin(admin.ModelAdmin):
+class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     #     # 禁用添加按钮
     #     return False
     #
@@ -358,7 +403,8 @@ class RunningInsTimeAdmin(admin.ModelAdmin):
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'command_hit_rate', 'running_time', 'redis_ins_mem',
-                    'redis_qps', 'redis_start', 'redis_stop']
+                    # 'redis_qps', 'redis_start', 'redis_stop'
+                    ]
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
     # inlines = [RealTimeQpsInline]
@@ -389,10 +435,9 @@ admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
 # 审批
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
-admin.site.register(RedisVersion, RedisVersionAdmin)
+# admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
-admin.site.register(RedisModel, RedisModelAdmin)
+# admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
 admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
-admin.site.register(RunningInsStandalone)

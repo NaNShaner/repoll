@@ -80,8 +80,10 @@ def redis_apply_text(apply_text, redis_type=None):
                     redis_ip_check = apply_text.split(":")[0]
                     redis_port_check = apply_text.split(":")[1]
                     try:
-                        ip_check = IP(redis_ip_check)
-                        port_check = int(redis_port_check)
+                        IP(redis_ip_check)
+                        int(redis_port_check)
+                        if len(redis_ip_check.split(".")) != 4:
+                            raise ValidationError("单机格式文本校验错误, 请确认输入的IP是{0}".format(redis_ip_check))
                     except Exception as e:
                         raise ValidationError("单机格式文本校验错误, 请确认输入文本{0}".format(e))
             else:
@@ -98,9 +100,9 @@ def redis_apply_text(apply_text, redis_type=None):
                 try:
                     all_redis_ip = all_redis_ins_ip + redis_sentinel_ip
                     for ip in all_redis_ip:
-                        ip_check = IP(ip)
+                        IP(ip)
                     for port in all_redis_ins_port + redis_sentinel_port:
-                        port_check = int(port)
+                        int(port)
                 except Exception as e:
                     raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))
         # raise ValidationError(format_html(return_text))
