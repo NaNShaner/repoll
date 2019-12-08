@@ -16,9 +16,7 @@ def get_redis_ins_qps():
     all_ip_port = []
     for redis_name in all_redis_names:
         try:
-            # redis_ins_all = running_ins_names.filter(running_ins_name=redis_name)
             redis_ins = running_ins_names.get(running_ins_name=redis_name)
-            # redis_id = redis_ins_all.values('id').first()['id']
             if redis_ins.redis_type == 'Redis-Sentinel':
                 redis_sentinel = RunningInsSentinel.objects.all()
                 for redis_ip_port in redis_sentinel:
@@ -29,10 +27,6 @@ def get_redis_ins_qps():
                         ip_port['redis_ins_mem'] = redis_ip_port.__dict__['redis_ins_mem']
                         ip_port['redis_ins'] = redis_ins
                         all_ip_port.append(ip_port)
-                # for items in all_ip_port:
-                #     redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
-                #                                redis_ins_mem=items['redis_ins_mem'], redis_ins=redis_ins)
-                #     redis_mon.redismonitor()
             elif redis_ins.redis_type == 'Redis-Standalone':
                 redis_standalone = RunningInsStandalone.objects.all()
                 for redis_ip_port in redis_standalone:

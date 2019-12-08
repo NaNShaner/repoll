@@ -2,7 +2,6 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
-# from django.utils.safestring import mark_safe
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 from django.shortcuts import redirect
@@ -79,18 +78,22 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
     inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
 
     def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
         return False
 
     def redis_start(self, request, obj, parent_obj):
+        """启动redis"""
         button_html = "/polls/apis/redis-start/{0}/{1}/".format('standalone', obj.id)
         return redirect(button_html)
 
     def redis_stop(self, request, obj, parent_obj):
+        """停止redis"""
         if isinstance(obj, RunningInsStandalone):
             button_html = "/polls/apis/redis-stop/{0}/{1}/".format('standalone', obj.id)
             return redirect(button_html)
 
     def redis_qps(self, request, obj, parent_obj):
+        """redis qps"""
         button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('standalone', parent_obj.id, obj.redis_ip, obj.running_ins_port)
         return redirect(button_html)
 
@@ -101,28 +104,38 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsSentinel
 
     def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
         return False
 
     def redis_start(self, request, obj, parent_obj):
+        """启动redis"""
         button_html = "/polls/apis/redis-start/{0}/{1}/".format('sentinel', obj.id)
         return redirect(button_html)
 
     def redis_stop(self, request, obj, parent_obj):
+        """
+        停止redis
+        """
         if isinstance(obj, RunningInsSentinel):
             button_html = "/polls/apis/redis-stop/{0}/{1}/".format('sentinel', obj.id)
             return redirect(button_html)
 
     def redis_qps(self, request, obj, parent_obj):
+        """
+        显示redis_qps
+        """
         if obj.redis_type != 'Redis-Sentinel':
             button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('sentinel', parent_obj.id, obj.redis_ip, obj.running_ins_port)
             return redirect(button_html)
 
     def get_inline_actions(self, request, obj=None):
-        a = obj.redis_type
+        """
+        针对redis sentinel模式不显示redis_qps的按钮
+        """
         if obj.redis_type != 'Redis-Sentinel':
             self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         else:
-            self.inline_actions = ['redis_start', 'redis_stop',]
+            self.inline_actions = ['redis_start', 'redis_stop', ]
         return self.inline_actions
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
@@ -350,37 +363,54 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
-    #     # 禁用添加按钮
-    #     return False
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RunningInsTimeAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
+    # def redis_qps(self, obj):
+    #     button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
+    #     return format_html(button_html)
+    # redis_qps.short_description = "QPS监控趋势图"
     #
-    # def has_delete_permission(self, request, obj=None):
-    #     # 禁用删除按钮
-    #     return False
+    # def redis_stop(self, obj):
+    #     button_html = """<a class="changelink" href="/polls/apis/redis-start/{0}/">启动</a>""".format(obj.id)
+    #     return format_html(button_html)
+    # redis_stop.short_description = "启动"
     #
-    # def get_actions(self, request):
-    #     # 在actions中去掉‘删除’操作
-    #     actions = super(RunningInsTimeAdmin, self).get_actions(request)
-    #     if request.user.username[0].upper() != 'J':
-    #         if 'delete_selected' in actions:
-    #             del actions['delete_selected']
-    #     return actions
-
-    def redis_qps(self, obj):
-        button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
-        return format_html(button_html)
-    redis_qps.short_description = "QPS监控趋势图"
-
-    def redis_stop(self, obj):
-        button_html = """<a class="changelink" href="/polls/apis/redis-start/{0}/">启动</a>""".format(obj.id)
-        return format_html(button_html)
-    redis_stop.short_description = "启动"
-
-    def redis_start(self, obj):
-        button_html = """<a class="changelink" href="/polls/apis/redis-stop/{0}/">停止</a>""".format(obj.id)
-        return format_html(button_html)
-    redis_start.short_description = "停止"
+    # def redis_start(self, obj):
+    #     button_html = """<a class="changelink" href="/polls/apis/redis-stop/{0}/">停止</a>""".format(obj.id)
+    #     return format_html(button_html)
+    # redis_start.short_description = "停止"
 
     def get_form(self, request, obj=None, **args):
+        """
+        设置内联样式
+        """
         defaults = {}
         if obj is not None:
             if obj.redis_type == 'Redis-Standalone':
@@ -391,7 +421,6 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(running_ins_name=obj.running_ins_name))
         else:
             self.inlines = []  # 如果不是继承，就取消设置
-
         defaults.update(args)
         return super(RunningInsTimeAdmin, self).get_form(request, obj, **defaults)
 

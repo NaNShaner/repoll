@@ -8,6 +8,9 @@ from django.utils import timezone
 class RedisScheduled(object):
 
     def __init__(self, redis_ip, redis_port, redis_ins_mem, redis_ins):
+        """
+        redis监控，监控的qps、内存使用率
+        """
         self.redis_ip = redis_ip
         self.redis_port = redis_port
         self.redis_ins_mem = redis_ins_mem

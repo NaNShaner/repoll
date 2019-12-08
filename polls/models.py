@@ -373,9 +373,9 @@ class ApplyRedisText(models.Model):
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
                                                                    "2. sentinel类型：</br>"
                                                                    "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
-                                                                   "sentinelIp1</br>"
-                                                                   "sentinelIp2</br>"
-                                                                   "sentinelIp3",
+                                                                   "sentinelIp1:sentinelPort1</br>"
+                                                                   "sentinelIp2:sentinelPort2</br>"
+                                                                   "sentinelIp3:sentinelPort3",
                                   error_messages={'required': "不能为空"},
                                   validators=[redis_apply_text])
     who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
