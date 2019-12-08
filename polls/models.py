@@ -5,7 +5,8 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from .tools import redis_apply_text
 
 
 class Ipaddr(models.Model):
@@ -40,11 +41,10 @@ class ApplyRedisInfo(models.Model):
     sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
     pub_date = models.DateTimeField('申请时间', default=timezone.now)
-    user = User.objects.all()
-    user_list = [u.__dict__['username'] for u in user]
-    user_choice = zip(user_list, user_list)
-
-    create_user = models.CharField(max_length=150, choices=user_choice, null=True, verbose_name="申请人", default="")
+    # user = User.objects.all()
+    # user_list = [u.__dict__['username'] for u in user]
+    # user_choice = zip(user_list, user_list)
+    create_user = models.CharField(max_length=150, null=True, verbose_name="申请人", default="")
     status_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -62,11 +62,6 @@ class ApplyRedisInfo(models.Model):
 
     def __str__(self):
         return self.apply_ins_name
-
-    # def save(self, *args, **kwargs):
-    #     a = args
-    #     b = kwargs
-    #     print(a,b)
 
 
 class RedisInfo(models.Model):
@@ -123,7 +118,7 @@ class RedisApply(models.Model):
 
 
 class RedisIns(models.Model):
-    redis_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
+    redis_ins_name = models.CharField(max_length=50, unique=True, null=True, verbose_name="应用名称")
     ins_disc = models.CharField(max_length=150, verbose_name="应用描述")
     type_choice = [
         ("Redis-Standalone", "Redis-Standalone"),
@@ -145,10 +140,16 @@ class RedisIns(models.Model):
         (4, "已拒绝"),
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0], blank=True, verbose_name="实例状态")
+    on_line_status_choice = [
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未上线"),
+    ]
+    on_line_status = models.IntegerField(choices=on_line_status_choice, default=on_line_status_choice[2][0], blank=True, verbose_name="上线状态")
 
     class Meta:
         ordering = ('-pub_date', )
-        verbose_name = "Redis Approve"
+        verbose_name = "Redis Ins"
         verbose_name_plural = "Redis上线配置"
 
     def __str__(self):
@@ -311,6 +312,7 @@ class RedisSentienlConf(models.Model):
     ]
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
+    daemonize = models.CharField(max_length=30, default="yes", verbose_name="daemonize")
     port = models.CharField(max_length=150, help_text="sentinel实例端口", verbose_name="port", default="%port%")
     dir = models.CharField(max_length=150, help_text="工作目录", verbose_name="dir", default="/opt/repoll/")
     sentinelMonitor = models.CharField(max_length=150,
@@ -329,6 +331,8 @@ class RedisSentienlConf(models.Model):
                                              help_text="在执行故障转移时,最多有多少个从服务器同时对新的主服务器进行同步,默认:1",
                                              verbose_name="sentinel parallel-syncs",
                                              default="%s 1%")
+    logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
+                               verbose_name="logfile", default="/opt/repoll/")
 
     def __str__(self):
         return "Sentinel 配置成功"
@@ -349,7 +353,7 @@ class RedisVersion(models.Model):
     # redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
     #                                  default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply = models.CharField(max_length=60, default=User, verbose_name="版本发布人")
+    who_apply = models.CharField(max_length=60, default="", verbose_name="版本发布人")
 
     def __str__(self):
         return "Redis版本添加成功"
@@ -369,10 +373,12 @@ class ApplyRedisText(models.Model):
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
                                                                    "2. sentinel类型：</br>"
                                                                    "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
-                                                                   "sentinelIp1</br>"
-                                                                   "sentinelIp2</br>"
-                                                                   "sentinelIp3")
-    who_apply_ins = models.CharField(max_length=50, default=User, verbose_name="审批人")
+                                                                   "sentinelIp1:sentinelPort1</br>"
+                                                                   "sentinelIp2:sentinelPort2</br>"
+                                                                   "sentinelIp3:sentinelPort3",
+                                  error_messages={'required': "不能为空"},
+                                  validators=[redis_apply_text])
+    who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 
     def __str__(self):
@@ -384,7 +390,41 @@ class ApplyRedisText(models.Model):
 
 
 class RunningInsTime(models.Model):
-    running_ins_name = models.CharField(max_length=50, null=True, unique=True, verbose_name="应用名称")
+    running_ins_name = models.CharField(max_length=50, unique=True, null=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    # running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
+    # redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
+    command_hit_rate = models.IntegerField(default=0, null=True, verbose_name="命中率")
+    running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
+    ins_choice = [
+        (0, "已上线"),
+        (1, "已下线"),
+        (2, "未审批"),
+        (3, "已审批"),
+        (4, "已拒绝"),
+    ]
+    ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0],
+                                     null=True, blank=True, verbose_name="实例状态")
+    # running_ins_standalone = models.OneToOneField(RunningInsStandalone, on_delete=models.CASCADE, null=True)
+    # running_ins_sentinel = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.running_ins_name
+
+    class Meta:
+        verbose_name = "Redis Running Ins"
+        verbose_name_plural = "Redis已运行实例"
+
+
+class RunningInsStandalone(models.Model):
+    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
     choice_list = [
         ('Redis-Standalone', 'Redis-Standalone'),
         ('Redis-Cluster', 'Redis-Cluster'),
@@ -395,13 +435,38 @@ class RunningInsTime(models.Model):
     running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
+    running_ins = models.ForeignKey(RunningInsTime, default="", on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.running_ins_name
+        return ""
 
     class Meta:
-        verbose_name = "Redis Running Ins"
-        verbose_name_plural = "Redis已运行实例"
+        verbose_name = "Redis Running Standalone Ins"
+        verbose_name_plural = "运行实例详情"
+
+
+class RunningInsSentinel(models.Model):
+    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Standalone', 'Redis-Standalone'),
+        ('Redis-Cluster', 'Redis-Cluster'),
+        ('Redis-Sentinel', 'Redis-Sentinel'),
+        ('Redis-Master', 'Redis-Master'),
+        ('Redis-Slave', 'Redis-Slave')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
+    redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
+    running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return ""
+
+    class Meta:
+        verbose_name = "Redis Running Sentinel Ins"
+        verbose_name_plural = "运行实例详情"
 
 
 class RealTimeQps(models.Model):
@@ -410,6 +475,12 @@ class RealTimeQps(models.Model):
     redis_qps = models.FloatField(default=0, null=True, verbose_name="Redis QPS")
     redis_ins_used_mem = models.CharField(max_length=50, null=True, verbose_name="Redis内存使用率")
     redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
+    # redis_sentinel_ins_ip = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
+    #                                           to_field='redis_ip', verbose_name="redis_ip", default="")
+    # redis_sentinel_ins_port = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
+    #                                             to_field='running_ins_port', related_name="redis_port", default="")
+    redis_ip = models.GenericIPAddressField(default="", verbose_name="redis_ip", null=False)
+    redis_port = models.IntegerField(default=0, verbose_name="redis_port", null=False)
 
     class Meta:
         verbose_name = "Redis Monitor"

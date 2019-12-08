@@ -8,6 +8,9 @@ from django.utils import timezone
 class RedisScheduled(object):
 
     def __init__(self, redis_ip, redis_port, redis_ins_mem, redis_ins):
+        """
+        redis监控，监控的qps、内存使用率
+        """
         self.redis_ip = redis_ip
         self.redis_port = redis_port
         self.redis_ins_mem = redis_ins_mem
@@ -30,7 +33,9 @@ class RedisScheduled(object):
                                                 redis_qps=qps['instantaneous_ops_per_sec'],
                                                 redis_ins_used_mem=float('%.2f' % redis_ins_used_mem),
                                                 collect_date=timezone.now,
-                                                redis_running_monitor=self.redis_ins)
+                                                redis_running_monitor=self.redis_ins,
+                                                redis_ip=self.redis_ip,
+                                                redis_port=self.redis_port)
                 real_time_qps_obj.save()
                 i += 1
         except ConnectionRefusedError:

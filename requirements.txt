@@ -7,3 +7,5 @@ djangorestframework==3.10.2
 django-crontab==0.7.1
 django-simpleui==3.2
 mysqlclient==1.4.4
+IPy==1.0
+django-inline-actions==2.3.0

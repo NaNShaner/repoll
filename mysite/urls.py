@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-
+from django.views import generic
 
 # from django.contrib.auth.models import User
 from rest_framework import serializers, viewsets, routers
@@ -67,6 +67,7 @@ router.register(r'redis_ins', RunningInsTimeSet)
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
+    url(r'^$', generic.RedirectView.as_view(url='/admin/', permanent=False)),
     # url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'favicon.ico$', favicon)
