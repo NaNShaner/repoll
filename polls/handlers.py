@@ -575,8 +575,7 @@ class RedisModelStartClass:
                 running_ins_standalone_id=obj_runningins_now.id,
             )
             obj_sentinel.save()
-
-        RedisIns.objects.filter(redis_ins_name=self.redis_ins_name).update(on_line_status=0)
+        RedisIns.objects.filter(redis_ins_name=self.redis_ins_name['redis_ins_name']).update(on_line_status=0)
         return True
 
 
