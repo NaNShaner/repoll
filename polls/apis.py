@@ -52,11 +52,13 @@ def redisstart(request, redis_type, ins_id):
     running_ins = running_ins_time.filter(id=ins_id)
     running_ins_ip = running_ins.values('redis_ip').first()
     running_ins_port = running_ins.values('running_ins_port').first()
-    if redis_type == 'sentinel':
+    for c in running_ins:
+        running_ins_type = c.__dict__['redis_type']
+    if running_ins_type == 'Redis-Sentinel':
         redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
                                    redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-sentienl.conf --sentinel".format(
                                        running_ins_port['running_ins_port']))
-    elif redis_type == 'standalone':
+    else:
         redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
                                    redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}.conf".format(
                                        running_ins_port['running_ins_port']))

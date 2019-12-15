@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
-# from django.contrib.auth.models import User
 from .tools import redis_apply_text
 
 
@@ -401,7 +400,7 @@ class RunningInsTime(models.Model):
     # running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
     # redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
-    command_hit_rate = models.IntegerField(default=0, null=True, verbose_name="命中率")
+    running_ins_used_mem_rate = models.IntegerField(default=0, null=True, verbose_name="内存使用率")
     running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
     ins_choice = [
         (0, "已上线"),
