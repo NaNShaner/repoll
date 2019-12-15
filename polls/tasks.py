@@ -40,8 +40,8 @@ def get_redis_ins_qps():
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
                                            redis_ins_mem=items['redis_ins_mem'], redis_ins=items['redis_ins'])
                 redis_mon.redismonitor()
-        except redis.exceptions.ConnectionError:
-            pass
+        except redis.exceptions.ConnectionError as e:
+            print(e)
         continue
 
 

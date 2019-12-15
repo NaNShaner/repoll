@@ -215,13 +215,13 @@ class RedisApplyAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
-
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
     list_per_page = 15
+
     actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
 
     def approve_selected_new_assets(self, request, queryset):
@@ -354,6 +354,16 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
     inlines = [ChoiceInline]
     list_per_page = 15
+    readonly_fields = ['redis_ins_name', 'ins_disc', 'redis_version', 'redis_type',
+                       'redis_mem', 'sys_author', 'area', 'pub_date', 'approval_user',
+                       'ins_status', 'on_line_status']
+    list_display_links = ('id', 'redis_ins_name')
+
+    fieldsets = [
+        ('所属系统', {'fields': ['redis_ins_name', 'ins_disc', 'area']}),
+        ('Redis实例详情', {'fields': ['redis_version', 'redis_type', 'redis_mem']}),
+        ('Redis申请信息', {'fields': ['approval_user', 'sys_author', 'pub_date']}),
+    ]
 
     # 审核项有且只能有一条记录
     ChoiceInline.max_num = 1
@@ -431,12 +441,12 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     #     return super(RunningInsTimeAdmin, self).changelist_view(request, extra_context=None)
 
     list_display = ['id', 'running_ins_name', 'redis_type',
-                    'command_hit_rate', 'running_time', 'redis_ins_mem',
+                    'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
                     # 'redis_qps', 'redis_start', 'redis_stop'
                     ]
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
-    # inlines = [RealTimeQpsInline]
+    list_display_links = ('id', 'running_ins_name')
     RealTimeQpsInline.max_num = 15
     list_per_page = 15
     fieldsets = (
@@ -444,6 +454,7 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             'fields': ('running_ins_name', 'redis_type', 'redis_ins_mem')
         }),
     )
+    readonly_fields = ['running_ins_name', 'redis_type', 'redis_ins_mem']
 
 
 class RealTimeQpsAdmin(admin.ModelAdmin):
@@ -458,7 +469,7 @@ class RedisSentienlConfAdmin(admin.ModelAdmin):
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
-admin.site.register(Ipaddr, IpaddrAdmin)
+# admin.site.register(Ipaddr, IpaddrAdmin)
 # 申请
 admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
 # 审批
@@ -468,5 +479,5 @@ admin.site.register(RedisIns, RedisApprovalAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
 # admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
-admin.site.register(RealTimeQps, RealTimeQpsAdmin)
+# admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
