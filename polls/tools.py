@@ -20,7 +20,11 @@ def redis_apply_text(apply_text, redis_type=None):
                   "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>" \
                   "sentinelIp1</br>" \
                   "sentinelIp2</br>" \
-                  "sentinelIp3"
+                  "sentinelIp3" \
+                  "3. Cluster类型: </br>" \
+                  "master1Ip:master1Port:memSize(M):slave1Ip:slave1Port</br>" \
+                  "master2Ip:master2Port:memSize(M):slave2Ip:slave2Port</br>" \
+                  "master3Ip:master3Port:memSize(M):slave3Ip:slave3Port</br>"
     if redis_type:
         if isinstance(apply_text, str) and redis_type == 'Redis-Standalone':
             redis_text_split = apply_text.split(":")
@@ -35,7 +39,7 @@ def redis_apply_text(apply_text, redis_type=None):
             # if apply_text_dict['redis_ip'] not in all_redis_ip:
             #     raise ValidationError("{0}不在Redis云管列表中...".format(apply_text_dict['redis_ip']))
             return apply_text_dict
-        if redis_type == 'Redis-Sentinel':
+        elif redis_type == 'Redis-Sentinel':
             try:
                 all_line = apply_text.split('\r\n')
                 redis_ins = all_line.pop(0)
@@ -44,7 +48,6 @@ def redis_apply_text(apply_text, redis_type=None):
                 redis_master_name = all_redis_ins.pop(2)
                 all_redis_ins_ip = all_redis_ins[::2]
                 all_redis_ins_port = all_redis_ins[1::2]
-                # all_redis_ins_ip_port = dict(zip(all_redis_ins_ip, all_redis_ins_port))
                 redis_master_ip_port = {all_redis_ins_ip.pop(0): all_redis_ins_port.pop(0)}
                 redis_slave_ip_port_list = []
                 for i in all_redis_ins_ip:
@@ -66,6 +69,24 @@ def redis_apply_text(apply_text, redis_type=None):
                 return apply_text_dict
             except Exception as e:
                 raise ValidationError("文本格式输入错误，{0}".format(e))
+        elif redis_type == 'Redis-Cluster':
+            redis_text_split = apply_text.split("\r\n")
+            apply_text_dict = {}
+            text_list = []
+            for redis_ins in redis_text_split:
+                text_dict = {}
+                redis_inline = redis_ins.split(":")
+                redis_mem = redis_inline.pop(2)
+                try:
+                    all_redis_ins_ip = redis_inline[::2]
+                    all_redis_ins_port = redis_inline[1::2]
+                    all_redis = list(zip(all_redis_ins_ip, all_redis_ins_port))
+                    text_dict["redis_ip_port"] = all_redis
+                    text_dict['redis_mem'] = redis_mem
+                    text_list.append(text_dict)
+                except IndexError as e:
+                    pass
+            return text_list
         else:
             raise ValidationError("输入格式校验错误，请核对文本规则")
     else:

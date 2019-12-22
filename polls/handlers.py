@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .tools import redis_apply_text
 import os
+import logging
 
 
 # 定义信号
@@ -16,6 +17,11 @@ work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 # 定义项目绝对路径
 TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# 日志格式
+logging.basicConfig(filename="repoll.log", filemode="a+",
+                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%d-%M-%Y %H:%M:%S",
+                    level=logging.DEBUG)
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
@@ -50,9 +56,9 @@ def apply_redis_text_handler(sender, **kwargs):
             redis_start = RedisStartClass(host=redis_ip,
                                           redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" + str(redis_port) + ".conf")
             if redis_start.start_server():
-                print("Redis 启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+                logging.info("Redis 单实例启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
             else:
-                print("Redis 启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+                logging.info("Redis 单实例启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
     elif redis_ins_type == 'Redis-Sentinel':
         b = RedisModelStartClass(model_type='Redis-Sentinel',
                                  redis_ins=redis_ins_obj,
@@ -72,9 +78,33 @@ def apply_redis_text_handler(sender, **kwargs):
             if start_master:
                 start_slave = b.start_slave_master()
                 if start_slave:
-                    start_sentinel = b.start_sentinel_master()
-                    print("start sentinel start ok")
+                    b.start_sentinel_master()
+                    logging.info("哨兵模式启动成功,redis_master_ip_port:{0},"
+                                 "redis_slave_ip_port:{1},"
+                                 "redis_sentinel_ip_port:{2},"
+                                 "redis_master_name:{3}".format(redis_apply_text_split['redis_master_ip_port'],
+                                                                redis_apply_text_split['redis_slave_ip_port'],
+                                                                redis_apply_text_split['redis_sentinel_ip_port'],
+                                                                redis_apply_text_split['redis_master_name']))
         b.save_sentinel_redis_ins()
+    elif redis_ins_type == 'Redis-Cluster':
+        redis_list = []
+        for redis_one_ins in redis_apply_text_split:
+            for all_redis_ins in redis_one_ins['redis_ip_port']:
+                c = RedisClusterClass(redis_ins=redis_ins_obj,
+                                      redis_ins_name=redis_ins_obj_name,
+                                      redis_ins_type=redis_ins_type,
+                                      redis_ins_mem=redis_one_ins['redis_mem'],
+                                      redis_ip=all_redis_ins[0],
+                                      redis_port=all_redis_ins[1])
+                file_status = c.create_cluster_file()
+                if file_status:
+                    c.start_all_redis_ins()
+            redis_one_ins_split = {"redis_master": redis_one_ins['redis_ip_port'][0],
+                                   "redis_slave": redis_one_ins['redis_ip_port'][1:],
+                                   "redis_mem": redis_one_ins['redis_mem']}
+            redis_list.append(redis_one_ins_split)
+            start_cluster = StartRedisCluster(cluster_list=redis_list)
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -120,6 +150,8 @@ def get_redis_conf(redis_type):
         obj = RedisConf.objects.all().filter(redis_type=redis_type)
     elif redis_type == 'Redis-Sentinel':
         obj = RedisSentienlConf.objects.all().filter()
+    elif redis_type == 'Redis-Cluster':
+        obj = RedisClusterConf.objects.all().filter()
     else:
         obj = None
     return obj
@@ -274,6 +306,10 @@ def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
                 key = key.replace(key, "sentinel parallel-syncs ")
                 value = value.replace(value, " {0} 1".format(kwargs['kwargs']['masterName']))
                 return key, value
+            elif "clusterconfigfile" in key:
+                key = key.replace(key, "cluster-config-file")
+                value = value.replace(value, "nodes-{0}.conf".format(kwargs['kwargs']['redis_port']))
+                return key, value
         except ValueError as e:
             pass
     return key, value
@@ -364,9 +400,9 @@ class RedisStandalone:
                 f.write("slaveof {0} {1}".format(_maser_ip_port[0], _maser_ip_port[1]))
         if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf",
                   user_name="root", user_password="Pass@word"):
-            print("文件分发成功")
+            logging.info("文件分发成功")
         else:
-            print("文件分发失败")
+            logging.error("文件分发失败")
             return False
         return True
 
@@ -450,9 +486,6 @@ class RedisModelStartClass:
                     "masterIp": self.redis_master_ip,
                     "masterPort": self.redis_master_port,
                     "sentienlNum": self.redis_sentinel_num,
-                    # "sentinel_down_after_milliseconds": self.sentinel_down_after_milliseconds,
-                    # "sentinel_failover_timeout": self.sentinel_failover_timeout,
-                    # "sentinel_parallel_syncs": self.sentinel_parallel_syncs
                 }
                 with open(conf_file_name, 'w+') as f:
                     for k, v in all_redis_conf[0].items():
@@ -464,9 +497,9 @@ class RedisModelStartClass:
                 if do_scp(redis_sentinel_ip, conf_file_name,
                           "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf",
                           user_name="root", user_password="Pass@word"):
-                    print("文件分发成功")
+                    logging.info("文件分发成功")
                 else:
-                    print("文件分发失败")
+                    logging.error("文件分发失败")
                     return False
         return True
 
@@ -497,6 +530,9 @@ class RedisModelStartClass:
         return True
 
     def start_redis_master(self):
+        """
+        启动master实例
+        """
         redis_master_start = RedisStartClass(host=self.redis_master_ip,
                                              redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
                                              str(self.redis_master_port) + ".conf")
@@ -504,6 +540,9 @@ class RedisModelStartClass:
         return start_result
 
     def start_slave_master(self):
+        """
+        启动slave实例
+        """
         start_result_dict = {}
         for slave_ip_port in self.redis_slave_ip_port:
             for slave_ip, slave_port in slave_ip_port.items():
@@ -515,6 +554,9 @@ class RedisModelStartClass:
         return start_result_dict
 
     def start_sentinel_master(self):
+        """
+        启动哨兵实例
+        """
         start_result_dict = {}
         for sentinel in self.redis_sentinel_ip_port:
             if isinstance(sentinel, str):
@@ -527,6 +569,9 @@ class RedisModelStartClass:
         return start_result_dict
 
     def save_sentinel_redis_ins(self):
+        """
+        配置入库
+        """
         obj_runningins = RunningInsTime(running_ins_name=self.redis_ins_name['redis_ins_name'],
                                         redis_type=self.model_type,
                                         redis_ins_mem=self.redis_mem,
@@ -537,8 +582,6 @@ class RedisModelStartClass:
             for slave_ip, slave_port in slave_ip_port.items():
                 slave_ip_port_str = slave_ip + ":" + slave_port
                 all_redis_ip_port.append(slave_ip_port_str)
-        # master_ip_port = self.redis_master_ip + ":" + self.redis_master_port
-        # all_redis_ip_port.append(master_ip_port)
         obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name['redis_ins_name'])
         for redis_slave_ip_port in all_redis_ip_port:
             ip = redis_slave_ip_port.split(":")[0]
@@ -552,9 +595,6 @@ class RedisModelStartClass:
                 running_ins_standalone_id=obj_runningins_now.id,
             )
             obj.save()
-        # for redis_master_ip_port in master_ip_port:
-        #     ip = redis_master_ip_port.split(":")[0]
-        #     port = redis_master_ip_port.split(":")[1]
         obj = RunningInsSentinel(
             running_ins_name=self.redis_ins_name['redis_ins_name'],
             redis_type='Redis-Master',
@@ -577,6 +617,85 @@ class RedisModelStartClass:
             obj_sentinel.save()
         RedisIns.objects.filter(redis_ins_name=self.redis_ins_name['redis_ins_name']).update(on_line_status=0)
         return True
+
+
+class RedisClusterClass:
+
+    def __init__(self, redis_ins, redis_ins_name, redis_ins_type, redis_ins_mem, redis_ip, redis_port):
+        """
+        单个redis的实例进行配置文件生成、配置文件分发、进程启动
+        :param redis_ins:
+        :param redis_ins_name:
+        :param redis_ins_type:
+        :param redis_ins_mem:
+        :param redis_ip:
+        :param redis_port:
+        """
+        self.redis_ins = [r.__dict__ for r in redis_ins]
+        self.redis_ins_name = redis_ins_name['redis_ins_name']
+        self.redis_ins_type = redis_ins_type
+        self.redis_ins_mem = redis_ins_mem
+        self.redis_ip = redis_ip
+        self.redis_port = redis_port
+
+    def create_cluster_file(self):
+        """
+        创建redis实例的配置文件，并分发到资源池服务器指定的目录下。分发文件支持ssh免密和用户密码校验
+        使用用户密码校验目前是硬编码，后续优化支持读库
+        :return:
+        """
+        redis_conf = get_redis_conf("Redis-Standalone")
+        redis_cluster_conf = get_redis_conf(self.redis_ins_type)
+        all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
+        all_cluster_conf = [conf_k_v.__dict__ for conf_k_v in redis_cluster_conf]
+        conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(self.redis_port) + "-cluser.conf"
+        with open(conf_file_name, 'w+') as f:
+            for k, v in all_redis_conf[0].items():
+                if k != 'id' and k != 'redis_version' and k != 'redis_type':
+                    if isinstance(v, str) or isinstance(v, int):
+                        k, v = regx_redis_conf(key=k, value=v, port=self.redis_port,
+                                               maxmemory=mem_unit_chage(self.redis_ins_mem))
+                        f.write(k + " " + str(v) + "\n")
+            for k, v in all_cluster_conf[0].items():
+                if k != 'id' and k != 'redis_version' and k != 'redis_type':
+                    if isinstance(v, str) or isinstance(v, int):
+                        k, v = regx_redis_conf(key=k, value=v, port=self.redis_port,
+                                               maxmemory=mem_unit_chage(self.redis_ins_mem),
+                                               kwargs={"redis_port": self.redis_port})
+                        f.write(k + " " + str(v) + "\n")
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf",
+                  user_name="root", user_password="Pass@word"):
+            logging.info("目标服务器{0}文件分发成功".format("/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"))
+        else:
+            logging.error("目标服务器{0}文件分发失败".format("/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"))
+            return False
+        return True
+
+    def start_all_redis_ins(self):
+        redis_start = RedisStartClass(host=self.redis_ip,
+                                      redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
+                                                       str(self.redis_port) + "-cluster.conf")
+        if redis_start.start_server():
+            logging.info("redis 实例{2}启动成功，ip:port: {0}:{1}".format(self.redis_ip, self.redis_port, self.redis_ins_name))
+            return True
+        else:
+            logging.info("redis 实例{2}启动失败，ip:port: {0}:{1}".format(self.redis_ip, self.redis_port, self.redis_ins_name))
+            return False
+
+    def save_cluster_ins(self):
+        obj = RunningInsCluster(
+            running_ins_name=self.redis_ins_name,
+            redis_type=self.redis_ins_name,
+        )
+
+
+class StartRedisCluster:
+
+    def __init__(self, cluster_list):
+        self.cluster_list = cluster_list
+
+    def start_redis_cluster(self):
+        pass
 
 
 class ApproveRedis:
@@ -660,12 +779,3 @@ class ApproveRedis:
         :return:
         """
         return self.new_asset.apply_ins_name
-
-
-
-
-
-
-
-
-

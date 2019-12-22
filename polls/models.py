@@ -277,7 +277,7 @@ class RedisConf(models.Model):
     auto_aof_rewrite_min_size = models.CharField(max_length=150, help_text="触发rewrite的aof文件最小阀值,默认64m",
                                                  verbose_name="auto-aof-rewrite-min-size", default="64m")
     auto_aof_rewrite_percentage = models.CharField(max_length=150, help_text="Redis重写aof文件的比例条件,默认从100开始,统一机器下不同实例按4%递减",
-                                                   verbose_name="auto-aof-rewrite-percentage", default="%d")
+                                                   verbose_name="auto-aof-rewrite-percentage", default="100")
     rdbcompression = models.CharField(max_length=150, help_text="rdb是否压缩", verbose_name="rdbcompression", default="yes")
     rdbchecksum = models.CharField(max_length=150, help_text="rdb校验和", verbose_name="rdbchecksum", default="yes")
     repl_diskless_sync = models.CharField(max_length=150, help_text="开启无盘复制", verbose_name="repl-diskless-sync", default="no")
@@ -340,6 +340,35 @@ class RedisSentienlConf(models.Model):
         verbose_name_plural = "Redis Sentinel配置信息"
 
 
+class RedisClusterConf(models.Model):
+    cluster_enabled = models.CharField(max_length=150, default="yes",
+                                       verbose_name="cluster-enabled",
+                                       help_text="是否开启集群模式")
+    cluster_node_timeout = models.IntegerField(default=15000,
+                                               verbose_name="cluster-slave-validity-factor",
+                                               help_text="集群节点超时时间,默认15秒")
+    cluster_slave_validity_factor = models.IntegerField(default=10,
+                                                        help_text="从节点延迟有效性判断因子,默认10秒",
+                                                        verbose_name="cluster-slave-validity-factor")
+    cluster_migration_barrier = models.IntegerField(default=1,
+                                                    help_text="主从迁移至少需要的从节点数,默认1个",
+                                                    verbose_name="cluster-migration-barrier")
+    clusterconfigfile = models.CharField(max_length=150,
+                                           help_text="集群配置文件名称,格式:nodes-{port}.conf",
+                                           verbose_name="cluster-config-file",
+                                           default="nodes-%d.conf")
+    cluster_require_full_coverage = models.CharField(max_length=150,
+                                                     help_text="节点部分失败期间,其他节点是否继续工作",
+                                                     verbose_name="sentinel down-after-milliseconds",
+                                                     default="no")
+
+    def __str__(self):
+        return "Cluster 配置成功"
+
+    class Meta:
+        verbose_name_plural = "Redis Cluster配置信息"
+
+
 class RedisVersion(models.Model):
     redis_version = models.ForeignKey(RedisConf, on_delete=models.CASCADE)
     choice_list = [
@@ -374,7 +403,11 @@ class ApplyRedisText(models.Model):
                                                                    "masterIp:masterPort:memSize(M):masterName:slaveIp:slavePort</br>"
                                                                    "sentinelIp1:sentinelPort1</br>"
                                                                    "sentinelIp2:sentinelPort2</br>"
-                                                                   "sentinelIp3:sentinelPort3",
+                                                                   "sentinelIp3:sentinelPort3</br>"
+                                                                   "3. Cluster类型: </br>"
+                                                                   "master1Ip:master1Port:memSize(M):slave1Ip:slave1Port</br>" 
+                                                                   "master2Ip:master2Port:memSize(M):slave2Ip:slave2Port</br>" 
+                                                                   "master3Ip:master3Port:memSize(M):slave3Ip:slave3Port</br>",
                                   error_messages={'required': "不能为空"},
                                   validators=[redis_apply_text])
     who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
@@ -397,8 +430,6 @@ class RunningInsTime(models.Model):
     ]
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
-    # running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
-    # redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
     running_ins_used_mem_rate = models.IntegerField(default=0, null=True, verbose_name="内存使用率")
     running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
@@ -411,8 +442,6 @@ class RunningInsTime(models.Model):
     ]
     ins_status = models.IntegerField(choices=ins_choice, default=ins_choice[2][0],
                                      null=True, blank=True, verbose_name="实例状态")
-    # running_ins_standalone = models.OneToOneField(RunningInsStandalone, on_delete=models.CASCADE, null=True)
-    # running_ins_sentinel = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.running_ins_name
@@ -468,6 +497,27 @@ class RunningInsSentinel(models.Model):
         verbose_name_plural = "运行实例详情"
 
 
+class RunningInsCluster(models.Model):
+    running_ins_name = models.CharField(max_length=50, null=True, verbose_name="应用名称")
+    choice_list = [
+        ('Redis-Master', 'Redis-Master'),
+        ('Redis-Slave', 'Redis-Slave')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
+    running_ins_port = models.IntegerField(null=True, unique=True, verbose_name="端口")
+    redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
+    redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
+    running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return ""
+
+    class Meta:
+        verbose_name = "Redis Running Cluster Ins"
+        verbose_name_plural = "运行实例详情"
+
+
 class RealTimeQps(models.Model):
     redis_used_mem = models.CharField(default=0, null=True, max_length=50, verbose_name="Redis已用内存")
     collect_date = models.DateTimeField(auto_now=True, verbose_name="收集时间")
@@ -484,8 +534,3 @@ class RealTimeQps(models.Model):
     class Meta:
         verbose_name = "Redis Monitor"
         verbose_name_plural = "Redis监控信息"
-
-
-
-
-
