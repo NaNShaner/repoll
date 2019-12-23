@@ -12,9 +12,6 @@ from .handlers import ApproveRedis
 from pyecharts.globals import CurrentConfig
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
 
-# 此处设置页面显示标题
-admin.site.site_header = 'Redis云管系统'
-
 # 此处设置页面头部标题
 admin.site.site_title = 'Redis云管系统'
 admin.site.index_title = 'Repoll'

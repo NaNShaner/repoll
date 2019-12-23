@@ -9,6 +9,7 @@ from django.db.models.signals import post_save
 from .tools import redis_apply_text
 import os
 import logging
+import copy
 
 
 # 定义信号
@@ -32,8 +33,6 @@ def apply_redis_text_handler(sender, **kwargs):
     :param kwargs:
     :return:
     """
-    redis_ip = ''
-    redis_port = ''
     a = kwargs
     redis_ins_id = kwargs['instance'].redis_ins_id
     redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
@@ -104,7 +103,10 @@ def apply_redis_text_handler(sender, **kwargs):
                                    "redis_slave": redis_one_ins['redis_ip_port'][1:],
                                    "redis_mem": redis_one_ins['redis_mem']}
             redis_list.append(redis_one_ins_split)
-            start_cluster = StartRedisCluster(cluster_list=redis_list)
+        start_cluster = StartRedisCluster(cluster_list=redis_list)
+        a = start_cluster.start_redis_cluster()
+        start_cluster.redis_cluser_meet(a)
+        print(a)
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -692,10 +694,46 @@ class RedisClusterClass:
 class StartRedisCluster:
 
     def __init__(self, cluster_list):
-        self.cluster_list = cluster_list
+        """
+        启动Redis Cluster
+        :param cluster_list: 所有redis实例的IP及PORT
+        """
+        if isinstance(cluster_list, list):
+            self.cluster_list = cluster_list
 
     def start_redis_cluster(self):
-        pass
+        """
+        格式化所有redis实例的IP及PORT
+        :return: list
+        """
+        redis_list = []
+        for redis_one_list in self.cluster_list:
+            redis_list.append(redis_one_list['redis_master'])
+            for redis_slave in redis_one_list['redis_slave']:
+                redis_list.append(redis_slave)
+        return redis_list
+
+    def redis_cluser_meet(self, redis_ins_list):
+        if isinstance(redis_ins_list, list):
+            redis_ins_list_copy = copy.deepcopy(redis_ins_list)
+            i = 0
+            try:
+                if i < len(redis_ins_list_copy):
+                    redis_ins_one = redis_ins_list_copy.pop(0)
+                    redis_ins_list_copy.extend(redis_ins_one)
+                    redis_ins_one_ip = redis_ins_one[0]
+                    redis_ins_one_port = redis_ins_one[1]
+                    for redis_ins_one_by_one in redis_ins_list_copy:
+                        redis_ins_one_by_one_ip = redis_ins_one_by_one[0]
+                        redis_ins_one_port_port = redis_ins_one_by_one[1]
+                        comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3]".format(
+                            redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port
+                        )
+                        if do_command(host=redis_ins_one_ip, commands=comm_line):
+                            logging.info("{0}:{1} cluster meet {2}:{3] is ok".format(
+                                redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port))
+            except Exception:
+                pass
 
 
 class ApproveRedis:
