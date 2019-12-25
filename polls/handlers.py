@@ -719,21 +719,23 @@ class StartRedisCluster:
             i = 0
             try:
                 if i < len(redis_ins_list_copy):
+                    i += 1
                     redis_ins_one = redis_ins_list_copy.pop(0)
-                    redis_ins_list_copy.extend(redis_ins_one)
+                    redis_ins_list_copy.append(redis_ins_one)
                     redis_ins_one_ip = redis_ins_one[0]
                     redis_ins_one_port = redis_ins_one[1]
                     for redis_ins_one_by_one in redis_ins_list_copy:
                         redis_ins_one_by_one_ip = redis_ins_one_by_one[0]
                         redis_ins_one_port_port = redis_ins_one_by_one[1]
-                        comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3]".format(
+                        comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3}".format(
                             redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port
                         )
-                        if do_command(host=redis_ins_one_ip, commands=comm_line):
-                            logging.info("{0}:{1} cluster meet {2}:{3] is ok".format(
+                        if do_command(host=redis_ins_one_ip, commands=comm_line, user_name="root", user_password="Pass@word"):
+                            logging.info("{0}:{1} cluster meet {2}:{3} is ok".format(
                                 redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port))
-            except Exception:
-                pass
+            except Exception as e:
+                logging.error(e)
+                print(e)
 
 
 class ApproveRedis:
