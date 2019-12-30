@@ -1,6 +1,6 @@
 import time
 import redis
-from .models import RealTimeQps, RunningInsTime, RunningInsSentinel, RunningInsStandalone
+from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster
 from django.utils import timezone
 from .scheduled import RedisScheduled
 import threading
@@ -36,13 +36,22 @@ def get_redis_ins_qps():
                     ip_port['redis_ins_mem'] = redis_ip_port.__dict__['redis_ins_mem']
                     ip_port['redis_ins'] = redis_ins
                     all_ip_port.append(ip_port)
-            for items in all_ip_port:
-                redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
-                                           redis_ins_mem=items['redis_ins_mem'], redis_ins=items['redis_ins'])
-                redis_mon.redismonitor()
+            elif redis_ins.redis_type == 'Redis-Cluster':
+                redis_cluster = RunningInsCluster.objects.all()
+                for redis_ip_port in redis_cluster:
+                    ip_port = {}
+                    ip_port['redis_ip'] = redis_ip_port.__dict__['redis_ip']
+                    ip_port['running_ins_port'] = redis_ip_port.__dict__['running_ins_port']
+                    ip_port['redis_ins_mem'] = redis_ip_port.__dict__['redis_ins_mem']
+                    ip_port['redis_ins'] = redis_ins
+                    all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
             print(e)
-        continue
+        print("=={0}==".format(all_ip_port))
+        for items in all_ip_port:
+            redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
+                                       redis_ins_mem=items['redis_ins_mem'], redis_ins=items['redis_ins'])
+            redis_mon.redismonitor()
 
 
 t = threading.Thread(target=get_redis_ins_qps, name='get_redis_ins_qps')

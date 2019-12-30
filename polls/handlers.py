@@ -95,10 +95,10 @@ def apply_redis_text_handler(sender, **kwargs):
                                    "redis_mem": redis_one_ins['redis_mem']}
             redis_cluster_mem_sum += int(redis_one_ins['redis_mem'])
             redis_list.append(redis_one_ins_split)
-        obj_runningins = RunningInsTime(running_ins_name=redis_ins_obj_name,
+        obj_runningins = RunningInsTime(running_ins_name=redis_ins_obj_name["redis_ins_name"],
                                         redis_type='Redis-Cluster',
                                         redis_ins_mem=redis_cluster_mem_sum,
-                                        )
+                                        ins_status=0)
         obj_runningins.save()
         for redis_one_ins in redis_apply_text_split:
             for all_redis_ins in redis_one_ins['redis_ip_port']:
@@ -124,6 +124,7 @@ def apply_redis_text_handler(sender, **kwargs):
                     if file_status:
                         c.start_all_redis_ins()
                         c.save_cluster_ins()
+        RedisIns.objects.filter(redis_ins_name=redis_ins_obj_name["redis_ins_name"]).update(on_line_status=0)
         start_cluster = StartRedisCluster(cluster_list=redis_list)
         redis_cluster_list = start_cluster.redis_cluster_list()
         start_cluster.redis_cluser_meet(redis_cluster_list)

@@ -137,6 +137,43 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
 
+class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
+    model = RunningInsCluster
+
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
+
+    def redis_start(self, request, obj, parent_obj):
+        """启动redis"""
+        button_html = "/polls/apis/redis-start/{0}/{1}/".format('cluster', obj.id)
+        return redirect(button_html)
+
+    def redis_stop(self, request, obj, parent_obj):
+        """
+        停止redis
+        """
+        if isinstance(obj, RunningInsCluster):
+            button_html = "/polls/apis/redis-stop/{0}/{1}/".format('cluster', obj.id)
+            return redirect(button_html)
+
+    def redis_qps(self, request, obj, parent_obj):
+        """
+        显示redis_qps
+        """
+        if obj.redis_type != 'Redis-Sentinel':
+            button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('cluster', parent_obj.id, obj.redis_ip, obj.running_ins_port)
+            return redirect(button_html)
+
+    def get_inline_actions(self, request, obj=None):
+        """
+        针对redis sentinel模式不显示redis_qps的按钮
+        """
+        self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
+        return self.inline_actions
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+
+
 class RealTimeQpsInline(admin.StackedInline):
     model = RealTimeQps
     extra = 1
@@ -426,6 +463,9 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             elif obj.redis_type == 'Redis-Sentinel':
                 self.inlines = [RunningInsSentinelInline]
                 RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(running_ins_name=obj.running_ins_name))
+            elif obj.redis_type == 'Redis-Cluster':
+                self.inlines = [RunningInsClusterInline]
+                RunningInsClusterInline.max_num = len(RunningInsCluster.objects.filter(running_ins_name=obj.running_ins_name))
         else:
             self.inlines = []  # 如果不是继承，就取消设置
         defaults.update(args)
