@@ -22,7 +22,7 @@ TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # 日志格式
 logging.basicConfig(filename="repoll.log", filemode="a+",
                     format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%d-%M-%Y %H:%M:%S",
-                    level=logging.DEBUG)
+                    level=logging.INFO)
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
@@ -88,25 +88,50 @@ def apply_redis_text_handler(sender, **kwargs):
         b.save_sentinel_redis_ins()
     elif redis_ins_type == 'Redis-Cluster':
         redis_list = []
+        redis_cluster_mem_sum = 0
         for redis_one_ins in redis_apply_text_split:
-            for all_redis_ins in redis_one_ins['redis_ip_port']:
-                c = RedisClusterClass(redis_ins=redis_ins_obj,
-                                      redis_ins_name=redis_ins_obj_name,
-                                      redis_ins_type=redis_ins_type,
-                                      redis_ins_mem=redis_one_ins['redis_mem'],
-                                      redis_ip=all_redis_ins[0],
-                                      redis_port=all_redis_ins[1])
-                file_status = c.create_cluster_file()
-                if file_status:
-                    c.start_all_redis_ins()
             redis_one_ins_split = {"redis_master": redis_one_ins['redis_ip_port'][0],
                                    "redis_slave": redis_one_ins['redis_ip_port'][1:],
                                    "redis_mem": redis_one_ins['redis_mem']}
+            redis_cluster_mem_sum += int(redis_one_ins['redis_mem'])
             redis_list.append(redis_one_ins_split)
+        obj_runningins = RunningInsTime(running_ins_name=redis_ins_obj_name,
+                                        redis_type='Redis-Cluster',
+                                        redis_ins_mem=redis_cluster_mem_sum,
+                                        )
+        obj_runningins.save()
+        for redis_one_ins in redis_apply_text_split:
+            for all_redis_ins in redis_one_ins['redis_ip_port']:
+                if redis_one_ins['redis_ip_port'].index(all_redis_ins) == 0:
+                    c = RedisClusterClass(redis_ins=redis_ins_obj,
+                                          redis_ins_name=redis_ins_obj_name,
+                                          redis_ins_type="Redis-Master",
+                                          redis_ins_mem=redis_one_ins['redis_mem'],
+                                          redis_ip=all_redis_ins[0],
+                                          redis_port=all_redis_ins[1])
+                    file_status = c.create_cluster_file()
+                    if file_status:
+                        c.start_all_redis_ins()
+                        c.save_cluster_ins()
+                else:
+                    c = RedisClusterClass(redis_ins=redis_ins_obj,
+                                          redis_ins_name=redis_ins_obj_name,
+                                          redis_ins_type="Redis-Slave",
+                                          redis_ins_mem=redis_one_ins['redis_mem'],
+                                          redis_ip=all_redis_ins[0],
+                                          redis_port=all_redis_ins[1])
+                    file_status = c.create_cluster_file()
+                    if file_status:
+                        c.start_all_redis_ins()
+                        c.save_cluster_ins()
         start_cluster = StartRedisCluster(cluster_list=redis_list)
-        a = start_cluster.start_redis_cluster()
-        start_cluster.redis_cluser_meet(a)
-        print(a)
+        redis_cluster_list = start_cluster.redis_cluster_list()
+        start_cluster.redis_cluser_meet(redis_cluster_list)
+        redis_cluster_node_info = start_cluster.get_cluster_info()
+        if redis_cluster_node_info:
+            start_cluster.add_slot_2_master(redis_cluster_node_info)
+        else:
+            logging.error("redis cluster 启动失败，集群信息为{0}".format(redis_list))
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -647,7 +672,7 @@ class RedisClusterClass:
         :return:
         """
         redis_conf = get_redis_conf("Redis-Standalone")
-        redis_cluster_conf = get_redis_conf(self.redis_ins_type)
+        redis_cluster_conf = get_redis_conf("Redis-Cluster")
         all_redis_conf = [conf_k_v.__dict__ for conf_k_v in redis_conf]
         all_cluster_conf = [conf_k_v.__dict__ for conf_k_v in redis_cluster_conf]
         conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(self.redis_port) + "-cluser.conf"
@@ -685,10 +710,16 @@ class RedisClusterClass:
             return False
 
     def save_cluster_ins(self):
+        obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name)
         obj = RunningInsCluster(
             running_ins_name=self.redis_ins_name,
-            redis_type=self.redis_ins_name,
+            redis_type=self.redis_ins_type,
+            running_ins_port=self.redis_port,
+            redis_ip=self.redis_ip,
+            redis_ins_mem=self.redis_ins_mem,
+            running_ins_standalone=obj_runningins_now
         )
+        obj.save()
 
 
 class StartRedisCluster:
@@ -701,7 +732,7 @@ class StartRedisCluster:
         if isinstance(cluster_list, list):
             self.cluster_list = cluster_list
 
-    def start_redis_cluster(self):
+    def redis_cluster_list(self):
         """
         格式化所有redis实例的IP及PORT
         :return: list
@@ -714,6 +745,11 @@ class StartRedisCluster:
         return redis_list
 
     def redis_cluser_meet(self, redis_ins_list):
+        """
+        redis集群内所有节点完成cluster meet
+        :param redis_ins_list: 入参为格式化后的集群节点信息
+        :return:
+        """
         if isinstance(redis_ins_list, list):
             redis_ins_list_copy = copy.deepcopy(redis_ins_list)
             i = 0
@@ -734,8 +770,55 @@ class StartRedisCluster:
                             logging.info("{0}:{1} cluster meet {2}:{3} is ok".format(
                                 redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port))
             except Exception as e:
-                logging.error(e)
-                print(e)
+                logging.error("Redis Cluster 启动失败，涉及节点为{0}，报错信息为{1}".format(self.cluster_list, e))
+
+    def get_cluster_info(self):
+        """
+        获取cluster nodes信息，用于后续的主从关系添加
+        :return: 所有节点的node id及ip对应关系
+        """
+        node_dict = {}
+        redis_cluster_ip_port = self.cluster_list[0]
+        _comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster nodes ".format(redis_cluster_ip_port['redis_master'][0], redis_cluster_ip_port['redis_master'][1])
+        _comm_result = do_command(host=redis_cluster_ip_port['redis_master'][0], commands=_comm_line, user_name="root", user_password="Pass@word")
+        if _comm_result[0] == 0:
+            _comm_result_list = _comm_result[1].decode('unicode-escape')
+            _comm_result_list = _comm_result_list.split("\n")
+            node_dict = {one_line.split()[1]: one_line.split()[0] for one_line in _comm_result_list if one_line}
+        if node_dict:
+            return node_dict
+        else:
+            return None
+
+    def add_slot_2_master(self, cluster_node_info):
+        """
+        给主节点添加slot，并完成主从节点关系
+        :param cluster_node_info: 入参为所有节点的node id和ip对应关系
+        :return:
+        """
+        _slots = ["{0..5461}", "{5462..10922}", "{10923..16383}"]
+        num = 0
+        try:
+            for redis_ip_port in self.cluster_list:
+                redis_master_ip = redis_ip_port['redis_master']
+                _add_slot_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster addslots {2}".format(redis_master_ip[0],
+                                                                                                                     redis_master_ip[1],
+                                                                                                                     _slots[num])
+                if do_command(host=redis_master_ip[0], commands=_add_slot_comm_line, user_name="root", user_password="Pass@word"):
+                    logging.info("add slot 成功")
+                for redis_slave_ip in redis_ip_port['redis_slave']:
+                    _add_master_replca_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster replicate {2}".format(
+                        redis_slave_ip[0],
+                        redis_slave_ip[1],
+                        cluster_node_info['{0}:{1}'.format(redis_master_ip[0], redis_master_ip[1])]
+                    )
+                    logging.info(_add_master_replca_comm_line)
+                    if do_command(host=redis_slave_ip[0],  commands=_add_master_replca_comm_line, user_name="root", user_password="Pass@word"):
+                        logging.info("add replicate 成功")
+                num += 1
+        except IOError as e:
+            return False
+        return True
 
 
 class ApproveRedis:
