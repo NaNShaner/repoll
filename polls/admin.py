@@ -70,6 +70,11 @@ class ChoiceInline(admin.StackedInline):
     extra = 1
 
 
+class ServerUserLine(admin.StackedInline):
+    model = ServerUserPass
+    extra = 1
+
+
 class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsStandalone
     inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
@@ -406,7 +411,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
 
-class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+class RunningInsTimeAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -479,7 +484,6 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
-                    # 'redis_qps', 'redis_start', 'redis_stop'
                     ]
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
@@ -505,8 +509,31 @@ class RedisSentienlConfAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_type']
 
 
+class RedisClusterConfAdmin(admin.ModelAdmin):
+    list_display = ['id', 'redis_type']
+
+
+class RedisPollControlAdmin(admin.ModelAdmin):
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    list_display = ['id', 'ip', 'area', 'machina_type', 'machina_mem']
+    list_filter = ['ip', 'area']
+    search_fields = ['ip', 'area']
+    list_per_page = 15
+
+    inlines = [ServerUserLine]
+    ServerUserLine.max_num = 1
+
+
 admin.site.register(LogEntry, LogEntryAdmin)
-# admin.site.register(Ipaddr, IpaddrAdmin)
 # 申请
 admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
 # 审批
@@ -518,4 +545,5 @@ admin.site.register(RedisConf, RedisConfAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
 # admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
-admin.site.register(RedisClusterConf)
+admin.site.register(RedisClusterConf, RedisClusterConfAdmin)
+admin.site.register(Ipaddr, RedisPollControlAdmin)

@@ -9,22 +9,34 @@ from .tools import redis_apply_text
 
 
 class Ipaddr(models.Model):
-    ip = models.GenericIPAddressField(verbose_name="服务器IP")
-    area = models.CharField(max_length=50, verbose_name="机房")
+    ip = models.GenericIPAddressField(verbose_name="服务器IP", unique=True, help_text="服务器IP地址")
+    area = models.CharField(max_length=50, verbose_name="机房", help_text="机房区域")
     choice_list = [
         (0, '虚拟机'),
         (1, "物理机")
     ]
     machina_type = models.IntegerField(choices=choice_list, verbose_name="机器类型")
-    machina_mem = models.CharField(max_length=50, verbose_name="内存大小")
-    used_mem = models.CharField(max_length=50, verbose_name="已分配内存")
-    used_cpu = models.CharField(max_length=50, verbose_name="CPU使用率")
+    machina_mem = models.CharField(max_length=50, verbose_name="内存大小", help_text="服务器内存大小")
+    used_mem = models.CharField(max_length=50, null=True, verbose_name="已分配内存")
+    used_cpu = models.CharField(max_length=50, null=True, verbose_name="CPU使用率")
 
     def __str__(self):
         return self.ip
 
     class Meta:
         verbose_name_plural = "资源池服务器列表"
+
+
+class ServerUserPass(models.Model):
+    user_name = models.CharField(default="repoll", max_length=50, verbose_name="服务器用户名", help_text="服务器用户名")
+    user_passwd = models.CharField(default="", max_length=128, verbose_name="服务器用户密码", help_text="服务器用户密码")
+    ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user_name
+
+    class Meta:
+        verbose_name_plural = "服务器资源池用户配置"
 
 
 class ApplyRedisInfo(models.Model):
@@ -298,7 +310,6 @@ class RedisConf(models.Model):
                                verbose_name="logfile", default="/opt/repoll/")
 
     def __str__(self):
-        # return self.redis_version
         return self.redis_version
 
     class Meta:
@@ -341,6 +352,11 @@ class RedisSentienlConf(models.Model):
 
 
 class RedisClusterConf(models.Model):
+    choice_list = [
+        ('Redis-Cluster', 'Redis-Cluster')
+    ]
+    redis_type = models.CharField(max_length=150, choices=choice_list,
+                                  default=choice_list[0][0], verbose_name="Redis运行模式")
     cluster_enabled = models.CharField(max_length=150, default="yes",
                                        verbose_name="cluster-enabled",
                                        help_text="是否开启集群模式")
@@ -524,10 +540,6 @@ class RealTimeQps(models.Model):
     redis_qps = models.FloatField(default=0, null=True, verbose_name="Redis QPS")
     redis_ins_used_mem = models.CharField(max_length=50, null=True, verbose_name="Redis内存使用率")
     redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
-    # redis_sentinel_ins_ip = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
-    #                                           to_field='redis_ip', verbose_name="redis_ip", default="")
-    # redis_sentinel_ins_port = models.ForeignKey(RunningInsSentinel, on_delete=models.CASCADE,
-    #                                             to_field='running_ins_port', related_name="redis_port", default="")
     redis_ip = models.GenericIPAddressField(default="", verbose_name="redis_ip", null=False)
     redis_port = models.IntegerField(default=0, verbose_name="redis_port", null=False)
 

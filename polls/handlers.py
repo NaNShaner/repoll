@@ -1,5 +1,4 @@
 from .models import *
-from django.dispatch import receiver
 import paramiko
 import logging
 from .scheduled import mem_unit_chage
@@ -13,8 +12,8 @@ import copy
 
 
 # 定义信号
-import django.dispatch
-work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
+# import django.dispatch
+# work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 # 定义项目绝对路径
 TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
