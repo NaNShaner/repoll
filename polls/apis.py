@@ -1,4 +1,4 @@
-from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone
+from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster
 from .handlers import RedisStartClass
 from rest_framework import serializers
 from rest_framework.response import Response
@@ -23,6 +23,8 @@ def redisstop(request, redis_type, ins_id):
         running_ins_time = RunningInsSentinel.objects.all()
     elif redis_type == 'standalone':
         running_ins_time = RunningInsStandalone.objects.all()
+    elif redis_type == 'cluster':
+        running_ins_time = RunningInsCluster.objects.all()
     running_ins = running_ins_time.filter(id=ins_id)
     running_ins_name = running_ins.values('running_ins_name').first()
     running_ins_ip = running_ins.values('redis_ip').first()
@@ -49,6 +51,8 @@ def redisstart(request, redis_type, ins_id):
         running_ins_time = RunningInsSentinel.objects.all()
     elif redis_type == 'standalone':
         running_ins_time = RunningInsStandalone.objects.all()
+    elif redis_type == 'cluster':
+        running_ins_time = RunningInsCluster.objects.all()
     running_ins = running_ins_time.filter(id=ins_id)
     running_ins_ip = running_ins.values('redis_ip').first()
     running_ins_port = running_ins.values('running_ins_port').first()

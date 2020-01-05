@@ -59,7 +59,37 @@ class RedisConfControlAdmin(admin.ModelAdmin):
 
 
 class RedisConfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'redis_version']
+    list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
 
 class RedisModelAdmin(admin.ModelAdmin):
@@ -71,6 +101,19 @@ class RedisModelAdmin(admin.ModelAdmin):
 class ChoiceInline(admin.StackedInline):
     model = ApplyRedisText
     extra = 1
+
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
+
+
+class ServerUserLine(admin.StackedInline):
+    model = ServerUserPass
+    extra = 1
+
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
 
 
 class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
@@ -96,6 +139,13 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
         """redis qps"""
         button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('standalone', parent_obj.id, obj.redis_ip, obj.running_ins_port)
         return redirect(button_html)
+
+    def get_inline_actions(self, request, obj=None):
+        """
+        针对redis standalone模式不显示redis_qps的按钮
+        """
+        self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
+        return self.inline_actions
 
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
@@ -136,6 +186,43 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
             self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         else:
             self.inline_actions = ['redis_start', 'redis_stop', ]
+        return self.inline_actions
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+
+
+class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
+    model = RunningInsCluster
+
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
+
+    def redis_start(self, request, obj, parent_obj):
+        """启动redis"""
+        button_html = "/polls/apis/redis-start/{0}/{1}/".format('cluster', obj.id)
+        return redirect(button_html)
+
+    def redis_stop(self, request, obj, parent_obj):
+        """
+        停止redis
+        """
+        if isinstance(obj, RunningInsCluster):
+            button_html = "/polls/apis/redis-stop/{0}/{1}/".format('cluster', obj.id)
+            return redirect(button_html)
+
+    def redis_qps(self, request, obj, parent_obj):
+        """
+        显示redis_qps
+        """
+        if obj.redis_type != 'Redis-Sentinel':
+            button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('cluster', parent_obj.id, obj.redis_ip, obj.running_ins_port)
+            return redirect(button_html)
+
+    def get_inline_actions(self, request, obj=None):
+        """
+        针对redis sentinel模式不显示redis_qps的按钮
+        """
+        self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
@@ -429,6 +516,9 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             elif obj.redis_type == 'Redis-Sentinel':
                 self.inlines = [RunningInsSentinelInline]
                 RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(running_ins_name=obj.running_ins_name))
+            elif obj.redis_type == 'Redis-Cluster':
+                self.inlines = [RunningInsClusterInline]
+                RunningInsClusterInline.max_num = len(RunningInsCluster.objects.filter(running_ins_name=obj.running_ins_name))
         else:
             self.inlines = []  # 如果不是继承，就取消设置
         defaults.update(args)
@@ -442,7 +532,6 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
-                    # 'redis_qps', 'redis_start', 'redis_stop'
                     ]
     list_filter = ['running_ins_name']
     search_fields = ['redis_type']
@@ -466,18 +555,100 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 class RedisSentienlConfAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisSentienlConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
+
+class RedisClusterConfAdmin(admin.ModelAdmin):
+    list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisClusterConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
+
+
+class RedisPollControlAdmin(admin.ModelAdmin):
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    list_display = ['id', 'ip', 'area', 'machina_type', 'machina_mem']
+    list_filter = ['ip', 'area']
+    search_fields = ['ip', 'area']
+    list_per_page = 15
+
+    inlines = [ServerUserLine]
+    ServerUserLine.max_num = 1
 
 
 admin.site.register(LogEntry, LogEntryAdmin)
-# admin.site.register(Ipaddr, IpaddrAdmin)
 # 申请
 admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
 # 审批
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
-# admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
-# admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
-# admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
+admin.site.register(RedisClusterConf, RedisClusterConfAdmin)
+admin.site.register(Ipaddr, RedisPollControlAdmin)

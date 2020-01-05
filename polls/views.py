@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from .models import RealTimeQps, RunningInsTime, RunningInsSentinel, RunningInsStandalone
+from .models import RealTimeQps, RunningInsSentinel, RunningInsStandalone, RunningInsCluster
 import os
 # pyecharts
 from jinja2 import Environment, FileSystemLoader
@@ -20,6 +20,8 @@ def redis_qps(request, redis_type, ins_id, redis_ip, redis_port):
         running_ins_time = RunningInsSentinel.objects.all()
     elif redis_type == 'standalone':
         running_ins_time = RunningInsStandalone.objects.all()
+    elif redis_type == 'cluster':
+        running_ins_time = RunningInsCluster.objects.all()
     real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id, redis_ip=redis_ip, redis_port=redis_port).order_by('-collect_date')[:60]
     running_ins = running_ins_time.filter(redis_ip=redis_ip, running_ins_port=redis_port)
     running_ins_name = running_ins.values('running_ins_name').first()
