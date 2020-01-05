@@ -313,7 +313,7 @@ class RedisConf(models.Model):
         return self.redis_version
 
     class Meta:
-        verbose_name_plural = "Redis配置信息"
+        verbose_name_plural = "Redis Standalone配置信息"
 
 
 class RedisSentienlConf(models.Model):
@@ -420,7 +420,7 @@ class ApplyRedisText(models.Model):
                                                                    "sentinelIp1:sentinelPort1</br>"
                                                                    "sentinelIp2:sentinelPort2</br>"
                                                                    "sentinelIp3:sentinelPort3</br>"
-                                                                   "3. Cluster类型: </br>"
+                                                                   "3. Cluster类型:（集群各实例端口不建议大于50000）</br>"
                                                                    "master1Ip:master1Port:memSize(M):slave1Ip:slave1Port</br>" 
                                                                    "master2Ip:master2Port:memSize(M):slave2Ip:slave2Port</br>" 
                                                                    "master3Ip:master3Port:memSize(M):slave3Ip:slave3Port</br>",

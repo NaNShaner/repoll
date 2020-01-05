@@ -12,6 +12,9 @@ from .handlers import ApproveRedis
 from pyecharts.globals import CurrentConfig
 CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("./templates/polls"))
 
+# 此处设置页面显示标题
+admin.site.site_header = 'Redis云管系统'
+
 # 此处设置页面头部标题
 admin.site.site_title = 'Redis云管系统'
 admin.site.index_title = 'Repoll'
@@ -56,7 +59,37 @@ class RedisConfControlAdmin(admin.ModelAdmin):
 
 
 class RedisConfAdmin(admin.ModelAdmin):
-    list_display = ['id', 'redis_version']
+    list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
 
 class RedisModelAdmin(admin.ModelAdmin):
@@ -69,10 +102,18 @@ class ChoiceInline(admin.StackedInline):
     model = ApplyRedisText
     extra = 1
 
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
+
 
 class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
     extra = 1
+
+    def has_delete_permission(self, request, obj=None):
+        """隐藏删除按钮"""
+        return False
 
 
 class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
@@ -98,6 +139,13 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
         """redis qps"""
         button_html = "/polls/redis_qps/{0}/{1}/{2}/{3}".format('standalone', parent_obj.id, obj.redis_ip, obj.running_ins_port)
         return redirect(button_html)
+
+    def get_inline_actions(self, request, obj=None):
+        """
+        针对redis standalone模式不显示redis_qps的按钮
+        """
+        self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
+        return self.inline_actions
 
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
 
@@ -411,7 +459,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
         self.message_user(request, "操作实例为 {0} 的实例失败，原因为{1}".format(queryset, mem))
 
 
-class RunningInsTimeAdmin(admin.ModelAdmin):
+class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -507,10 +555,70 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 class RedisSentienlConfAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisSentienlConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
 
 class RedisClusterConfAdmin(admin.ModelAdmin):
     list_display = ['id', 'redis_type']
+    list_display_links = ('id', 'redis_type')
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RedisClusterConfAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
 
 class RedisPollControlAdmin(admin.ModelAdmin):
@@ -539,11 +647,8 @@ admin.site.register(ApplyRedisInfo, ApplyRedisInfoAdmin)
 # 审批
 admin.site.register(RedisApply, RedisApplyAdmin)
 admin.site.register(RedisIns, RedisApprovalAdmin)
-# admin.site.register(RedisVersion, RedisVersionAdmin)
 admin.site.register(RedisConf, RedisConfAdmin)
-# admin.site.register(RedisModel, RedisModelAdmin)
 admin.site.register(RunningInsTime, RunningInsTimeAdmin)
-# admin.site.register(RealTimeQps, RealTimeQpsAdmin)
 admin.site.register(RedisSentienlConf, RedisSentienlConfAdmin)
 admin.site.register(RedisClusterConf, RedisClusterConfAdmin)
 admin.site.register(Ipaddr, RedisPollControlAdmin)

@@ -92,6 +92,11 @@ python3 manage.py runserver 127.0.0.1:8000 # 这里的IP换成本机服务器IP�
 http://127.0.0.1:8000/admin
 ```
 
+# 初始化redis各模式的配置
+```bash
+python3 manage.py loaddata /django/repoll/init_data.json
+```
+
 # 标准化申请流程
 * 分配普通用户权限（dev或者ops角色）
 * 领导层进行审批（boss角色）

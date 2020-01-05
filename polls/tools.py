@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError
 # from .models import Ipaddr
 from django.utils.html import format_html
 from IPy import IP
+import itertools as it
 
 
 def redis_apply_text(apply_text, redis_type=None):
@@ -11,8 +12,6 @@ def redis_apply_text(apply_text, redis_type=None):
     :param redis_type: redis的运行模式，目前支持Standalone和Sentinel
     :return: 返回格式化后的文本信息dict
     """
-    # redis_apply_ip = Ipaddr.objects.all()
-    # all_redis_ip = [redis_ip_ipaddr.__dict__['ip'] for redis_ip_ipaddr in redis_apply_ip]
     return_text = "输入规则错误请遵循如下规则: </br>" \
                   "1. standalone类型：</br>" \
                   "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>" \
@@ -21,7 +20,7 @@ def redis_apply_text(apply_text, redis_type=None):
                   "sentinelIp1</br>" \
                   "sentinelIp2</br>" \
                   "sentinelIp3" \
-                  "3. Cluster类型: </br>" \
+                  "3. Cluster类型（集群各实例端口不建议大于50000）: </br>" \
                   "master1Ip:master1Port:memSize(M):slave1Ip:slave1Port</br>" \
                   "master2Ip:master2Port:memSize(M):slave2Ip:slave2Port</br>" \
                   "master3Ip:master3Port:memSize(M):slave3Ip:slave3Port</br>"
@@ -107,6 +106,8 @@ def redis_apply_text(apply_text, redis_type=None):
                             raise ValidationError("单机格式文本校验错误, 请确认输入的IP是{0}".format(redis_ip_check))
                     except Exception as e:
                         raise ValidationError("单机格式文本校验错误, 请确认输入文本{0}".format(e))
+            elif '\r\n\r\n' in apply_text:
+                raise ValidationError("审批文本中存在多余的空行，请删除空行")
             else:
                 all_line = apply_text.split('\r\n')
                 redis_ins = all_line.pop(0)
@@ -127,3 +128,29 @@ def redis_apply_text(apply_text, redis_type=None):
                 except Exception as e:
                     raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))
         # raise ValidationError(format_html(return_text))
+
+
+def split_integer(m, n):
+    """
+    正对redis cluster的slot等份划分
+    :param m: 16384
+    :param n: 等份的份数
+    :return:
+    """
+    assert n > 0
+    quotient = int(m / n)
+    remainder = m % n
+    if remainder > 0:
+        return [quotient] * (n - remainder) + [quotient + 1] * remainder
+    if remainder < 0:
+        return [quotient - 1] * -remainder + [quotient] * (n + remainder)
+    return [quotient] * n
+
+
+def slot_split_part(n):
+    """
+    根据slot等分的份数，格式化redis命令行添加slot所需的格式
+    :param n: split_integer函数的返回结果
+    :return:
+    """
+    return ['..'.join((str(i+1), str(j))) for i, j in zip([-1]+list(it.accumulate(n[:-1])), it.accumulate(n))]

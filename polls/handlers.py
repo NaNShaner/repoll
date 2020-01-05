@@ -2,10 +2,11 @@ from .models import *
 import paramiko
 import logging
 from .scheduled import mem_unit_chage
+from django.core.exceptions import ValidationError
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from .tools import redis_apply_text
+from .tools import redis_apply_text, split_integer, slot_split_part
 import os
 import logging
 import copy
@@ -32,7 +33,6 @@ def apply_redis_text_handler(sender, **kwargs):
     :param kwargs:
     :return:
     """
-    a = kwargs
     redis_ins_id = kwargs['instance'].redis_ins_id
     redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
     redis_ins_type = redis_ins_obj.values('redis_type').first()['redis_type']
@@ -57,6 +57,9 @@ def apply_redis_text_handler(sender, **kwargs):
                 logging.info("Redis 单实例启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
             else:
                 logging.info("Redis 单实例启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+                raise ValidationError("redis 单实例启动失败")
+        else:
+            raise ValidationError("redis 单实例启动失败")
     elif redis_ins_type == 'Redis-Sentinel':
         b = RedisModelStartClass(model_type='Redis-Sentinel',
                                  redis_ins=redis_ins_obj,
@@ -84,6 +87,8 @@ def apply_redis_text_handler(sender, **kwargs):
                                                                 redis_apply_text_split['redis_slave_ip_port'],
                                                                 redis_apply_text_split['redis_sentinel_ip_port'],
                                                                 redis_apply_text_split['redis_master_name']))
+        else:
+            raise ValidationError("redis 哨兵动失败")
         b.save_sentinel_redis_ins()
     elif redis_ins_type == 'Redis-Cluster':
         redis_list = []
@@ -112,6 +117,8 @@ def apply_redis_text_handler(sender, **kwargs):
                     if file_status:
                         c.start_all_redis_ins()
                         c.save_cluster_ins()
+                    else:
+                        raise ValidationError("redis cluster 启动失败")
                 else:
                     c = RedisClusterClass(redis_ins=redis_ins_obj,
                                           redis_ins_name=redis_ins_obj_name,
@@ -123,6 +130,8 @@ def apply_redis_text_handler(sender, **kwargs):
                     if file_status:
                         c.start_all_redis_ins()
                         c.save_cluster_ins()
+                    else:
+                        raise ValidationError("redis cluster 启动失败")
         RedisIns.objects.filter(redis_ins_name=redis_ins_obj_name["redis_ins_name"]).update(on_line_status=0)
         start_cluster = StartRedisCluster(cluster_list=redis_list)
         redis_cluster_list = start_cluster.redis_cluster_list()
@@ -132,6 +141,9 @@ def apply_redis_text_handler(sender, **kwargs):
             start_cluster.add_slot_2_master(redis_cluster_node_info)
         else:
             logging.error("redis cluster 启动失败，集群信息为{0}".format(redis_list))
+            raise ValidationError("redis cluster 启动失败")
+    else:
+        raise ValidationError("redis 模式错误")
 
 
 @receiver(post_save, sender=ApplyRedisInfo, dispatch_uid="mymodel_post_save")
@@ -144,7 +156,6 @@ def apply_redis_info_handler(sender, **kwargs):
     """
     redis_ins_id = kwargs['instance'].apply_ins_name
     redis_ins_obj = ApplyRedisInfo.objects.filter(apply_ins_name=redis_ins_id)
-
     redis_ins_obj_type = redis_ins_obj.values('redis_type').first()
     redis_ins_obj_name = redis_ins_obj.values('apply_ins_name').first()
     redis_ins_obj_mem = redis_ins_obj.values('redis_mem').first()
@@ -699,6 +710,10 @@ class RedisClusterClass:
         return True
 
     def start_all_redis_ins(self):
+        """
+        启动所有redis实例
+        :return:
+        """
         redis_start = RedisStartClass(host=self.redis_ip,
                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
                                                        str(self.redis_port) + "-cluster.conf")
@@ -710,6 +725,10 @@ class RedisClusterClass:
             return False
 
     def save_cluster_ins(self):
+        """
+        redis实例信息入库
+        :return:
+        """
         obj_runningins_now = RunningInsTime.objects.all().get(running_ins_name=self.redis_ins_name)
         obj = RunningInsCluster(
             running_ins_name=self.redis_ins_name,
@@ -766,9 +785,14 @@ class StartRedisCluster:
                         comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3}".format(
                             redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port
                         )
-                        if do_command(host=redis_ins_one_ip, commands=comm_line, user_name="root", user_password="Pass@word"):
+                        _exex_command = do_command(host=redis_ins_one_ip, commands=comm_line, user_name="root", user_password="Pass@word")
+                        if _exex_command[0] == 0:
                             logging.info("{0}:{1} cluster meet {2}:{3} is ok".format(
                                 redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port))
+                        else:
+                            logging.info("{0}:{1} cluster meet {2}:{3} is fail, 报错信息为{4}".format(
+                                redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port,
+                                _exex_command[1]))
             except Exception as e:
                 logging.error("Redis Cluster 启动失败，涉及节点为{0}，报错信息为{1}".format(self.cluster_list, e))
 
@@ -796,16 +820,24 @@ class StartRedisCluster:
         :param cluster_node_info: 入参为所有节点的node id和ip对应关系
         :return:
         """
-        _slots = ["{0..5461}", "{5462..10922}", "{10923..16383}"]
+        # _slots = ["{0..5461}", "{5462..10922}", "{10923..16383}"]
+        master_num = len(self.cluster_list)
+        _slots = split_integer(16383, master_num)
+        slot_split = slot_split_part(_slots)
         num = 0
         try:
             for redis_ip_port in self.cluster_list:
                 redis_master_ip = redis_ip_port['redis_master']
-                _add_slot_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster addslots {2}".format(redis_master_ip[0],
-                                                                                                                     redis_master_ip[1],
-                                                                                                                     _slots[num])
-                if do_command(host=redis_master_ip[0], commands=_add_slot_comm_line, user_name="root", user_password="Pass@word"):
-                    logging.info("add slot 成功")
+                _add_slot_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster addslots {2}{3}{4}"\
+                    .format(redis_master_ip[0], redis_master_ip[1], "{", slot_split[num], "}")
+                _ex_addslots_command = do_command(host=redis_master_ip[0],
+                                                  commands=_add_slot_comm_line,
+                                                  user_name="root",
+                                                  user_password="Pass@word")
+                if _ex_addslots_command[0] == 0:
+                    logging.info("add slot 成功，命令行命令为{0}".format(_add_slot_comm_line))
+                else:
+                    logging.error("add slot 失败，报错为{0}".format(_ex_addslots_command[1]))
                 for redis_slave_ip in redis_ip_port['redis_slave']:
                     _add_master_replca_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster replicate {2}".format(
                         redis_slave_ip[0],
@@ -813,8 +845,14 @@ class StartRedisCluster:
                         cluster_node_info['{0}:{1}'.format(redis_master_ip[0], redis_master_ip[1])]
                     )
                     logging.info(_add_master_replca_comm_line)
-                    if do_command(host=redis_slave_ip[0],  commands=_add_master_replca_comm_line, user_name="root", user_password="Pass@word"):
+                    _ex_cluster_replicate = do_command(host=redis_slave_ip[0],
+                                                       commands=_add_master_replca_comm_line,
+                                                       user_name="root",
+                                                       user_password="Pass@word")
+                    if _ex_cluster_replicate[0] == 0:
                         logging.info("add replicate 成功")
+                    else:
+                        logging.error("add replicate 失败，报错为{0}".format(_ex_cluster_replicate[1]))
                 num += 1
         except IOError as e:
             return False
