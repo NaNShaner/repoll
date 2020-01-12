@@ -449,6 +449,7 @@ class RunningInsTime(models.Model):
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
     running_ins_used_mem_rate = models.IntegerField(default=0, null=True, verbose_name="内存使用率")
     running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
+    running_type = models.CharField(max_length=50, default="未运行", null=True, verbose_name="运行状态")
     ins_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -542,6 +543,7 @@ class RealTimeQps(models.Model):
     redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
     redis_ip = models.GenericIPAddressField(default="", verbose_name="redis_ip", null=False)
     redis_port = models.IntegerField(default=0, verbose_name="redis_port", null=False)
+    running_type = models.CharField(max_length=50, default="未运行", null=True, verbose_name="运行状态")
 
     class Meta:
         verbose_name = "Redis Monitor"

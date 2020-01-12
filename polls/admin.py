@@ -532,9 +532,9 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
-                    ]
+                    'running_type']
     list_filter = ['running_ins_name']
-    search_fields = ['redis_type']
+    search_fields = ['redis_type', 'running_type']
     list_display_links = ('id', 'running_ins_name')
     RealTimeQpsInline.max_num = 15
     list_per_page = 15

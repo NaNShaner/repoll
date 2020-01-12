@@ -21,7 +21,7 @@ TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 日志格式
 logging.basicConfig(filename="repoll.log", filemode="a+",
-                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%d-%M-%Y %H:%M:%S",
+                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%Y-%M-%d %H:%M:%S",
                     level=logging.INFO)
 
 
