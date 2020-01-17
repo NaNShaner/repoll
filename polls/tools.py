@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-# from .models import Ipaddr
 from django.utils.html import format_html
 from IPy import IP
 import itertools as it
@@ -8,6 +7,7 @@ import itertools as it
 def redis_apply_text(apply_text, redis_type=None):
     """
     解析审批页面中输入的文本信息，并格式化输出
+    TODO: 在资源池内的机器才能新建实例
     :param apply_text: 审批页面中输入的原始文本信息
     :param redis_type: redis的运行模式，目前支持Standalone和Sentinel
     :return: 返回格式化后的文本信息dict

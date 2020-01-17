@@ -29,6 +29,7 @@ logging.basicConfig(filename="repoll.log", filemode="a+",
 def apply_redis_text_handler(sender, **kwargs):
     """
     触发器，前端页面在审批完后自动触发
+    TODO: 在资源池内的机器才能新建实例
     :param sender:
     :param kwargs:
     :return:

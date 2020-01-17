@@ -30,7 +30,7 @@ class Ipaddr(models.Model):
 class ServerUserPass(models.Model):
     user_name = models.CharField(default="repoll", max_length=50, verbose_name="服务器用户名", help_text="服务器用户名")
     user_passwd = models.CharField(default="", max_length=128, verbose_name="服务器用户密码", help_text="服务器用户密码")
-    ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
+    server_ip = models.ForeignKey(Ipaddr, to_field="ip", on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user_name
