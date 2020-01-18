@@ -2,12 +2,24 @@ from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 from IPy import IP
 import itertools as it
+from django.db import connection
+
+
+def my_custom_sql():
+    """
+    链接数据库查询库中所有资源池的IP地址
+    :return: 所有资源池IP地址
+    :type: 元组
+    """
+    cursor = connection.cursor()
+    cursor.execute("SELECT ip FROM django.polls_ipaddr")
+    row = cursor.fetchone()
+    return row
 
 
 def redis_apply_text(apply_text, redis_type=None):
     """
     解析审批页面中输入的文本信息，并格式化输出
-    TODO: 在资源池内的机器才能新建实例
     :param apply_text: 审批页面中输入的原始文本信息
     :param redis_type: redis的运行模式，目前支持Standalone和Sentinel
     :return: 返回格式化后的文本信息dict
@@ -28,6 +40,8 @@ def redis_apply_text(apply_text, redis_type=None):
         if isinstance(apply_text, str) and redis_type == 'Redis-Standalone':
             redis_text_split = apply_text.split(":")
             try:
+                if redis_text_split[0] not in my_custom_sql():
+                    raise ValidationError("服务器{0},不在资源池列表中".format(redis_text_split[0]))
                 apply_text_dict = {
                     'redis_ip':  redis_text_split[0],
                     'redis_port': redis_text_split[1],
@@ -35,8 +49,6 @@ def redis_apply_text(apply_text, redis_type=None):
                 }
             except Exception as e:
                 raise ValidationError("文本格式输入错误，{0}".format(e))
-            # if apply_text_dict['redis_ip'] not in all_redis_ip:
-            #     raise ValidationError("{0}不在Redis云管列表中...".format(apply_text_dict['redis_ip']))
             return apply_text_dict
         elif redis_type == 'Redis-Sentinel':
             try:
@@ -50,6 +62,8 @@ def redis_apply_text(apply_text, redis_type=None):
                 redis_master_ip_port = {all_redis_ins_ip.pop(0): all_redis_ins_port.pop(0)}
                 redis_slave_ip_port_list = []
                 for i in all_redis_ins_ip:
+                    if i not in my_custom_sql():
+                        raise ValidationError("服务器{0},不在资源池列表中".format(i))
                     for p in all_redis_ins_port:
                         redis_ins_ip_port_dict = {}
                         redis_ins_ip_port_dict[i] = p
@@ -70,7 +84,6 @@ def redis_apply_text(apply_text, redis_type=None):
                 raise ValidationError("文本格式输入错误，{0}".format(e))
         elif redis_type == 'Redis-Cluster':
             redis_text_split = apply_text.split("\r\n")
-            apply_text_dict = {}
             text_list = []
             for redis_ins in redis_text_split:
                 text_dict = {}
@@ -78,6 +91,9 @@ def redis_apply_text(apply_text, redis_type=None):
                 redis_mem = redis_inline.pop(2)
                 try:
                     all_redis_ins_ip = redis_inline[::2]
+                    for i in all_redis_ins_ip:
+                        if i not in my_custom_sql():
+                            raise ValidationError("服务器{0},不在资源池列表中".format(i))
                     all_redis_ins_port = redis_inline[1::2]
                     all_redis = list(zip(all_redis_ins_ip, all_redis_ins_port))
                     text_dict["redis_ip_port"] = all_redis
@@ -101,6 +117,8 @@ def redis_apply_text(apply_text, redis_type=None):
                     redis_port_check = apply_text.split(":")[1]
                     try:
                         IP(redis_ip_check)
+                        if redis_ip_check not in my_custom_sql():
+                            raise ValidationError("服务器{0},不在资源池列表中".format(redis_ip_check))
                         int(redis_port_check)
                         if len(redis_ip_check.split(".")) != 4:
                             raise ValidationError("单机格式文本校验错误, 请确认输入的IP是{0}".format(redis_ip_check))
@@ -112,8 +130,6 @@ def redis_apply_text(apply_text, redis_type=None):
                 all_line = apply_text.split('\r\n')
                 redis_ins = all_line.pop(0)
                 all_redis_ins = redis_ins.split(":")
-                redis_mem = all_redis_ins.pop(2)
-                redis_master_name = all_redis_ins.pop(2)
                 all_redis_ins_ip = all_redis_ins[::2]
                 all_redis_ins_port = all_redis_ins[1::2]
                 redis_sentinel = [redis_sentinel for redis_sentinel in all_line if redis_sentinel != '']
@@ -123,11 +139,12 @@ def redis_apply_text(apply_text, redis_type=None):
                     all_redis_ip = all_redis_ins_ip + redis_sentinel_ip
                     for ip in all_redis_ip:
                         IP(ip)
+                        if ip not in my_custom_sql():
+                            raise ValidationError("服务器{0},不在资源池列表中".format(ip))
                     for port in all_redis_ins_port + redis_sentinel_port:
                         int(port)
                 except Exception as e:
                     raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))
-        # raise ValidationError(format_html(return_text))
 
 
 def split_integer(m, n):

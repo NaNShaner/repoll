@@ -447,7 +447,7 @@ class RunningInsTime(models.Model):
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
-    running_ins_used_mem_rate = models.IntegerField(default=0, null=True, verbose_name="内存使用率")
+    running_ins_used_mem_rate = models.CharField(default="0", max_length=50, null=True, verbose_name="内存使用率")
     running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
     running_type = models.CharField(max_length=50, default="未运行", null=True, verbose_name="运行状态")
     ins_choice = [

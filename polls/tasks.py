@@ -7,8 +7,8 @@ import threading
 import logging
 
 # 日志格式
-logging.basicConfig(filename="repoll.log", filemode="a+",
-                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%Y-%M-%d %H:%M:%S",
+logging.basicConfig(filename="repoll1.log", filemode="a+",
+                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s",
                     level=logging.INFO)
 
 
@@ -53,8 +53,8 @@ def get_redis_ins_qps():
                     ip_port['redis_ins'] = redis_ins
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
-            logging.error(e)
-
+            print("报错信息为".format(e))
+        print(all_ip_port)
         for items in all_ip_port:
             try:
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
@@ -62,13 +62,15 @@ def get_redis_ins_qps():
                 if not redis_mon.redis_alive:
                     RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
                         running_time=0, running_type="未运行")
-                    logging.error("实例{0}监控异常".format(items['redis_ins']))
+                    print("实例{0}监控异常".format(items['redis_ins']))
                 else:
                     redis_memory_usage = redis_mon.redis_memory_usage()
                     ops = redis_mon.ops()
                     redis_used_memory_human = redis_mon.redis_used_memory_human()
                     redis_uptime_in_days = redis_mon.redis_uptime_in_days()
-                    logging.info("{0},{1},{2},{3}".format(redis_memory_usage, ops, redis_used_memory_human, redis_uptime_in_days))
+                    if int(redis_uptime_in_days) == 0:
+                        redis_uptime_in_days = 1
+                    print("{0},{1},{2},{3}".format(redis_memory_usage, ops, redis_used_memory_human, redis_uptime_in_days))
                     real_time_qps_obj = RealTimeQps(redis_used_mem=redis_used_memory_human,
                                                     redis_qps=ops,
                                                     redis_ins_used_mem=redis_memory_usage,
@@ -82,10 +84,11 @@ def get_redis_ins_qps():
                         running_type="运行中",
                         running_ins_used_mem_rate=redis_memory_usage,
                         running_time=redis_uptime_in_days)
+                    print("items['redis_ins']: {0}".format(items['redis_ins'].running_ins_name))
             except ValueError as e:
-                logging.error(e)
-            finally:
-                logging.info("finally : {0}".format(items))
+                print("报错信息为{0}".format(e))
+            # finally:
+            #     print("finally : {0}".format(items))
 
 
 t = threading.Thread(target=get_redis_ins_qps, name='get_redis_ins_qps')
