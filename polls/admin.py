@@ -477,17 +477,17 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         """
         return False
 
-    def get_actions(self, request):
-        """
-        在actions中去掉‘删除’操作
-        :param request:
-        :return:
-        """
-        actions = super(RunningInsTimeAdmin, self).get_actions(request)
-        if request.user.username[0].upper() != 'J':
-            if 'delete_selected' in actions:
-                del actions['delete_selected']
-        return actions
+    # def get_actions(self, request):
+    #     """
+    #     在actions中去掉‘删除’操作
+    #     :param request:
+    #     :return:
+    #     """
+    #     actions = super(RunningInsTimeAdmin, self).get_actions(request)
+    #     if request.user.username[0].upper() != 'J':
+    #         if 'delete_selected' in actions:
+    #             del actions['delete_selected']
+    #     return actions
 
     # def redis_qps(self, obj):
     #     button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)

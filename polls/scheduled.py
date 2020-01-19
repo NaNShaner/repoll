@@ -27,6 +27,7 @@ class RedisScheduled(object):
         try:
             self.info = self.rds.info()
         except Exception as e:
+            print("{0}::::{1}  info 失败 {2}".format(self.redis_ip, self.redis_port, e))
             self.info = None
 
     def redismonitor(self):
