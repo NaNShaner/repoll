@@ -14,6 +14,7 @@ import logging
 def get_redis_ins_qps():
     """
     Redis ins 所有的redis实例进行监控，速率为秒级
+    TODO: 哨兵模式和集群模式的redis 角色变化监控
     :return:
     """
     running_ins_names = RunningInsTime.objects.all()
@@ -52,7 +53,6 @@ def get_redis_ins_qps():
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
             print("报错信息为".format(e))
-        # print(all_ip_port)
         for items in all_ip_port:
             try:
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],

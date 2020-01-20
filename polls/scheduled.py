@@ -223,5 +223,7 @@ def mem_unit_chage(mem):
         return int(float(memory)*1024)
     elif type == 'k' and 'K':
         return int(float(memory)/1024)
+    elif type == 'm' and 'M':
+        return int(float(memory)/1024)
     else:
-        return int(float(memory))
+        return int(float(mem))

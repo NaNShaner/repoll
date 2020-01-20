@@ -197,6 +197,7 @@ def get_redis_conf(redis_type):
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
     """
     登录远端服务器执行命令
+    TODO: 使用库中服务器资源池ServerUserPass表里的用户名和密码
     :param host: 远端主机
     :param commands:  到远端执行的命令
     :param user_name: 登录到远端的服务名

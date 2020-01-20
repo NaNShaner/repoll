@@ -15,6 +15,15 @@ CurrentConfig.GLOBAL_ENV = Environment(loader=FileSystemLoader("{0}/polls/static
 
 # echarts
 def redis_qps(request, redis_type, ins_id, redis_ip, redis_port):
+    """
+    TODO: 目前查看 QPS的趋势图是硬编码，后台只能查看最近60秒的趋势
+    :param request:
+    :param redis_type:
+    :param ins_id:
+    :param redis_ip:
+    :param redis_port:
+    :return:
+    """
     real_time_qps = RealTimeQps.objects.all()
     if redis_type == 'sentinel':
         running_ins_time = RunningInsSentinel.objects.all()

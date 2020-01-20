@@ -59,6 +59,9 @@ class RedisConfControlAdmin(admin.ModelAdmin):
 
 
 class RedisConfAdmin(admin.ModelAdmin):
+    """
+    TODO: 目前redis的各个配置项为命令行初始化，无法在后台灵活添加配置
+    """
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
@@ -110,6 +113,7 @@ class ChoiceInline(admin.StackedInline):
 class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
     extra = 1
+    readonly_fields = ['user_name']
 
     def has_delete_permission(self, request, obj=None):
         """隐藏删除按钮"""
@@ -460,6 +464,9 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    """
+    TODO: redis consle功能添加
+    """
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -477,17 +484,17 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         """
         return False
 
-    # def get_actions(self, request):
-    #     """
-    #     在actions中去掉‘删除’操作
-    #     :param request:
-    #     :return:
-    #     """
-    #     actions = super(RunningInsTimeAdmin, self).get_actions(request)
-    #     if request.user.username[0].upper() != 'J':
-    #         if 'delete_selected' in actions:
-    #             del actions['delete_selected']
-    #     return actions
+    def get_actions(self, request):
+        """
+        在actions中去掉‘删除’操作
+        :param request:
+        :return:
+        """
+        actions = super(RunningInsTimeAdmin, self).get_actions(request)
+        if request.user.username[0].upper() != 'J':
+            if 'delete_selected' in actions:
+                del actions['delete_selected']
+        return actions
 
     # def redis_qps(self, obj):
     #     button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
