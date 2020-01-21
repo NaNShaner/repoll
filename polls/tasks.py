@@ -25,9 +25,9 @@ def get_redis_ins_qps():
             redis_ins = running_ins_names.get(running_ins_name=redis_name)
             if redis_ins.redis_type == 'Redis-Sentinel':
                 redis_sentinel = RunningInsSentinel.objects.all().filter(running_ins_name=redis_name).values()
-                ip_port = {}
                 for redis_ip_port in redis_sentinel:
-                    if redis_ip_port.redis_type != 'Redis-Sentinel':
+                    ip_port = {}
+                    if redis_ip_port["redis_type"] != 'Redis-Sentinel':
                         ip_port['redis_ip'] = redis_ip_port['redis_ip']
                         ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
                         ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
@@ -35,8 +35,8 @@ def get_redis_ins_qps():
                         all_ip_port.append(ip_port)
             elif redis_ins.redis_type == 'Redis-Standalone':
                 redis_standalone = RunningInsStandalone.objects.all().filter(running_ins_name=redis_name).values()
-                ip_port = {}
                 for redis_standalone_ins in redis_standalone:
+                    ip_port = {}
                     ip_port['redis_ip'] = redis_standalone_ins['redis_ip']
                     ip_port['running_ins_port'] = redis_standalone_ins['running_ins_port']
                     ip_port['redis_ins_mem'] = redis_standalone_ins['redis_ins_mem']
@@ -44,8 +44,8 @@ def get_redis_ins_qps():
                     all_ip_port.append(ip_port)
             elif redis_ins.redis_type == 'Redis-Cluster':
                 redis_cluster = RunningInsCluster.objects.all().filter(running_ins_name=redis_name).values()
-                ip_port = {}
                 for redis_ip_port in redis_cluster:
+                    ip_port = {}
                     ip_port['redis_ip'] = redis_ip_port['redis_ip']
                     ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
                     ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
@@ -53,6 +53,7 @@ def get_redis_ins_qps():
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
             print("报错信息为".format(e))
+        print("all_ip_port : {0}".format(all_ip_port))
         for items in all_ip_port:
             try:
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],

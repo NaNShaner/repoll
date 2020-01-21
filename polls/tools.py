@@ -81,7 +81,7 @@ def redis_apply_text(apply_text, redis_type=None):
                 redis_slave_ip_port_list = []
                 for i in all_redis_ins_ip:
                     if i not in mysql_ip_row:
-                        raise ValidationError("服务器{0},不在资源池列表中".format(i))
+                        raise ValidationError("服务器{0},不在资源池列表中或文本格式不正确".format(i))
                     for p in all_redis_ins_port:
                         redis_ins_ip_port_dict = {}
                         redis_ins_ip_port_dict[i] = p
@@ -168,7 +168,7 @@ def redis_apply_text(apply_text, redis_type=None):
                         if ip not in mysql_ip_row:
                             raise ValidationError("服务器{0},不在资源池列表中".format(ip))
                 except Exception as e:
-                    raise ValidationError("文本输入格式错误，请检查是否为哨兵模式，纠正错误{0}".format(e))
+                    raise ValidationError("文本输入格式错误，请检查并纠正错误{0}".format(e))
 
 
 def split_integer(m, n):
