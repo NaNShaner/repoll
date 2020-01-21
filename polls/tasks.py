@@ -9,12 +9,13 @@ import logging
 # 日志格式
 # logging.basicConfig(format="%(asctime)s %(name)s: %(levelname)s: %(message)s",
 #                     level=logging.INFO)
+logger = logging.getLogger("redis.monitor")
 
 
 def get_redis_ins_qps():
     """
-    Redis ins 所有的redis实例进行监控，速率为秒级
-    TODO: 哨兵模式和集群模式的redis 角色变化监控
+    Redis ins 所有的redis实例进行监控
+    TODO: 哨兵模式和集群模式的redis 角色变化监控，速率为现状是分钟级，需要精确到秒级
     :return:
     """
     running_ins_names = RunningInsTime.objects.all()
@@ -52,8 +53,8 @@ def get_redis_ins_qps():
                     ip_port['redis_ins'] = redis_ins
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
-            print("报错信息为".format(e))
-        print("all_ip_port : {0}".format(all_ip_port))
+            logger.error("报错信息为".format(e))
+        logger.info("all_ip_port : {0}".format(all_ip_port))
         for items in all_ip_port:
             try:
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
@@ -61,7 +62,7 @@ def get_redis_ins_qps():
                 if not redis_mon.redis_alive:
                     RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
                         running_time=0, running_type="未运行")
-                    print("实例{0}监控异常, {1}::::{2}".format(items['redis_ins'], items['redis_ip'], items['running_ins_port']))
+                    logger.error("实例{0}监控异常, {1}::::{2}".format(items['redis_ins'], items['redis_ip'], items['running_ins_port']))
                 else:
                     redis_memory_usage = redis_mon.redis_memory_usage()
                     ops = redis_mon.ops()
@@ -83,11 +84,11 @@ def get_redis_ins_qps():
                         running_ins_used_mem_rate=redis_memory_usage,
                         running_time=redis_uptime_in_days)
                     # print("items['redis_ins']: {0}".format(items['redis_ins'].running_ins_name))
-                    print("实例名称：{7} -- {4}:::{5} -- RunningInsTime保存状态:{6} -- redis_memory_usage:{0},ops:{1},redis_used_memory_human:{2},redis_uptime_in_days:{3}".format(
+                    logger.info("实例名称：{7} -- {4}:::{5} -- RunningInsTime保存状态:{6} -- redis_memory_usage:{0},ops:{1},redis_used_memory_human:{2},redis_uptime_in_days:{3}".format(
                             redis_memory_usage, ops, redis_used_memory_human, redis_uptime_in_days, items['redis_ip'],
                             items['running_ins_port'], qw, items['redis_ins'].running_ins_name))
             except ValueError as e:
-                print("报错信息为{0}".format(e))
+                logger.error("报错信息为{0}".format(e))
 
 
 t = threading.Thread(target=get_redis_ins_qps, name='get_redis_ins_qps')

@@ -164,8 +164,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'polls/static/')
 
 CRONJOBS = [
-    ('* * * * *', 'polls.tasks.get_redis_ins_qps',
-     '> {0}/redis_qps.log'.format(BASE_DIR)),
+    ('*/1 * * * *', 'polls.tasks.get_redis_ins_qps'),
+    # ('* * * * *', 'polls.tasks.get_redis_ins_qps', '2>&1 >> {0}/redis_qps.log'.format(BASE_DIR)),
 ]
 
 # 关闭simpleui统计分析上报信息。
@@ -176,3 +176,74 @@ SIMPLEUI_STATIC_OFFLINE = True
 
 # 关闭simpleui的版本信息展示
 SIMPLEUI_HOME_INFO = False
+
+# logging的配置
+LOGGING = {
+    'version': 1,                       # 指明dictConnfig的版本
+    'disable_existing_loggers': True,   # 表示是否禁用所有的已经存在的日志配置
+    'formatters': {
+        # 日志格式器
+        'verbose': {  # 详细
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'standard': {  # 标准
+            'format': '[%(asctime)s] [%(levelname)s] %(message)s'
+        },
+    },
+    # handlers：用来定义具体处理日志的方式，可以定义多种，"default"就是默认方式，"console"就是打印到控制台方式。file是写入到文件的方式，注意使用的class不同
+    'handlers': {
+        # 处理器，在这里定义了两个个处理器
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'stream': 'ext://sys.stdout',   # 文件重定向的配置，将打印到控制台的信息都重定向出去
+            'formatter': 'standard'         # 制定输出的格式，注意 在上面的formatters配置里面选择一个，否则会报错
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '{0}/repoll.log'.format(BASE_DIR),  # 这是将普通日志写入到日志文件中的方法，
+            'formatter': 'standard'
+        },
+        'monitor': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': '{0}/monitor.log'.format(BASE_DIR),  # 这是将普通日志写入到日志文件中的方法，
+            'formatter': 'standard'
+        },
+        'default': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '{0}/repoll.log'.format(BASE_DIR),      # 日志输出文件
+            'maxBytes': 1024*1024*5,                            # 文件大小
+            'backupCount': 5,                                   # 备份份数
+            'formatter': 'standard',                            # 使用哪种formatters日志格式
+        },
+        # 上面两种写入日志的方法是有区别的，前者是将控制台下输出的内容全部写入到文件中，这样做的好处就是我们在views代码中的所有print也会写在对应的位置
+        # 第二种方法就是将系统内定的内容写入到文件，具体就是请求的地址、错误信息等，小伙伴也可以都使用一下然后查看两个文件的异同。
+    },
+    'loggers': {  # log记录器，配置之后就会对应的输出日志
+        # django 表示就是django本身默认的控制台输出，就是原本在控制台里面输出的内容，在这里的handlers里的file表示写入到上面配置的file-/home/aea/log/jwt_test.log文件里面
+        # 在这里的handlers里的console表示写入到上面配置的console-/home/aea/log/test.log文件里面
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'redis.monitor': {
+            'handlers': ['monitor'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django.request ': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.db.backends': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

@@ -1,8 +1,17 @@
 import redis
 import time
-# from .tasks import mem_unit_chage
 from .models import RealTimeQps, RunningInsTime
 from django.utils import timezone
+import logging
+logger = logging.getLogger("redis.monitor")
+
+
+# def timer_count(func):
+#     def wrapper(*args, **kwargs):
+#         i = 0
+#         while i < 60:
+#             func(*args, **kwargs)
+#     return wrapper
 
 
 class RedisScheduled(object):
@@ -27,7 +36,7 @@ class RedisScheduled(object):
         try:
             self.info = self.rds.info()
         except Exception as e:
-            print("{0}::::{1}  info 失败 {2}".format(self.redis_ip, self.redis_port, e))
+            logger.error("实例{0}:{1}  执行redis info命令失败，报错信息为{2}".format(self.redis_ip, self.redis_port, e))
             self.info = None
 
     def redismonitor(self):
