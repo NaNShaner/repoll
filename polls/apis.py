@@ -35,6 +35,18 @@ def redisstop(request, redis_type, ins_id):
     result = serializer.data[0]
     if redisins.start_server():
         result['redis_status'] = "DOWN"
+        if redis_type == 'sentinel':
+            RunningInsSentinel.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                              running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="未启动")
+        elif redis_type == 'standalone':
+            RunningInsStandalone.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                                running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="未启动")
+        elif redis_type == 'cluster':
+            RunningInsCluster.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                             running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="未启动")
         return Response(result)
     result['redis_status'] = "ERROR"
     return Response(result)
@@ -63,13 +75,30 @@ def redisstart(request, redis_type, ins_id):
                                    redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-sentienl.conf --sentinel".format(
                                        running_ins_port['running_ins_port']))
     else:
-        redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
-                                   redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}.conf".format(
-                                       running_ins_port['running_ins_port']))
+        if redis_type == 'cluster':
+            redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
+                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-cluster.conf".format(
+                                           running_ins_port['running_ins_port']))
+        else:
+            redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
+                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}.conf".format(
+                                           running_ins_port['running_ins_port']))
     serializer = RunningInsTimeSerializer(running_ins, many=True)
     result = serializer.data[0]
     if redisins.start_server():
         result['redis_status'] = "UP"
+        if redis_type == 'sentinel':
+            RunningInsSentinel.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                              running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="运行中")
+        elif redis_type == 'standalone':
+            RunningInsStandalone.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                                running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="运行中")
+        elif redis_type == 'cluster':
+            RunningInsCluster.objects.filter(redis_ip=running_ins_ip['redis_ip'],
+                                             running_ins_port=running_ins_port['running_ins_port']).update(
+                redis_ins_alive="运行中")
         return Response(result)
     result['redis_status'] = "ERROR"
     return Response(result)

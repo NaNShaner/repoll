@@ -8,21 +8,13 @@ from django.dispatch import receiver
 from django.db.models.signals import post_save
 from .tools import redis_apply_text, split_integer, slot_split_part
 import os
-import logging
 import copy
-
-
-# 定义信号
-# import django.dispatch
-# work_done = django.dispatch.Signal(providing_args=['redis_text', 'request'])
 
 # 定义项目绝对路径
 TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# 日志格式
-logging.basicConfig(filename="repoll.log", filemode="a+",
-                    format="%(asctime)s %(name)s: %(levelname)s: %(message)s", datefmt="%d-%M-%Y %H:%M:%S",
-                    level=logging.INFO)
+
+logger = logging.getLogger("django")
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
@@ -54,7 +46,7 @@ def apply_redis_text_handler(sender, **kwargs):
             redis_start = RedisStartClass(host=redis_ip,
                                           redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" + str(redis_port) + ".conf")
             if redis_start.start_server():
-                logging.info("Redis 单实例启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+                logger.info("Redis 单实例启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
             else:
                 logging.info("Redis 单实例启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
                 raise ValidationError("redis 单实例启动失败")
@@ -198,6 +190,7 @@ def get_redis_conf(redis_type):
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
     """
     登录远端服务器执行命令
+    TODO: 使用库中服务器资源池ServerUserPass表里的用户名和密码
     :param host: 远端主机
     :param commands:  到远端执行的命令
     :param user_name: 登录到远端的服务名
@@ -458,7 +451,7 @@ class RedisStartClass:
 
     def start_server(self):
         """
-       启动redis的实例
+        启动redis的实例
         """
         do_command_result = do_command(self.host, self.redis_server_ctl, user_name="root", user_password="Pass@word")
         if do_command_result:

@@ -59,6 +59,9 @@ class RedisConfControlAdmin(admin.ModelAdmin):
 
 
 class RedisConfAdmin(admin.ModelAdmin):
+    """
+    TODO: 目前redis的各个配置项为命令行初始化，无法在后台灵活添加配置
+    """
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
@@ -110,6 +113,7 @@ class ChoiceInline(admin.StackedInline):
 class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
     extra = 1
+    readonly_fields = ['user_name']
 
     def has_delete_permission(self, request, obj=None):
         """隐藏删除按钮"""
@@ -147,7 +151,8 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
         self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
 
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type',
+                       'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
@@ -187,7 +192,8 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
         else:
             self.inline_actions = ['redis_start', 'redis_stop', ]
         return self.inline_actions
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
+                       'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
@@ -224,7 +230,8 @@ class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
         """
         self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
+                       'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RealTimeQpsInline(admin.StackedInline):
@@ -398,38 +405,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
-    # def ins_status_color(self, obj):
-    #     ins_status = ''
-    #     ins_choice = [
-    #         (0, "已上线"),
-    #         (1, "已下线"),
-    #         (2, "未审批"),
-    #         (3, "已审批"),
-    #         (4, "已拒绝"),
-    #     ]
-    #     if obj.ins_status == 0:
-    #         color = 'red'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 1:
-    #         color = 'green'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 2:
-    #         color = 'blue'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 3:
-    #         color = 'green'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 4:
-    #         color = 'blue'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     else:
-    #         color = ''
-    #     return format_html(
-    #         '<font size="5" face="arial" color="{0}">{1}</font>',
-    #         color,
-    #         ins_status,
-    #     )
-    # ins_status_color.short_description = u'实例状态'
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
@@ -460,6 +435,9 @@ class RedisApprovalAdmin(admin.ModelAdmin):
 
 
 class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    """
+    TODO: redis consle功能添加
+    """
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -532,9 +510,9 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
-                    ]
+                    'running_type']
     list_filter = ['running_ins_name']
-    search_fields = ['redis_type']
+    search_fields = ['redis_type', 'running_type']
     list_display_links = ('id', 'running_ins_name')
     RealTimeQpsInline.max_num = 15
     list_per_page = 15

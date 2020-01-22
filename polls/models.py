@@ -30,7 +30,7 @@ class Ipaddr(models.Model):
 class ServerUserPass(models.Model):
     user_name = models.CharField(default="repoll", max_length=50, verbose_name="服务器用户名", help_text="服务器用户名")
     user_passwd = models.CharField(default="", max_length=128, verbose_name="服务器用户密码", help_text="服务器用户密码")
-    ip = models.ForeignKey(Ipaddr, on_delete=models.CASCADE)
+    server_ip = models.ForeignKey(Ipaddr, to_field="ip", on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user_name
@@ -447,8 +447,9 @@ class RunningInsTime(models.Model):
     redis_type = models.CharField(max_length=150, choices=choice_list,
                                   default=choice_list[0][0], verbose_name="Redis运行模式")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
-    running_ins_used_mem_rate = models.IntegerField(default=0, null=True, verbose_name="内存使用率")
+    running_ins_used_mem_rate = models.CharField(default="0", max_length=50, null=True, verbose_name="内存使用率")
     running_time = models.IntegerField(default=0, null=True, verbose_name="运行时间")
+    running_type = models.CharField(max_length=50, default="未运行", null=True, verbose_name="运行状态")
     ins_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -480,6 +481,7 @@ class RunningInsStandalone(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
     running_ins = models.ForeignKey(RunningInsTime, default="", on_delete=models.CASCADE)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""
@@ -504,6 +506,7 @@ class RunningInsSentinel(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
     running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""
@@ -525,6 +528,7 @@ class RunningInsCluster(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
     running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""
@@ -542,6 +546,7 @@ class RealTimeQps(models.Model):
     redis_running_monitor = models.ForeignKey(RunningInsTime, on_delete=models.CASCADE)
     redis_ip = models.GenericIPAddressField(default="", verbose_name="redis_ip", null=False)
     redis_port = models.IntegerField(default=0, verbose_name="redis_port", null=False)
+    running_type = models.CharField(max_length=50, default="未运行", null=True, verbose_name="运行状态")
 
     class Meta:
         verbose_name = "Redis Monitor"
