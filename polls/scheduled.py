@@ -16,7 +16,7 @@ logger = logging.getLogger("redis.monitor")
 
 class RedisScheduled(object):
 
-    def __init__(self, redis_ip, redis_port, redis_ins_mem, redis_ins, password=None):
+    def __init__(self, redis_ip, redis_port, redis_ins_mem=None, redis_ins=None, password=None):
         """
         IP、port、最大内存以及redis已运行实例obj
         :param redis_ip:
@@ -194,6 +194,22 @@ class RedisScheduled(object):
             hits = self.info['keyspace_hits']
             rate = float(hits) / float(int(hits) + int(misses))
             return "%.2f" % (rate * 100)
+        except Exception as e:
+            return 0
+
+    def redis_running_type(self):
+        """
+        命令命中率
+        :return:
+        """
+        try:
+            choice_list = ['Redis-Master', 'Redis-Slave']
+            if self.info['role'] == "master":
+                return choice_list[0]
+            elif self.info['role'] == "slave":
+                return choice_list[1]
+            else:
+                return 0
         except Exception as e:
             return 0
 

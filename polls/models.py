@@ -481,6 +481,7 @@ class RunningInsStandalone(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, verbose_name="实例内存")
     running_ins = models.ForeignKey(RunningInsTime, default="", on_delete=models.CASCADE)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""
@@ -505,6 +506,7 @@ class RunningInsSentinel(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
     running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""
@@ -526,6 +528,7 @@ class RunningInsCluster(models.Model):
     redis_ip = models.GenericIPAddressField(null=True, verbose_name="Redis IP地址")
     redis_ins_mem = models.CharField(max_length=50, null=True, default="无", verbose_name="实例内存")
     running_ins_standalone = models.ForeignKey(RunningInsTime, unique=False, on_delete=models.CASCADE, null=True)
+    redis_ins_alive = models.CharField(default="未启动", max_length=50, null=True, verbose_name="实例存活状态")
 
     def __str__(self):
         return ""

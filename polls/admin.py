@@ -151,7 +151,8 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
         self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
 
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type',
+                       'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
@@ -191,7 +192,8 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
         else:
             self.inline_actions = ['redis_start', 'redis_stop', ]
         return self.inline_actions
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
+                       'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
@@ -228,7 +230,8 @@ class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
         """
         self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
-    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+    readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
+                       'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
 
 class RealTimeQpsInline(admin.StackedInline):

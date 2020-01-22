@@ -21,6 +21,7 @@ def get_redis_ins_qps():
     running_ins_names = RunningInsTime.objects.all()
     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
     all_ip_port = []
+    all_sentienl_ip_port = []
     for redis_name in all_redis_names:
         try:
             redis_ins = running_ins_names.get(running_ins_name=redis_name)
@@ -33,7 +34,12 @@ def get_redis_ins_qps():
                         ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
                         ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
                         ip_port['redis_ins'] = redis_ins
+                        ip_port['redis_type'] = 'Redis-Sentinel'
                         all_ip_port.append(ip_port)
+                    else:
+                        ip_port['redis_ip'] = redis_ip_port['redis_ip']
+                        ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
+                        all_sentienl_ip_port.append(ip_port)
             elif redis_ins.redis_type == 'Redis-Standalone':
                 redis_standalone = RunningInsStandalone.objects.all().filter(running_ins_name=redis_name).values()
                 for redis_standalone_ins in redis_standalone:
@@ -42,6 +48,7 @@ def get_redis_ins_qps():
                     ip_port['running_ins_port'] = redis_standalone_ins['running_ins_port']
                     ip_port['redis_ins_mem'] = redis_standalone_ins['redis_ins_mem']
                     ip_port['redis_ins'] = redis_ins
+                    ip_port['redis_type'] = 'Redis-Standalone'
                     all_ip_port.append(ip_port)
             elif redis_ins.redis_type == 'Redis-Cluster':
                 redis_cluster = RunningInsCluster.objects.all().filter(running_ins_name=redis_name).values()
@@ -51,10 +58,11 @@ def get_redis_ins_qps():
                     ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
                     ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
                     ip_port['redis_ins'] = redis_ins
+                    ip_port['redis_type'] = 'Redis-Cluster'
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
             logger.error("报错信息为".format(e))
-        logger.info("all_ip_port : {0}".format(all_ip_port))
+        logger.error("all_sentienl_ip_port : {0}".format(all_sentienl_ip_port))
         for items in all_ip_port:
             try:
                 redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
@@ -62,10 +70,30 @@ def get_redis_ins_qps():
                 if not redis_mon.redis_alive:
                     RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
                         running_time=0, running_type="未运行")
+                    if items["redis_type"] == 'Redis-Cluster':
+                        RunningInsCluster.objects.filter(redis_ip=items['redis_ip'],
+                                                         running_ins_port=items['running_ins_port']).update(
+                            redis_ins_alive="未启动")
+                    elif items["redis_type"] == 'Redis-Sentinel':
+                        RunningInsSentinel.objects.filter(redis_ip=items['redis_ip'],
+                                                          running_ins_port=items['running_ins_port']).update(
+                            redis_ins_alive="未启动")
+                        for sentienl_items in all_sentienl_ip_port:
+                            redis_sentienl_mon = RedisScheduled(redis_ip=sentienl_items['redis_ip'],
+                                                                redis_port=sentienl_items['running_ins_port'])
+                            if not redis_sentienl_mon.redis_alive:
+                                RunningInsSentinel.objects.filter(redis_ip=sentienl_items['redis_ip'],
+                                                                  running_ins_port=sentienl_items['running_ins_port']).update(
+                                    redis_ins_alive="未启动")
+                    else:
+                        RunningInsCluster.objects.filter(redis_ip=items['redis_ip'],
+                                                         running_ins_port=items['running_ins_port']).update(
+                            redis_ins_alive="未启动")
                     logger.error("实例{0}监控异常, {1}::::{2}".format(items['redis_ins'], items['redis_ip'], items['running_ins_port']))
                 else:
                     redis_memory_usage = redis_mon.redis_memory_usage()
                     ops = redis_mon.ops()
+                    redis_running_type = redis_mon.redis_running_type()
                     redis_used_memory_human = redis_mon.redis_used_memory_human()
                     redis_uptime_in_days = redis_mon.redis_uptime_in_days()
                     if int(redis_uptime_in_days) == 0:
@@ -87,6 +115,27 @@ def get_redis_ins_qps():
                     logger.info("实例名称：{7} -- {4}:::{5} -- RunningInsTime保存状态:{6} -- redis_memory_usage:{0},ops:{1},redis_used_memory_human:{2},redis_uptime_in_days:{3}".format(
                             redis_memory_usage, ops, redis_used_memory_human, redis_uptime_in_days, items['redis_ip'],
                             items['running_ins_port'], qw, items['redis_ins'].running_ins_name))
+
+                    if items["redis_type"] == 'Redis-Cluster':
+                        RunningInsCluster.objects.filter(redis_ip=items['redis_ip'],
+                                                         running_ins_port=items['running_ins_port']).update(
+                            redis_type=redis_running_type,
+                            redis_ins_alive="运行中")
+                    elif items["redis_type"] == 'Redis-Sentinel':
+                        RunningInsSentinel.objects.filter(redis_ip=items['redis_ip'],
+                                                          running_ins_port=items['running_ins_port']).update(
+                            redis_type=redis_running_type,
+                            redis_ins_alive="运行中")
+                        for sentienl_items in all_sentienl_ip_port:
+                            redis_sentienl_mon = RedisScheduled(redis_ip=sentienl_items['redis_ip'],
+                                                                redis_port=sentienl_items['running_ins_port'])
+                            if redis_sentienl_mon.redis_alive:
+                                result = RunningInsSentinel.objects.filter(redis_ip=sentienl_items['redis_ip'],
+                                                                  running_ins_port=sentienl_items['running_ins_port']).update(
+                                    redis_ins_alive="运行中")
+                                logger.error("{0}:{1} 当前存活状态{2},入库状态{3}".format(sentienl_items['redis_ip'],
+                                                                        sentienl_items['running_ins_port'],
+                                                                        redis_sentienl_mon.redis_alive,result ))
             except ValueError as e:
                 logger.error("报错信息为{0}".format(e))
 

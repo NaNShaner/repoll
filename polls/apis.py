@@ -16,6 +16,7 @@ class RunningInsTimeSerializer(serializers.ModelSerializer):
 @permission_classes((permissions.IsAuthenticated,))
 def redisstop(request, redis_type, ins_id):
     """
+    TODO: 启停状态没有同步更新数据库
     API接口，停止redis实例。
     授权模式，当前平台内部用户
     """
