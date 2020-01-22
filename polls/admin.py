@@ -405,38 +405,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
-    # def ins_status_color(self, obj):
-    #     ins_status = ''
-    #     ins_choice = [
-    #         (0, "已上线"),
-    #         (1, "已下线"),
-    #         (2, "未审批"),
-    #         (3, "已审批"),
-    #         (4, "已拒绝"),
-    #     ]
-    #     if obj.ins_status == 0:
-    #         color = 'red'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 1:
-    #         color = 'green'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 2:
-    #         color = 'blue'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 3:
-    #         color = 'green'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     elif obj.ins_status == 4:
-    #         color = 'blue'
-    #         ins_status = ins_choice[obj.ins_status][1]
-    #     else:
-    #         color = ''
-    #     return format_html(
-    #         '<font size="5" face="arial" color="{0}">{1}</font>',
-    #         color,
-    #         ins_status,
-    #     )
-    # ins_status_color.short_description = u'实例状态'
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',

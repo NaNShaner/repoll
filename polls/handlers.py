@@ -451,7 +451,7 @@ class RedisStartClass:
 
     def start_server(self):
         """
-       启动redis的实例
+        启动redis的实例
         """
         do_command_result = do_command(self.host, self.redis_server_ctl, user_name="root", user_password="Pass@word")
         if do_command_result:

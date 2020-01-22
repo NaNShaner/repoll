@@ -235,6 +235,13 @@ class RedisScheduled(object):
         except Exception as e:
             return None
 
+    @property
+    def cluster_alive_status(self):
+        try:
+            return self.rds.cluster("info")
+        except Exception as e:
+            return None
+
 
 def mem_unit_chage(mem):
     """
