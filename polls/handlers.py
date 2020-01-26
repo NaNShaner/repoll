@@ -26,7 +26,7 @@ def apply_redis_text_handler(sender, **kwargs):
     :return:
     """
     redis_ins_id = kwargs['instance'].redis_ins_id
-    redis_ins_obj = RedisIns.objects.filter(id=redis_ins_id)
+    redis_ins_obj = RedisIns.objects.filter(redis_ins_name=redis_ins_id)
     redis_ins_type = redis_ins_obj.values('redis_type').first()['redis_type']
     redis_text = kwargs['instance'].apply_text
     redis_apply_text_split = redis_apply_text(redis_text, redis_type=redis_ins_type)
@@ -185,6 +185,10 @@ def get_redis_conf(redis_type):
     else:
         obj = None
     return obj
+
+
+def get_server_user_passwd(server_ip):
+    server_user_passwd = ServerUserPass.objects.filter(server_ip_id=server_ip).values("user_name", "user_passwd")
 
 
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):

@@ -17,15 +17,7 @@ Ubuntu 18.04
 ```
 apt install python3-pip
 apt-get install libmysqlclient-dev python3-dev
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  django==2.0
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  djangorestframework
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  django-crontab
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  mysqlclient
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  redis
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  paramiko
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  pyecharts==1.5.1
-pip3 install -i http://pypi.douban.com/simple/ --trusted-host=pypi.douban.com  django-simpleui
-
+pip3 install -r requirements.txt
 ```
 
 # 配置Django
@@ -97,6 +89,15 @@ http://127.0.0.1:8000/admin
 python3 manage.py loaddata /django/repoll/init_data.json
 ```
 
+# 初始化redis资源池服务器
+* 在平台内点击资源池服务器列表，点击增加输入相关字段即可
+![image](https://github.com/NaNShaner/repoll/blob/develop/images/ResourcePool.png?raw=true)
+* 特别注意！！！
+所有资源池中的服务器，安装redis必须使用平台提供的脚本完成安装，命令如下：
+```bash
+sh repoll-init.sh repoll # 密码自定义
+```
+
 # 标准化申请流程
 * 分配普通用户权限（dev或者ops角色）
 * 领导层进行审批（boss角色）
@@ -104,7 +105,7 @@ python3 manage.py loaddata /django/repoll/init_data.json
 
 # Todo list
 - [x] 支持哨兵模式和集群模式
-- [ ] 监控独立展示，包括qps、内存使用率、客户端链接以及慢查询等
+- [x] 监控独立展示，包括qps、内存使用率、客户端链接以及慢查询等
 - [ ] 支持web console
 
 # 声明

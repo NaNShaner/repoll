@@ -145,7 +145,11 @@ def get_redis_ins_qps():
                                 if redis_sentienl_mon.info and redis_sentienl_mon.info["master0"]["status"] == "ok":
                                     RunningInsTime.objects.filter(
                                         running_ins_name=items['redis_ins'].running_ins_name).update(
-                                        running_time=0, running_type="运行中")
+                                        running_time=redis_uptime_in_days, running_type="运行中")
+                                    if redis_sentienl_mon.info["master0"]["address"] == "{0}:{1}".format(items['redis_ip'], items['running_ins_port']):
+                                        RunningInsTime.objects.filter(
+                                            running_ins_name=items['redis_ins'].running_ins_name).update(
+                                            running_ins_used_mem_rate=redis_memory_usage)
                                 logger.info("{0}:{1} 当前存活状态{2},入库状态{3}".format(sentienl_items['redis_ip'],
                                                                         sentienl_items['running_ins_port'],
                                                                         redis_sentienl_mon.redis_alive,result ))
@@ -155,7 +159,9 @@ def get_redis_ins_qps():
                             redis_type=redis_running_type,
                             redis_ins_alive="运行中")
                         RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
-                            running_time=0, running_type="运行中")
+                            running_time=redis_uptime_in_days,
+                            running_type="运行中",
+                            running_ins_used_mem_rate=redis_memory_usage)
                         # logger.error("实例：{0}，{1}:{2}".format("RunningInsStandalone", items['redis_ip'], items['running_ins_port']))
             except ValueError as e:
                 logger.error("报错信息为{0}".format(e))

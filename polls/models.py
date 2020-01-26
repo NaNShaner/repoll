@@ -410,7 +410,7 @@ class RedisVersion(models.Model):
 
 class ApplyRedisText(models.Model):
     # ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
-    redis_ins = models.ForeignKey(RedisIns, on_delete=models.CASCADE)
+    redis_ins = models.ForeignKey(RedisIns, to_field="redis_ins_name", on_delete=models.CASCADE)
     apply_text = models.TextField(max_length=250, verbose_name="实例详情",
                                   blank=True, null=True, help_text="具体规则如下: </br>"
                                                                    "1. standalone类型：</br>"

@@ -109,6 +109,12 @@ class ChoiceInline(admin.StackedInline):
         """隐藏删除按钮"""
         return False
 
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            if ApplyRedisText.objects.filter(redis_ins=obj.redis_ins_name):
+                self.readonly_fields = [field.name for field in ApplyRedisText._meta.fields]
+        return self.readonly_fields
+
 
 class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
@@ -240,6 +246,8 @@ class RealTimeQpsInline(admin.StackedInline):
 
 
 class ApplyRedisInfoAdmin(admin.ModelAdmin):
+    apply_redis_ins_obj = ApplyRedisInfo.objects.all()
+
     def get_queryset(self, request):
         """函数作用：使当前登录的用户只能看到自己负责的实例"""
         qs = super(ApplyRedisInfoAdmin, self).get_queryset(request)
@@ -260,6 +268,14 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
         obj.create_user = request.user
         super().save_model(request, obj, form, change)
 
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            if ApplyRedisInfo.objects.filter(apply_ins_name=obj.apply_ins_name):
+                self.readonly_fields = [field.name for field in RedisApply._meta.fields]
+            else:
+                self.readonly_fields = ['apply_status', ]
+        return self.readonly_fields
+
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'apply_status']
@@ -269,7 +285,9 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
     exclude = ['create_user']
     list_per_page = 15
 
-    readonly_fields = ['apply_status', ]
+    # readonly_field = ['apply_status', ]
+
+    # readonly_fields = [field.name for field in RedisApply._meta.fields]
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
@@ -309,12 +327,21 @@ class RedisApplyAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
+    # def has_change_permission(self, request, obj=None):
+    #     if obj:
+    #         if request.method not in ('GET', 'HEAD'):
+    #             self.message_user(request, "操作实例为 {0} 的实例失败，实例已存在无法修改".format(obj.apply_ins_name))
+    #             return False
+    #     return super(RedisApplyAdmin, self).has_change_permission(request, obj)
+
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
     list_filter = ['redis_type']
     search_fields = ['area']
     list_per_page = 15
+
+    readonly_fields = [field.name for field in RedisApply._meta.fields]
 
     actions = ['approve_selected_new_assets', 'deny_selected_new_assets']
 
@@ -404,7 +431,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
-
 
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
