@@ -320,12 +320,12 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 del actions['delete_selected']
         return actions
 
-    def get_queryset(self, request):
-        """函数作用：使当前登录的用户只能看到自己负责的实例"""
-        qs = super(RedisApplyAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
+    # def get_queryset(self, request):
+    #     """函数作用：使当前登录的用户只能看到自己负责的实例"""
+    #     qs = super(RedisApplyAdmin, self).get_queryset(request)
+    #     if request.user.is_superuser:
+    #         return qs
+    #     return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
     # def has_change_permission(self, request, obj=None):
     #     if obj:
@@ -558,6 +558,7 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 
 class RedisSentienlConfAdmin(admin.ModelAdmin):
+
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
@@ -592,6 +593,7 @@ class RedisSentienlConfAdmin(admin.ModelAdmin):
 
 
 class RedisClusterConfAdmin(admin.ModelAdmin):
+
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
