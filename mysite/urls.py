@@ -15,52 +15,61 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from django.views import generic
+from django.views import generic, static
+from django.conf import settings
 
-# from django.contrib.auth.models import User
-from rest_framework import serializers, viewsets, routers
-from polls.models import RedisInfo, RunningInsTime
+from django.contrib.auth.models import User
+from rest_framework import serializers, viewsets, routers, permissions
+from rest_framework.decorators import permission_classes
+from polls.models import RunningInsTime
 from polls.views import favicon
 
 
 # Serializers define the API representation.
-# class UserSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['url', 'username', 'password', 'email', 'is_staff']
-
-
-class RedisSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = RedisInfo
-        fields = ['sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date'] or "__all__"
+        model = User
+        fields = ['url', 'username', 'password', 'email', 'is_staff']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        """
+        使用rest_framework创建用户需要使用set_password对密码加密入库
+        :param validated_data:
+        :return:
+        """
+        user = User(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            is_staff=validated_data['is_staff']
+        )
+        user.set_password(validated_data['password'])
+        user.save()
+        return user
 
 
 class RunningInsTimeSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = RunningInsTime
-        fields = ['running_ins_name', 'redis_type', 'redis_ip', 'running_ins_port', 'redis_ins_mem']
+        fields = ['running_ins_name', 'redis_type', 'redis_ins_mem', 'running_ins_used_mem_rate',
+                  'running_time', 'ins_status']
 
 
 # ViewSets define the view behavior.
-# class UserViewSet(viewsets.ModelViewSet):
-#     queryset = User.objects.all()
-#     serializer_class = UserSerializer
+@permission_classes((permissions.IsAdminUser, ))
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
-class RedisViewSet(viewsets.ModelViewSet):
-    queryset = RedisInfo.objects.all()
-    serializer_class = RedisSerializer
-
-
+@permission_classes((permissions.IsAdminUser, ))
 class RunningInsTimeSet(viewsets.ModelViewSet):
     queryset = RunningInsTime.objects.all()
     serializer_class = RunningInsTimeSerializer
 
 
 router = routers.DefaultRouter()
-# router.register(r'users', UserViewSet)
-router.register(r'redis', RedisViewSet)
+router.register(r'users', UserViewSet)
 router.register(r'redis_ins', RunningInsTimeSet)
 
 
@@ -68,7 +77,9 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
     url(r'^$', generic.RedirectView.as_view(url='/admin/', permanent=False)),
-    # url(r'^', include(router.urls)),
+    url(r'^', include(router.urls)),
     # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'favicon.ico$', favicon)
+    url(r'favicon.ico$', favicon),
+    url(r'^static/(?P<path>.*)$', static.serve,
+        {'document_root': settings.STATIC_ROOT}, name='static'),
 ]

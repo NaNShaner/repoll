@@ -102,3 +102,40 @@ def redisstart(request, redis_type, ins_id):
         return Response(result)
     result['redis_status'] = "ERROR"
     return Response(result)
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated,))
+def allredisins(request, redis_type=None):
+    """
+    API接口，获取平台内所有redis实例。
+    授权模式，当前平台内部用户
+    """
+    sentinel_ins_time = RunningInsSentinel.objects.all()
+    stanalone_ins_time = RunningInsStandalone.objects.all()
+    cluster_ins_time = RunningInsCluster.objects.all()
+    all_redis_ins_list = []
+    try:
+        if redis_type == "all":
+            sentinel_ins = sentinel_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                    'redis_ins_mem', 'redis_type', 'running_ins_name',)
+            stanalone_ins = stanalone_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                      'redis_ins_mem', 'redis_type', 'running_ins_name')
+            cluster_ins = cluster_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                  'redis_ins_mem', 'redis_type', 'running_ins_name')
+            all_redis_ins_list = list(sentinel_ins) + list(stanalone_ins) + list(cluster_ins)
+        elif redis_type == "standalone":
+            stanalone_ins = stanalone_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                      'redis_ins_mem', 'redis_type', 'running_ins_name')
+            all_redis_ins_list = list(stanalone_ins)
+        elif redis_type == "sentinel":
+            sentinel_ins = sentinel_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                    'redis_ins_mem', 'redis_type', 'running_ins_name')
+            all_redis_ins_list = list(sentinel_ins)
+        elif redis_type == "cluster":
+            cluster_ins = cluster_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
+                                                  'redis_ins_mem', 'redis_type', 'running_ins_name')
+            all_redis_ins_list = list(cluster_ins)
+    except IOError as e:
+        return Response("redisins 获取平台内所有redis实例接口报错，报错信息{0}".format(e))
+    return Response(all_redis_ins_list)
