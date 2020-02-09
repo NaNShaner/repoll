@@ -188,7 +188,14 @@ def get_redis_conf(redis_type):
 
 
 def get_server_user_passwd(server_ip):
+    """
+    通过server IP从库中获取用户名和密码
+    :TODO 通过server IP从库中获取用户名和密码，取消用户名密码硬编码
+    :param server_ip:
+    :return:
+    """
     server_user_passwd = ServerUserPass.objects.filter(server_ip_id=server_ip).values("user_name", "user_passwd")
+    return server_user_passwd
 
 
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
