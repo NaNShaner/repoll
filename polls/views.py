@@ -34,8 +34,6 @@ def redis_qps(request, redis_type, ins_id, redis_ip, redis_port):
     real_time_obj = real_time_qps.filter(redis_running_monitor_id=ins_id, redis_ip=redis_ip, redis_port=redis_port).order_by('-collect_date')[:60]
     running_ins = running_ins_time.filter(redis_ip=redis_ip, running_ins_port=redis_port)
     running_ins_name = running_ins.values('running_ins_name').first()
-    # running_ins_ip = running_ins.values('redis_ip').first()
-    # running_ins_port = running_ins.values('running_ins_port').first()
     real_time = [real_time.__dict__['collect_date'] for real_time in real_time_obj]
     redis_qps = [redis_qps.__dict__['redis_qps'] for redis_qps in real_time_obj]
     c = (
