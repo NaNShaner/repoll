@@ -1,3 +1,4 @@
+[![ice](https://img.shields.io/badge/developing%20with-Simpleui-2077ff.svg)](https://github.com/newpanjing/simpleui)
 # repoll
 使用django框架编写的redis的管理平台，[项目wiki](https://github.com/NaNShaner/repoll/wiki)
 
@@ -48,16 +49,6 @@ python3 manage.py makemigrations
 python3 manage.py migrate
 ```
 
-* Django调试模式配置本级服务器IP
-```bash
-vi /django/repoll/mysite/settings.py
-
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = [u'你本机的IP地址']
-```
 * 执行以下命令完成simpleui的静态资源离线可访问
 ```
 cd /django/repoll
@@ -106,9 +97,9 @@ sh repoll-init.sh repoll # 密码自定义
 # Todo list
 - [x] 支持哨兵模式和集群模式
 - [x] 监控独立展示，包括qps、内存使用率、客户端链接以及慢查询等
+- [x] 支持在线扩缩容的申请、审批、配置生效流程
 - [ ] 支持导入已存在的redis实例
 - [ ] 支持web console，在线执行redis命令
-- [ ] 支持在线扩缩容的申请、审批、配置生效流程
 
 # 声明
 该项目将长期维护，期望有对redis有平台化管理的朋友加入一起维护。
