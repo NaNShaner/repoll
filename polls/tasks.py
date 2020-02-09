@@ -83,9 +83,9 @@ def get_redis_ins_qps():
                             redis_sentienl_mon = RedisScheduled(redis_ip=sentienl_items['redis_ip'],
                                                                 redis_port=sentienl_items['running_ins_port'])
                             if not redis_sentienl_mon.redis_alive:
-                                RunningInsSentinel.objects.filter(redis_ip=sentienl_items['redis_ip'],
-                                                                  running_ins_port=sentienl_items['running_ins_port']).update(
-                                    redis_ins_alive="未启动")
+                                RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
+                                    running_time=0, running_type="未运行")
+                                logger.error("{0} 未运行".format(items['redis_ins'].running_ins_name))
                             else:
                                 if redis_sentienl_mon.info:
                                     if redis_sentienl_mon.info["master0"]["status"] != "ok":
