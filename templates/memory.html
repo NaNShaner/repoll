@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>内存扩缩容</title>
+    <link rel="stylesheet" href="http://127.0.0.1:8000/static/bootstrap.min.css">
+    <script src="http://127.0.0.1:8000/static/jquery.min.js"></script>
+    <script src="http://127.0.0.1:8000/static/bootstrap.min.js"></script>
+  <script type="text/javascript">
+    function Go() {
+        var maxmemory = document.getElementById("maxmemory").value;
+        var redis_type = '{{ redis_type }}';
+        var insname = '{{ insname }}';
+        window.location.href="http://127.0.0.1:8000/polls/apis/redis-ins/" + redis_type + "/" + insname + "/" + maxmemory
+    }
+  </script>
+</head>
+
+<body>
+<!-- 模态框（Modal） -->
+<div id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" onclick="javascript:history.back(1)" aria-hidden="true" >
+                    &times;
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    实例名称： {{ insname }} 扩缩容申请
+                </h4>
+            </div>
+            <form name="redis_ins_form" id="form_data" method="get">
+            <div class="modal-body">
+                申请容量: <input type="text" id="maxmemory" name="maxmemory"/>
+                申请原因: <input type="text" id="apply_reason" name="apply_reason"/>
+                <input type="hidden" id="act" value="add" name="act"/>
+            </div>
+            <div class="modal-footer">
+{#                <button type="button" class="btn btn-default" data-dismiss="modal">关闭#}
+
+                <input type="button" name="Submit" class="btn btn-default" data-dismiss="modal" value="返回" onclick="javascript:history.back(1)" />
+{#                </button>#}
+{#                <button type="button" onclick="location.href='./admin/polls/runninginstime/'" class="btn btn-primary">#}
+                <button type="button" onclick="Go()" class="btn btn-primary">
+                    提交更改
+                </button>
+            </div>
+            </form>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+</html>
