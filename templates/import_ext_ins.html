@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>Django Form</title>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+<div align="center">
+<h1>已存在Redis实例平台纳管申请</h1>
+<hr>
+   <form action="api/import_ext_ins/" method="post">
+       {% csrf_token %}
+       {% load crispy_forms_tags %}
+       {% crispy form %}
+{#       <input type='submit' name='submit' value='提交' id='submit-id-submit' class='btn btn-primary'  />#}
+{#       <a href="/admin/polls/runninginstime/"><input class='btn btn-default' type='button' value='取消' /></a>#}
+    </form>
+
+</div>
+</div>
+</body>
+</html>
