@@ -24,9 +24,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'jw4f%am^w47or#dty2d(b*w$+f50n-w4-qy3ok#2*ds00i=d%&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'polls.apps.PollsConfig',
     'rest_framework',
     'django_crontab',
+    'crispy_forms',
 ]
 
 
@@ -107,7 +108,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:32769',
+        'LOCATION': 'redis://172.20.10.9:9862',
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
              #"PASSWORD": "yoursecret",
@@ -138,10 +139,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.11/topics/i18n/
 
-# LANGUAGE_CODE = 'en-us'
 LANGUAGE_CODE = 'zh-Hans'
 
-# TIME_ZONE = 'UTC'
 TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
@@ -177,6 +176,8 @@ SIMPLEUI_STATIC_OFFLINE = True
 # 关闭simpleui的版本信息展示
 SIMPLEUI_HOME_INFO = False
 
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
 # logging的配置
 LOGGING = {
     'version': 1,                       # 指明dictConnfig的版本
@@ -197,7 +198,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'stream': 'ext://sys.stdout',   # 文件重定向的配置，将打印到控制台的信息都重定向出去
-            'formatter': 'standard'         # 制定输出的格式，注意 在上面的formatters配置里面选择一个，否则会报错
+            'formatter': 'standard'         # 制定输出的格式，注意 在上面的formatters配置里面选择一个，否则报错
         },
         'file': {
             'level': 'INFO',
@@ -219,12 +220,8 @@ LOGGING = {
             'backupCount': 5,                                   # 备份份数
             'formatter': 'standard',                            # 使用哪种formatters日志格式
         },
-        # 上面两种写入日志的方法是有区别的，前者是将控制台下输出的内容全部写入到文件中，这样做的好处就是我们在views代码中的所有print也会写在对应的位置
-        # 第二种方法就是将系统内定的内容写入到文件，具体就是请求的地址、错误信息等，小伙伴也可以都使用一下然后查看两个文件的异同。
     },
     'loggers': {  # log记录器，配置之后就会对应的输出日志
-        # django 表示就是django本身默认的控制台输出，就是原本在控制台里面输出的内容，在这里的handlers里的file表示写入到上面配置的file-/home/aea/log/jwt_test.log文件里面
-        # 在这里的handlers里的console表示写入到上面配置的console-/home/aea/log/test.log文件里面
         'django': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
