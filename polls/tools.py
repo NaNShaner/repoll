@@ -195,3 +195,11 @@ def slot_split_part(n):
     :return:
     """
     return ['..'.join((str(i+1), str(j))) for i, j in zip([-1]+list(it.accumulate(n[:-1])), it.accumulate(n))]
+
+
+def recreate_conf_file():
+    """
+    TODO：从平台外部导入的reids实例，获取配置文件的绝对路径
+    :return:
+    """
+    pass
