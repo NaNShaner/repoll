@@ -5,6 +5,9 @@ from django.contrib import admin
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 from django.shortcuts import redirect
+from django.template import Context, Template
+from django.template.loader import get_template
+from django.http import HttpResponse
 from .models import *
 from django.contrib.admin.models import LogEntry
 from jinja2 import Environment, FileSystemLoader
@@ -33,7 +36,30 @@ class RedisAdmin(admin.ModelAdmin):
 
 
 class LogEntryAdmin(admin.ModelAdmin):
-    list_display = ['object_repr', 'object_id', 'action_flag', 'user', 'change_message']
+
+    def has_add_permission(self, request):
+        """
+        禁用添加按钮
+        :param request:
+        :return:
+        """
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        禁用删除按钮
+        :param request:
+        :param obj:
+        :return:
+        """
+        return False
+
+    list_display = ['action_time', 'object_repr', 'object_id', 'action_flag', 'user',
+                    'content_type', 'change_message', 'get_change_message']
+
+    readonly_fields = [field.name for field in LogEntry._meta.fields]
+
+    search_fields = ['action_flag', 'action_time', 'user']
 
 
 class UserAdmin(admin.ModelAdmin):
@@ -160,6 +186,8 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = ['id', 'running_ins_name', 'redis_type',
                        'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
+    exclude = ['local_redis_config_file']
+
 
 class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsSentinel
@@ -201,6 +229,8 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
                        'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
+    exclude = ['local_redis_config_file']
+
 
 class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsCluster
@@ -238,6 +268,8 @@ class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
         return self.inline_actions
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
                        'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
+
+    exclude = ['local_redis_config_file']
 
 
 class RealTimeQpsInline(admin.StackedInline):
@@ -285,10 +317,6 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
     exclude = ['create_user']
     list_per_page = 15
 
-    # readonly_field = ['apply_status', ]
-
-    # readonly_fields = [field.name for field in RedisApply._meta.fields]
-
 
 class RedisApplyAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
@@ -320,12 +348,12 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 del actions['delete_selected']
         return actions
 
-    def get_queryset(self, request):
-        """函数作用：使当前登录的用户只能看到自己负责的实例"""
-        qs = super(RedisApplyAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
+    # def get_queryset(self, request):
+    #     """函数作用：使当前登录的用户只能看到自己负责的实例"""
+    #     qs = super(RedisApplyAdmin, self).get_queryset(request)
+    #     if request.user.is_superuser:
+    #         return qs
+    #     return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
     # def has_change_permission(self, request, obj=None):
     #     if obj:
@@ -464,6 +492,25 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     """
     TODO: redis consle功能添加
     """
+    change_list_template = 'change_list.html'
+    inline_actions = ['memory_action', ]
+    actions = ['import_exist_ins', ]
+
+    def memory_action(self, request, obj, parent_obj):
+        """
+        新增实例扩缩容的按钮及页面逻辑
+        :param request:
+        :param obj:
+        :param parent_obj:
+        :return:
+        """
+        t = get_template("memory.html")
+        html = t.render({
+            'insname': obj.running_ins_name,
+            'redis_type': obj.redis_type
+        })
+        return HttpResponse(html)
+
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -493,21 +540,6 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 del actions['delete_selected']
         return actions
 
-    # def redis_qps(self, obj):
-    #     button_html = """<a class="changelink" href="/polls/redis_qps/{0}/">QPS监控趋势图</a>""".format(obj.id)
-    #     return format_html(button_html)
-    # redis_qps.short_description = "QPS监控趋势图"
-    #
-    # def redis_stop(self, obj):
-    #     button_html = """<a class="changelink" href="/polls/apis/redis-start/{0}/">启动</a>""".format(obj.id)
-    #     return format_html(button_html)
-    # redis_stop.short_description = "启动"
-    #
-    # def redis_start(self, obj):
-    #     button_html = """<a class="changelink" href="/polls/apis/redis-stop/{0}/">停止</a>""".format(obj.id)
-    #     return format_html(button_html)
-    # redis_start.short_description = "停止"
-
     def get_form(self, request, obj=None, **args):
         """
         设置内联样式
@@ -527,12 +559,6 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             self.inlines = []  # 如果不是继承，就取消设置
         defaults.update(args)
         return super(RunningInsTimeAdmin, self).get_form(request, obj, **defaults)
-
-    # def changelist_view(self, request, extra_context=None):
-    #     self.list_display = ['id', 'running_ins_name', 'redis_type',
-    #                     'redis_ip', 'running_ins_port', 'redis_ins_mem',
-    #                     'redis_qps', 'redis_start', 'redis_stop']
-    #     return super(RunningInsTimeAdmin, self).changelist_view(request, extra_context=None)
 
     list_display = ['id', 'running_ins_name', 'redis_type',
                     'running_ins_used_mem_rate', 'running_time', 'redis_ins_mem',
@@ -558,6 +584,7 @@ class RealTimeQpsAdmin(admin.ModelAdmin):
 
 
 class RedisSentienlConfAdmin(admin.ModelAdmin):
+
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
@@ -592,6 +619,7 @@ class RedisSentienlConfAdmin(admin.ModelAdmin):
 
 
 class RedisClusterConfAdmin(admin.ModelAdmin):
+
     list_display = ['id', 'redis_type']
     list_display_links = ('id', 'redis_type')
 
