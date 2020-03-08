@@ -6,14 +6,6 @@ import logging
 logger = logging.getLogger("redis.monitor")
 
 
-# def timer_count(func):
-#     def wrapper(*args, **kwargs):
-#         i = 0
-#         while i < 60:
-#             func(*args, **kwargs)
-#     return wrapper
-
-
 class RedisScheduled(object):
 
     def __init__(self, redis_ip, redis_port, redis_ins_mem=None, redis_ins=None, password=None):
@@ -235,8 +227,24 @@ class RedisScheduled(object):
         except Exception as e:
             return None
 
+    def set_config(self, command, value):
+        """
+        通过 config set命令行实时设置
+        :param command:
+        :param value:
+        :return:
+        """
+        try:
+            return self.rds.config_set(name=command, value=value)
+        except Exception as e:
+            return None
+
     @property
     def cluster_alive_status(self):
+        """
+        获取集群的info信息，等同cluster info的命令行命令返回
+        :return:
+        """
         try:
             return self.rds.cluster("info")
         except Exception as e:
