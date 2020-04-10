@@ -7,6 +7,7 @@ from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
+from django.shortcuts import render
 
 
 class RunningInsTimeSerializer(serializers.ModelSerializer):
@@ -152,6 +153,13 @@ def memory_action(request, redis_type, redis_ins_name, memory):
     """
     running_redis_obj = RunningInsTime.objects.all()
     redis_ins_status = True
+
+    try:
+        memory_unm = memory[:-1]
+        int(memory_unm)
+    except ValueError as e:
+        err = "内存大小格式错误，正确的格式是例如128m或1g，您输入的是{0}".format(memory)
+        return render(request, '500.html', {"error": err})
     try:
         if redis_type == "Redis-Standalone":
             obj = RunningInsStandalone.objects.all()
