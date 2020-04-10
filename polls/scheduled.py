@@ -258,12 +258,12 @@ def mem_unit_chage(mem):
     :return:
     """
     memory = mem[0:-1]
-    type = mem[-1]
-    if type == 'g' and 'G':
+    memory_type = mem[-1]
+    if memory_type == 'g' and 'G':
         return int(float(memory)*1024)
-    elif type == 'k' and 'K':
+    elif memory_type == 'k' and 'K':
         return int(float(memory)/1024)
-    elif type == 'm' and 'M':
+    elif memory_type == 'm' and 'M':
         return int(float(memory)/1024)
     else:
         return int(float(mem))
