@@ -2,6 +2,13 @@
 from __future__ import unicode_literals
 from .models import RealTimeQps, RunningInsSentinel, RunningInsStandalone, RunningInsCluster
 import os
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
+from django.shortcuts import render
+from django.http import HttpResponseRedirect, Http404
+
+from .forms import NameForm
+
 # pyecharts
 from jinja2 import Environment, FileSystemLoader
 from pyecharts.globals import CurrentConfig
@@ -47,6 +54,18 @@ def redis_qps(request, redis_type, ins_id, redis_ip, redis_port):
                          datazoom_opts=[opts.DataZoomOpts(), opts.DataZoomOpts(type_="inside")],)
     )
     return HttpResponse(c.render_embed())
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated,))
+def get_ext_ins(request):
+    """
+    处理已导入redis实例表单页面
+    :param request:
+    :return:
+    """
+    form = NameForm()
+    return render(request, 'import_ext_ins.html', {'form': form})
 
 
 def favicon(request):

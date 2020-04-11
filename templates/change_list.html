@@ -1,0 +1,10 @@
+{% extends 'admin/change_list.html' %}
+
+{% load i18n admin_static %}
+
+{% block object-tools-items %}
+{{ block.super }}
+<li>
+    <a href="/polls/get_ext_ins">导入已存在Redis实例</a>
+</li>
+{% endblock %}

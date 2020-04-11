@@ -3,15 +3,20 @@
 <head>
     <meta charset="utf-8">
     <title>内存扩缩容</title>
-    <link rel="stylesheet" href="http://127.0.0.1:8000/static/bootstrap.min.css">
-    <script src="http://127.0.0.1:8000/static/jquery.min.js"></script>
-    <script src="http://127.0.0.1:8000/static/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/static/bootstrap.min.css">
+    <script src="/static/jquery.min.js"></script>
+    <script src="/static/bootstrap.min.js"></script>
   <script type="text/javascript">
     function Go() {
         var maxmemory = document.getElementById("maxmemory").value;
         var redis_type = '{{ redis_type }}';
         var insname = '{{ insname }}';
-        window.location.href="http://127.0.0.1:8000/polls/apis/redis-ins/" + redis_type + "/" + insname + "/" + maxmemory
+        if(maxmemory==="")
+            {
+                alert("请填写申请容量大小，例如1024m");
+                return false;
+            }
+        window.location.href="/polls/apis/redis-ins/" + redis_type + "/" + insname + "/" + maxmemory
     }
   </script>
 </head>
@@ -31,8 +36,8 @@
             </div>
             <form name="redis_ins_form" id="form_data" method="get">
             <div class="modal-body">
-                申请容量: <input type="text" id="maxmemory" name="maxmemory"/>
-                申请原因: <input type="text" id="apply_reason" name="apply_reason"/>
+                申请容量: <input type="text" id="maxmemory" required name="maxmemory"/>
+                申请原因: <input type="text" id="apply_reason" required name="apply_reason"/>
                 <input type="hidden" id="act" value="add" name="act"/>
             </div>
             <div class="modal-footer">

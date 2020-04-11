@@ -1,11 +1,13 @@
-from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster
+from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster, RedisIns
 from .handlers import RedisStartClass
 from .scheduled import RedisScheduled
-from django.http import HttpResponse
+from .tools import redis_apply_text
+from django.http import HttpResponse, Http404
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
+from django.shortcuts import render
 
 
 class RunningInsTimeSerializer(serializers.ModelSerializer):
@@ -151,6 +153,13 @@ def memory_action(request, redis_type, redis_ins_name, memory):
     """
     running_redis_obj = RunningInsTime.objects.all()
     redis_ins_status = True
+
+    try:
+        memory_unm = memory[:-1]
+        int(memory_unm)
+    except ValueError as e:
+        err = "内存大小格式错误，正确的格式是例如128m或1g，您输入的是{0}".format(memory)
+        return render(request, '500.html', {"error": err})
     try:
         if redis_type == "Redis-Standalone":
             obj = RunningInsStandalone.objects.all()
@@ -217,3 +226,102 @@ def memory_action(request, redis_type, redis_ins_name, memory):
             return Response(result)
     except Exception as e:
         return Response("{0}实例扩缩容失败, 报错信息为{1}".format(redis_ins_name, e))
+
+
+@api_view(['POST'])
+@permission_classes((permissions.IsAuthenticated,))
+def import_ext_ins(request):
+    """
+    API接口，获取平台内所有redis实例。
+    授权模式，当前平台内部用户
+    """
+    sentinel_ins_time = RunningInsSentinel.objects.all()
+    stanalone_ins_time = RunningInsStandalone.objects.all()
+    cluster_ins_time = RunningInsCluster.objects.all()
+    running_ins_time = RunningInsTime.objects.all()
+
+    redis_type = request.data['redis_type']
+    redis_ins_name = request.data['redis_ins_name']
+    redis_version = request.data['redis_version']
+    area = request.data['area']
+    redis_ins_mem = request.data['redis_mem']
+    sys_author = request.data['sys_author']
+    redis_text = request.data['apply_text']
+    redis_apply_text_split = redis_apply_text(redis_text, redis_type=redis_type)
+    if running_ins_time.filter(running_ins_name=redis_ins_name):
+        return HttpResponse(Http404("{0} 实例名称已存在".format(redis_ins_name)))
+    else:
+        obj = RunningInsTime(
+            running_ins_name=redis_ins_name,
+            redis_type=redis_type,
+            redis_ins_mem=redis_ins_mem,
+            ins_status=0
+        )
+        obj.save()
+    serializer = RunningInsTimeSerializer(running_ins_time.filter(running_ins_name=redis_ins_name), many=True)
+    result = serializer.data[0]
+    try:
+        ins_time_obj = running_ins_time.get(running_ins_name=redis_ins_name)
+        if redis_type == "Redis-Standalone":
+            stanalone_ins = RunningInsStandalone(redis_ip=redis_apply_text_split['redis_ip'],
+                                                 running_ins_port=redis_apply_text_split['redis_port'],
+                                                 redis_ins_mem=redis_apply_text_split['redis_mem'],
+                                                 redis_type=redis_type,
+                                                 running_ins_name=redis_ins_name,
+                                                 running_ins_id=ins_time_obj.id)
+            if stanalone_ins.save():
+                return Response(result)
+        elif redis_type == "Redis-Sentinel":
+            all_redis_ip_port = []
+            redis_master_ip_port = redis_apply_text_split['redis_master_ip_port']
+            redis_slave_ip_port = redis_apply_text_split['redis_slave_ip_port']
+            # redis_master_name = redis_apply_text_split['redis_master_name']
+            redis_sentinel_ip_port = redis_apply_text_split['redis_sentinel_ip_port']
+            # redis_sentinel_num = redis_apply_text_split['redis_sentinel_num']
+            for slave_ip_port in redis_slave_ip_port:
+                for slave_ip, slave_port in slave_ip_port.items():
+                    slave_ip_port_str = slave_ip + ":" + slave_port
+                    all_redis_ip_port.append(slave_ip_port_str)
+            obj_runningins_now = RunningInsTime.objects.all().get(
+                running_ins_name=redis_ins_name)
+            for redis_slave_ip_port in all_redis_ip_port:
+                ip = redis_slave_ip_port.split(":")[0]
+                port = redis_slave_ip_port.split(":")[1]
+                obj = RunningInsSentinel(
+                    running_ins_name=redis_ins_name,
+                    redis_type='Redis-Slave',
+                    running_ins_port=port,
+                    redis_ip=ip,
+                    redis_ins_mem=redis_ins_mem,
+                    running_ins_standalone_id=obj_runningins_now.id,
+                )
+                obj.save()
+
+            for master_ip, master_port in redis_master_ip_port.items():
+                obj = RunningInsSentinel(
+                    running_ins_name=redis_ins_name,
+                    redis_type='Redis-Master',
+                    running_ins_port=master_port,
+                    redis_ip=master_ip,
+                    redis_ins_mem=redis_ins_mem,
+                    running_ins_standalone_id=obj_runningins_now.id,
+                )
+                obj.save()
+            for sentinel_ip_port in redis_sentinel_ip_port:
+                ip = sentinel_ip_port.split(":")[0]
+                port = sentinel_ip_port.split(":")[1]
+                obj_sentinel = RunningInsSentinel(
+                    running_ins_name=redis_ins_name,
+                    redis_type='Redis-Sentinel',
+                    running_ins_port=port,
+                    redis_ip=ip,
+                    running_ins_standalone_id=obj_runningins_now.id,
+                )
+                obj_sentinel.save()
+            # RedisIns.objects.filter(redis_ins_name=redis_ins_name['redis_ins_name']).update(on_line_status=0)
+            result['redis_status'] = True
+            return Response(result)
+    except IOError as e:
+        result['redis_status'] = False
+        return Response(result)
+    return Response(result)

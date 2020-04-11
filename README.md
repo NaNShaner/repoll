@@ -18,6 +18,7 @@ Ubuntu 18.04
 ```
 apt install python3-pip
 apt-get install libmysqlclient-dev python3-dev
+# yum install mysql-devel python3-devel 
 pip3 install -r requirements.txt
 ```
 
@@ -93,6 +94,11 @@ sh repoll-init.sh repoll # 密码自定义
 * 分配普通用户权限（dev或者ops角色）
 * 领导层进行审批（boss角色）
 * 管理员（dba角色）进行配置上线
+
+# demo演示
+http://repoll.club:8091/
+admin/admin
+
 
 # Todo list
 - [x] 支持哨兵模式和集群模式

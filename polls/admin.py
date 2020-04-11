@@ -186,6 +186,8 @@ class RunningInsStandaloneInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = ['id', 'running_ins_name', 'redis_type',
                        'redis_ip', 'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
+    exclude = ['local_redis_config_file']
+
 
 class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsSentinel
@@ -227,6 +229,8 @@ class RunningInsSentinelInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
                        'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
+    exclude = ['local_redis_config_file']
+
 
 class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
     model = RunningInsCluster
@@ -264,6 +268,8 @@ class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
         return self.inline_actions
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
                        'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
+
+    exclude = ['local_redis_config_file']
 
 
 class RealTimeQpsInline(admin.StackedInline):
@@ -486,7 +492,9 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     """
     TODO: redis consle功能添加
     """
+    change_list_template = 'change_list.html'
     inline_actions = ['memory_action', ]
+    actions = ['import_exist_ins', ]
 
     def memory_action(self, request, obj, parent_obj):
         """
