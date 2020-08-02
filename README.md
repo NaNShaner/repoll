@@ -1,7 +1,7 @@
 [![ice](https://img.shields.io/badge/developing%20with-Simpleui-2077ff.svg)](https://github.com/newpanjing/simpleui)
 # repoll
 使用django框架编写的redis的管理平台，[项目wiki](https://github.com/NaNShaner/repoll/wiki)
-
+![Anurag's github stats](https://github-readme-stats.vercel.app/api?username=NaNShaner&show_icons=true&theme=radical)
 ## 项目简介
 ### 主要功能（当前功能）
 - Redis的申请、审批、配置上线
@@ -104,9 +104,12 @@ admin/admin
 - [x] 支持哨兵模式和集群模式
 - [x] 监控独立展示，包括qps、内存使用率、客户端链接以及慢查询等
 - [x] 支持在线扩缩容的申请、审批、配置生效流程
-- [ ] 支持导入已存在的redis实例
+- [x] 支持导入已存在的redis实例
 - [ ] 支持web console，在线执行redis命令
 
 # 声明
 该项目将长期维护，期望有对redis有平台化管理的朋友加入一起维护。
 如果您觉得该项目对您有所帮助，欢迎star
+
+# 致谢
+开发工具由[Jetbrains](https://www.jetbrains.com/)赞助的Pycharm

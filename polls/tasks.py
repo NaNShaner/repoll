@@ -151,8 +151,8 @@ def get_redis_ins_qps():
                                             running_ins_name=items['redis_ins'].running_ins_name).update(
                                             running_ins_used_mem_rate=redis_memory_usage)
                                 logger.info("{0}:{1} 当前存活状态{2},入库状态{3}".format(sentienl_items['redis_ip'],
-                                                                        sentienl_items['running_ins_port'],
-                                                                        redis_sentienl_mon.redis_alive,result ))
+                                                                               sentienl_items['running_ins_port'],
+                                                                               redis_sentienl_mon.redis_alive, result))
                     else:
                         RunningInsStandalone.objects.filter(redis_ip=items['redis_ip'],
                                                             running_ins_port=items['running_ins_port']).update(
