@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
+from django.forms import widgets
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 from django.shortcuts import redirect
@@ -146,6 +147,12 @@ class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
     extra = 1
     readonly_fields = ['user_name']
+    fields = ('user_name', 'user_passwd',)
+
+    # 重写 字段类型 的 widget，使用PasswordInput 让前端输入密码为密文
+    formfield_overrides = {
+        models.CharField: {'widget': widgets.PasswordInput(attrs={"style": "width:50%;", 'class': 'user_passwd', "placeholder": "请输入密码"})},
+    }
 
     def has_delete_permission(self, request, obj=None):
         """隐藏删除按钮"""
