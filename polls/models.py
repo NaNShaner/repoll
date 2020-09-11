@@ -6,6 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
 from .tools import redis_apply_text
+import hashlib
 
 
 class Ipaddr(models.Model):
@@ -37,6 +38,7 @@ class ServerUserPass(models.Model):
 
     class Meta:
         verbose_name_plural = "服务器资源池用户配置"
+
 
 
 class ApplyRedisInfo(models.Model):
@@ -303,7 +305,7 @@ class RedisConf(models.Model):
                                               verbose_name="min-slaves-to-write", default=0)
     min_slaves_max_lag = models.IntegerField(help_text="当slave服务器和master服务器失去连接后，或者当数据正在复制传输的时候，如果此参数值设置yes，slave服务器可以继续接受客户端的请求",
                                              verbose_name="min-slaves-max-lag", default=10)
-    aof_load_truncated = models.CharField(max_length=150, help_text="客户端最大连接数", verbose_name="aof-load-truncated", default="yes")
+    aof_load_truncated = models.CharField(max_length=150, help_text="指redis在恢复时，会忽略最后一条可能存在问题的指令", verbose_name="aof-load-truncated", default="yes")
     notify_keyspace_events = models.CharField(max_length=150, help_text="keyspace事件通知功能", blank=True,
                                               verbose_name="notify-keyspace-events", null=True, default="")
     logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
