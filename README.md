@@ -1,4 +1,9 @@
+<div align="center">
+<img src="https://github.com/NaNShaner/repoll/blob/develop/images/R.png" width="350">
+</div>
+
 [![ice](https://img.shields.io/badge/developing%20with-Simpleui-2077ff.svg)](https://github.com/newpanjing/simpleui)
+![](https://img.shields.io/badge/build-passing-green.svg)
 # repoll
 使用django框架编写的redis的管理平台，[项目wiki](https://github.com/NaNShaner/repoll/wiki)
 ![Anurag's github stats](https://github-readme-stats.vercel.app/api?username=NaNShaner&show_icons=true&theme=radical)
