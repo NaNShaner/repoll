@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 from django.contrib import admin
+from django.forms import widgets
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 from django.shortcuts import redirect
@@ -146,6 +147,15 @@ class ServerUserLine(admin.StackedInline):
     model = ServerUserPass
     extra = 1
     readonly_fields = ['user_name']
+    fields = ('user_name', 'user_passwd',)
+
+    # 重写 字段类型 的 widget，使用PasswordInput 让前端输入密码为密文
+    formfield_overrides = {
+        models.CharField: {'widget': widgets.PasswordInput(attrs={"style": "width:50%;",
+                                                                  "class": "form-control",
+                                                                  "render_value": True,
+                                                                  "placeholder": "请输入密码"})},
+    }
 
     def has_delete_permission(self, request, obj=None):
         """隐藏删除按钮"""
@@ -301,11 +311,19 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
     def has_change_permission(self, request, obj=None):
+        """
+        修复 issues/I1XF64
+        :param request:
+        :param obj:
+        :return:
+        """
         if obj:
             if ApplyRedisInfo.objects.filter(apply_ins_name=obj.apply_ins_name):
                 self.readonly_fields = [field.name for field in RedisApply._meta.fields]
             else:
                 self.readonly_fields = ['apply_status', ]
+            return self.readonly_fields
+        self.readonly_fields = ()
         return self.readonly_fields
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
@@ -319,6 +337,9 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
+    """
+    TODO：审批拒绝的实例无法被DBA配置上线
+    """
     def has_add_permission(self, request):
         """
         禁用添加按钮

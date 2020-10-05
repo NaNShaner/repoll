@@ -44,7 +44,7 @@ class RedisScheduled(object):
                 while i < 60:
                     redis_ins_used_mem = mem_unit_chage(used_memory_human) / mem_unit_chage(self.redis_ins_mem)
                     time.sleep(1)
-                    print("{0},Redis的QPS为{1},已用内存{2},内存使用率{3},端口为{4},运行天数{5}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+                    logger.info("{0},Redis的QPS为{1},已用内存{2},内存使用率{3},端口为{4},运行天数{5}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                                                                              self.info['instantaneous_ops_per_sec'],
                                                                              used_memory_human, float('%.2f' % redis_ins_used_mem), self.redis_port, uptime_in_days))
                     real_time_qps_obj = RealTimeQps(redis_used_mem=used_memory_human,

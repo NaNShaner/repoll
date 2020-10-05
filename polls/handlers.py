@@ -195,7 +195,7 @@ def get_server_user_passwd(server_ip):
     :return:
     """
     server_user_passwd = ServerUserPass.objects.filter(server_ip_id=server_ip).values("user_name", "user_passwd")
-    return server_user_passwd
+    return server_user_passwd.first()
 
 
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
@@ -228,8 +228,9 @@ def do_command(host, commands, private_key_file=None, user_name=None, user_passw
             ssh.close()
             return command_exit_status, command_exit_result
         else:
+            pwd = get_server_user_passwd(server_ip=host)
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username=user_name, password=user_password)
+            ssh.connect(hostname=host, port=22, username=pwd['user_name'], password=pwd['user_passwd'])
             # 执行命令
             stdin, stdout, stderr = ssh.exec_command(commands)
             # 获取命令结果
@@ -910,7 +911,7 @@ class ApproveRedis:
                                                 area=self.new_asset.area,
                                                 pub_date=self.new_asset.pub_date,
                                                 approval_user=self.request.user,
-                                                ins_status=RedisIns.ins_choice[3][0]
+                                                ins_status=RedisIns.ins_choice[4][0]
                                                 )
                 if RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).values('ins_status') == 0:
                     RedisApply.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(
