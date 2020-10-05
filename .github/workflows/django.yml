@@ -1,0 +1,343 @@
+Last login: Mon Oct  5 22:42:42 on ttys002
+You have mail.
+bijingrui@RuierMacBook-Pro:~$ cd PycharmProjects/mysite1
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$ tail -f repoll.log
+[2020-10-05 22:29:31,656] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:29:31,748] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:33,491] [INFO] "GET /admin/polls/applyredisinfo/6/change/ HTTP/1.1" 200 14817
+[2020-10-05 22:29:33,579] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:34,684] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:29:34,777] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:36,072] [INFO] "GET /admin/polls/applyredisinfo/add/ HTTP/1.1" 200 14777
+[2020-10-05 22:29:36,165] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:36,998] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:29:37,100] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+
+
+
+
+
+
+
+
+
+
+
+[2020-10-05 22:51:19,053] [INFO] Watching for file changes with StatReloader
+
+^C
+You have mail in /var/mail/bijingrui
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$ ls -trl
+total 4272
+-rw-r--r--   1 bijingrui  staff    19006 10 13  2019 favicon.ico
+-rw-r--r--   1 bijingrui  staff      804 10 13  2019 manage.py
+drwxr-xr-x   3 bijingrui  staff       96 10 27  2019 __pycache__
+-rw-r--r--   1 bijingrui  staff    11357 11 10  2019 LICENSE
+-rw-r--r--   1 bijingrui  staff     2974  1  5  2020 init_data.json
+-rw-r--r--   1 bijingrui  staff      230  4 11 18:02 requirements.txt
+drwxr-xr-x  10 bijingrui  staff      320  7 27 22:01 static
+drwxr-xr-x  11 bijingrui  staff      352  7 27 22:01 mysite
+-rwxr-xr-x   1 bijingrui  staff     3002  7 27 22:01 repoll-init.sh
+drwxr-xr-x   7 bijingrui  staff      224  8  2 10:54 images
+-rw-r--r--   1 bijingrui  staff     3404  8  2 11:22 README.md
+drwxr-xr-x  11 bijingrui  staff      352  9 12 13:55 templates
+-rw-r--r--   1 bijingrui  staff        0 10  5 22:42 monitor.log
+drwxr-xr-x  25 bijingrui  staff      800 10  5 22:50 polls
+-rw-r--r--   1 bijingrui  staff  1158789 10  5 22:51 repoll.log
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$ tail -f repoll.log
+[2020-10-05 22:29:31,748] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:33,491] [INFO] "GET /admin/polls/applyredisinfo/6/change/ HTTP/1.1" 200 14817
+[2020-10-05 22:29:33,579] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:34,684] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:29:34,777] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:36,072] [INFO] "GET /admin/polls/applyredisinfo/add/ HTTP/1.1" 200 14777
+[2020-10-05 22:29:36,165] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:29:36,998] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:29:37,100] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:51:19,053] [INFO] Watching for file changes with StatReloader
+[2020-10-05 22:53:21,715] [INFO] "GET /admin/ HTTP/1.1" 200 22116
+[2020-10-05 22:53:22,052] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 32069
+[2020-10-05 22:53:22,134] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:53:22,524] [INFO] "GET /static/admin/simpleui-x/img/favicon.png HTTP/1.1" 200 115997
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[2020-10-05 22:56:15,332] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 27594
+[2020-10-05 22:56:15,377] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 22:56:15,377] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 22:56:15,410] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 22:56:15,410] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 22:56:23,604] [INFO] "GET /admin/polls/runninginstime/6/change/ HTTP/1.1" 200 18349
+[2020-10-05 22:56:23,664] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 22:56:23,666] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 22:56:23,667] [INFO] "GET /static/admin/js/inlines.min.js HTTP/1.1" 200 5824
+[2020-10-05 22:56:23,725] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:56:23,732] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 22:56:23,732] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 22:57:59,627] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 27594
+[2020-10-05 22:57:59,671] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 22:57:59,671] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 22:58:04,057] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 34926
+[2020-10-05 22:58:04,172] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:23,950] [INFO] "POST /admin/polls/redisapply/ HTTP/1.1" 302 0
+[2020-10-05 22:58:24,062] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 35022
+[2020-10-05 22:58:24,168] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:28,100] [INFO] "GET /admin/polls/applyredisinfo/add/ HTTP/1.1" 200 14777
+[2020-10-05 22:58:28,228] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:42,737] [INFO] "POST /admin/polls/applyredisinfo/add/ HTTP/1.1" 302 0
+[2020-10-05 22:58:42,822] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 33217
+[2020-10-05 22:58:42,952] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:49,066] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 36010
+[2020-10-05 22:58:49,162] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:51,069] [INFO] "POST /admin/polls/redisapply/ HTTP/1.1" 302 0
+[2020-10-05 22:58:51,137] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 36112
+[2020-10-05 22:58:51,216] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 22:58:52,721] [INFO] "GET /admin/polls/redisins/ HTTP/1.1" 200 34211
+[2020-10-05 23:00:29,050] [INFO] "POST /admin/polls/redisapply/ HTTP/1.1" 302 0
+[2020-10-05 23:00:29,159] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 36186
+[2020-10-05 23:00:29,270] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:00:35,448] [INFO] "POST /admin/polls/redisapply/ HTTP/1.1" 302 0
+[2020-10-05 23:00:35,539] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 36170
+[2020-10-05 23:00:35,636] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:04:40,839] [INFO] /Users/bijingrui/PycharmProjects/mysite1/polls/handlers.py changed, reloading.
+[2020-10-05 23:04:42,105] [INFO] Watching for file changes with StatReloader
+[2020-10-05 23:04:47,277] [INFO] "GET /admin/polls/applyredisinfo/add/ HTTP/1.1" 200 14777
+[2020-10-05 23:04:47,395] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:04:57,164] [INFO] "POST /admin/polls/applyredisinfo/add/ HTTP/1.1" 302 0
+[2020-10-05 23:04:57,275] [INFO] "GET /admin/polls/applyredisinfo/ HTTP/1.1" 200 34236
+[2020-10-05 23:04:57,378] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:05:02,851] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 37103
+[2020-10-05 23:05:02,940] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:05:05,748] [INFO] "POST /admin/polls/redisapply/ HTTP/1.1" 302 0
+[2020-10-05 23:05:05,833] [INFO] "GET /admin/polls/redisapply/ HTTP/1.1" 200 37199
+[2020-10-05 23:05:05,934] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:05:09,175] [INFO] "GET /admin/polls/redisins/ HTTP/1.1" 200 35283
+[2020-10-05 23:08:37,925] [INFO] /Users/bijingrui/PycharmProjects/mysite1/polls/admin.py changed, reloading.
+[2020-10-05 23:08:39,194] [INFO] Watching for file changes with StatReloader
+[2020-10-05 23:10:12,981] [INFO] /Users/bijingrui/PycharmProjects/mysite1/polls/admin.py changed, reloading.
+[2020-10-05 23:10:15,428] [INFO] Watching for file changes with StatReloader
+[2020-10-05 23:10:33,766] [INFO] "GET /admin/polls/redisins/8/change/ HTTP/1.1" 200 22148
+[2020-10-05 23:10:33,930] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:11:03,212] [INFO] "GET /admin/polls/ipaddr/ HTTP/1.1" 200 28679
+[2020-10-05 23:11:04,280] [INFO] "GET /admin/polls/ipaddr/add/ HTTP/1.1" 200 17424
+[2020-10-05 23:11:04,432] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:11:20,556] [INFO] "POST /admin/polls/ipaddr/add/ HTTP/1.1" 302 0
+[2020-10-05 23:11:20,654] [INFO] "GET /admin/polls/ipaddr/ HTTP/1.1" 200 29464
+[2020-10-05 23:11:25,527] [INFO] "GET /admin/polls/ipaddr/8/change/ HTTP/1.1" 200 18139
+[2020-10-05 23:11:25,669] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:11:28,359] [INFO] "GET /admin/polls/ipaddr/ HTTP/1.1" 200 29336
+[2020-10-05 23:11:51,919] [INFO] Redis 单实例启动成功，服务器IP：192.168.1.105, 启动端口为：18989
+[2020-10-05 23:11:51,936] [INFO] "POST /admin/polls/redisins/8/change/ HTTP/1.1" 302 0
+[2020-10-05 23:11:52,114] [INFO] "GET /admin/polls/redisins/ HTTP/1.1" 200 35408
+[2020-10-05 23:12:04,107] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:12:04,154] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:12:04,155] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:21,340] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:21,388] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:21,389] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:22,473] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:22,507] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:22,509] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:23,107] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:23,132] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:23,132] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:23,173] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:23,174] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:23,612] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:23,645] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:23,645] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:24,046] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:24,075] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:24,075] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:24,580] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:24,616] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:24,619] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:24,660] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:24,661] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:25,115] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:25,146] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:25,146] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:25,195] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:25,196] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:25,856] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:25,888] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:25,890] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:26,415] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:26,453] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:26,453] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:26,486] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:26,486] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:42,796] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:42,836] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:42,837] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:43,472] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:43,504] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:43,504] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:43,881] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:13:43,927] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:43,927] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:13:44,024] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:13:44,024] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:14:49,625] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:14:49,653] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:14:49,654] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:14:50,282] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:14:50,304] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:14:50,305] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:16:13,222] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:16:13,249] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:16:13,249] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:16:14,204] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:16:14,230] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:16:14,230] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:18:49,598] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:18:49,619] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:18:49,620] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:18:49,664] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:18:49,664] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:19:11,448] [INFO] /Users/bijingrui/PycharmProjects/mysite1/polls/admin.py changed, reloading.
+[2020-10-05 23:19:12,878] [INFO] Watching for file changes with StatReloader
+[2020-10-05 23:21:21,806] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28749
+[2020-10-05 23:21:21,851] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:21:21,854] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:21:21,903] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:21:21,905] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:04,320] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:28:04,364] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:28:04,377] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:08,884] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:28:08,935] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:28:08,938] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:09,658] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:28:09,678] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:28:09,679] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:10,855] [INFO] "POST /admin/polls/runninginstime/ HTTP/1.1" 200 2172
+[2020-10-05 23:28:10,903] [INFO] "GET /static/bootstrap.min.js HTTP/1.1" 200 37045
+[2020-10-05 23:28:10,904] [INFO] "GET /static/jquery.min.js HTTP/1.1" 200 84280
+[2020-10-05 23:28:10,905] [INFO] "GET /static/bootstrap.min.css HTTP/1.1" 200 121200
+[2020-10-05 23:28:11,937] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:28:13,957] [INFO] "GET /admin/polls/runninginstime/10/change/ HTTP/1.1" 200 18344
+[2020-10-05 23:28:14,004] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:28:14,004] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:14,099] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:28:14,105] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:28:14,106] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:28:23,921] [INFO] "POST /admin/polls/runninginstime/10/change/ HTTP/1.1" 302 0
+[2020-10-05 23:28:23,933] [INFO] "GET /polls/redis_qps/standalone/10/192.168.1.105/18989 HTTP/1.1" 301 0
+[2020-10-05 23:28:24,050] [INFO] "GET /polls/redis_qps/standalone/10/192.168.1.105/18989/ HTTP/1.1" 200 5762
+[2020-10-05 23:29:45,810] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:29:45,894] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:29:45,894] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:29:45,962] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:29:45,962] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:29:55,107] [INFO] "GET /admin/polls/runninginstime/10/change/ HTTP/1.1" 200 18344
+[2020-10-05 23:29:55,161] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:29:55,161] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:29:55,282] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:29:55,295] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:29:55,295] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:03,106] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:30:03,145] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:03,146] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:04,705] [INFO] "GET /admin/polls/runninginstime/9/change/ HTTP/1.1" 200 18363
+[2020-10-05 23:30:04,748] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:04,749] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:04,819] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:30:04,826] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:04,827] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:08,130] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:30:08,188] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:08,189] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:12,181] [INFO] "GET /admin/polls/runninginstime/10/change/ HTTP/1.1" 200 18344
+[2020-10-05 23:30:12,230] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:12,230] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:30:12,353] [INFO] "GET /admin/jsi18n/ HTTP/1.1" 200 7722
+[2020-10-05 23:30:12,362] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:30:12,362] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:42:14,861] [INFO] "GET /admin/polls/runninginstime/ HTTP/1.1" 200 28752
+[2020-10-05 23:42:14,907] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:42:14,908] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:42:15,025] [WARNING] Not Found: /static/inline_actions/css/inline_actions.css
+[2020-10-05 23:42:15,027] [WARNING] "GET /static/inline_actions/css/inline_actions.css HTTP/1.1" 404 77
+[2020-10-05 23:49:54,391] [INFO] /Users/bijingrui/PycharmProjects/mysite1/polls/handlers.py changed, reloading.
+[2020-10-05 23:49:55,748] [INFO] Watching for file changes with StatReloader
+^C
+You have mail in /var/mail/bijingrui
+bijingrui@RuierMacBook-Pro:~/PycharmProjects/mysite1$ cd ..
+bijingrui@RuierMacBook-Pro:~/PycharmProjects$ ls -trl
+total 38616
+drwxr-xr-x   8 bijingrui  staff       256 11  1  2019 RedisEnter
+-rw-r--r--@  1 bijingrui  staff     28906  1 27  2020 申请用户.xmind
+-rw-r--r--@  1 bijingrui  staff     57142  1 27  2020 申请用户.png
+-rw-r--r--@  1 bijingrui  staff    181523  1 28  2020 add_user.png
+drwxr-xr-x   8 bijingrui  staff       256  1 28  2020 repoll.wiki
+drwxr-xr-x  22 bijingrui  staff       704  3  4  2020 redis-py-cluster
+drwxr-xr-x  17 bijingrui  staff       544  3 14  2020 videoproject
+drwxr-xr-x  16 bijingrui  staff       512  3 15  2020 redis-rdb-tools
+drwxr-xr-x  24 bijingrui  staff       768  3 26  2020 aotuRun
+drwxr-xr-x  27 bijingrui  staff       864  4  6  2020 viewflow
+name: Django CI
+
+on:
+  schedule:
+    - cron: 0 20 * * *
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.6, 3.7, 3.8]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        apt-get install libmysqlclient-dev python3-dev
+        pip install -r requirements.txt
+    - name: Run Tests
+      run: |
+        python manage.py test
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+~
+-- INSERT --                                                                       31,30         All
