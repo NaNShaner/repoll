@@ -911,7 +911,7 @@ class ApproveRedis:
                                                 area=self.new_asset.area,
                                                 pub_date=self.new_asset.pub_date,
                                                 approval_user=self.request.user,
-                                                ins_status=RedisIns.ins_choice[3][0]
+                                                ins_status=RedisIns.ins_choice[4][0]
                                                 )
                 if RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).values('ins_status') == 0:
                     RedisApply.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(
