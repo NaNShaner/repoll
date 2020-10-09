@@ -24,18 +24,6 @@ admin.site.site_title = 'Redis云管系统'
 admin.site.index_title = 'Repoll'
 
 
-class RedisAdmin(admin.ModelAdmin):
-    list_display = ('sys_type', 'redis_type', 'host_ip', 'redis_port', 'pub_date')
-    list_filter = ['redis_type']
-    search_fields = ['redis_type']
-    fieldsets = [
-        ('所属系统', {'fields': ['sys_type']}),
-        ('Redis类型', {'fields': ['redis_type', 'pub_date']}),
-        ('Redis信息', {'fields': ['host_ip', 'redis_port']}),
-    ]
-    save_on_top = False
-
-
 class LogEntryAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
@@ -276,6 +264,7 @@ class RunningInsClusterInline(InlineActionsMixin, admin.TabularInline):
         """
         self.inline_actions = ['redis_start', 'redis_stop', 'redis_qps']
         return self.inline_actions
+
     readonly_fields = ['id', 'running_ins_name', 'redis_type', 'redis_ip',
                        'running_ins_port', 'redis_ins_mem', 'redis_ins_alive']
 
@@ -337,9 +326,7 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
 
 
 class RedisApplyAdmin(admin.ModelAdmin):
-    """
-    TODO：审批拒绝的实例无法被DBA配置上线
-    """
+
     def has_add_permission(self, request):
         """
         禁用添加按钮
@@ -413,7 +400,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
                     self.message_user(request, "成功批准  %s  个新Redis实例上线！" % success_upline_number)
                     obj.redis_apply_status_update(statu=3)
                 else:
-                    self.message_user(request, "实例为 {0} 的实例上线失败，已存在上线实例，请检查".format(obj.redis_ins_name))
+                    self.message_user(request, "实例为 {0} 的实例审批失败，已审批完成，请检查".format(obj.redis_ins_name))
         except ValueError as e:
             self.message_user(request, "实例为 {0} 的实例上线失败，原因为{1}".format(queryset, e))
     approve_selected_new_assets.short_description = "批准选择的Redis实例"
@@ -481,6 +468,16 @@ class RedisApprovalAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
+    def get_form(self, request, obj=None, **args):
+        """审批拒绝的实例，DBA无法进行配置上线，填写配置的文本框不可见"""
+        defaults = {}
+        if obj.ins_status == 4:    # 如实例审批状态为已拒绝则不关联配置文本框
+            self.inlines = []
+        else:
+            self.inlines = [ChoiceInline]
+        defaults.update(args)
+        return super(RedisApprovalAdmin, self).get_form(request, obj, **defaults)
+
     list_display = ['id', 'redis_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'approval_user', 'ins_status', 'on_line_status'
@@ -489,7 +486,6 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     list_filter = ['redis_type']
     search_fields = ['area', 'ins_status']
     actions = ['apply_selected_new_redis', 'deny_selected_new_redis']
-    inlines = [ChoiceInline]
     list_per_page = 15
     readonly_fields = ['redis_ins_name', 'ins_disc', 'redis_version', 'redis_type',
                        'redis_mem', 'sys_author', 'area', 'pub_date', 'approval_user',
@@ -499,7 +495,7 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     fieldsets = [
         ('所属系统', {'fields': ['redis_ins_name', 'ins_disc', 'area']}),
         ('Redis实例详情', {'fields': ['redis_version', 'redis_type', 'redis_mem']}),
-        ('Redis申请信息', {'fields': ['approval_user', 'sys_author', 'pub_date']}),
+        ('Redis申请信息', {'fields': ['approval_user', 'sys_author', 'ins_status', 'pub_date']}),
     ]
 
     # 审核项有且只能有一条记录
