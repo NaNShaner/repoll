@@ -28,4 +28,4 @@ jobs:
         sudo pip3 install -r requirements.txt
     - name: Run Tests
       run: |
-        python manage.py test
+        python3 manage.py test
