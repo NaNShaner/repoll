@@ -1,8 +1,8 @@
-Django==2.2.10
+django==2.2.13
 Jinja2==2.10.1
 pyecharts==1.5.1
 paramiko==2.6.0
-redis==3.3.8
+redis==3.5.3
 djangorestframework==3.10.2
 django-crontab==0.7.1
 django-simpleui==3.2
