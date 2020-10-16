@@ -13,7 +13,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.7]
 
     steps:
     - uses: actions/checkout@v2
@@ -29,5 +29,7 @@ jobs:
     - name: Run Tests
       run: |
         python3 -m pip list
+        whereis python3
+        /opt/hostedtoolcache/Python/3.7.9/bin/python3 -m pip list
         /usr/local/bin/python3 -m pip list
         whereis python3
