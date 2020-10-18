@@ -31,5 +31,5 @@ jobs:
         python3 -m pip list
         whereis python3
         /opt/hostedtoolcache/Python/3.7.9/x64/bin/python3 -m pip list
-        /usr/local/bin/python3 -m pip list
         /usr/lib/python3.7 -m pip list
+        /usr/share/python3  -m pip list
