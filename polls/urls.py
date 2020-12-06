@@ -16,4 +16,5 @@ urlpatterns = [
     path(r'apis/redis-ins/<str:redis_type>/<str:redis_ins_name>/<str:memory>', memory_action),
     path(r'get_ext_ins/', views.get_ext_ins),
     path(r'get_ext_ins/api/import_ext_ins/', import_ext_ins),
+    path(r'message/<str:message>/', views.return_message),
 ]
