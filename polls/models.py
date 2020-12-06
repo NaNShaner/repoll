@@ -6,7 +6,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.html import format_html
 from .tools import redis_apply_text
-import hashlib
+from django.contrib.auth.models import User
 
 
 class Ipaddr(models.Model):
@@ -56,7 +56,9 @@ class ApplyRedisInfo(models.Model):
     ]
     redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
-    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    # sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    sys_author = models.ForeignKey(User, on_delete=models.CASCADE, to_field="username",
+                                   related_name="apply_redis_info_sys_author", verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
     pub_date = models.DateTimeField('申请时间', default=timezone.now)
     # user = User.objects.all()
@@ -113,10 +115,14 @@ class RedisApply(models.Model):
     ]
     redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
-    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    # sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    sys_author = models.ForeignKey(User, on_delete=models.CASCADE, default="", to_field="username",
+                                   related_name="ins_sys_author", verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
     pub_date = models.DateTimeField('申请时间', default=timezone.now)
-    create_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
+    # create_user = models.CharField(max_length=150, null=True, verbose_name="申请人")
+    create_user = models.ForeignKey(User, on_delete=models.CASCADE, default="", to_field="username",
+                                    related_name="create_user", verbose_name="申请人")
     status_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -148,10 +154,14 @@ class RedisIns(models.Model):
     redis_version = models.CharField(max_length=150, null=True, verbose_name="Redis 版本", default="3.0.6")
     redis_type = models.CharField(max_length=60, default=type_choice[0][0], choices=type_choice, verbose_name="存储种类")
     redis_mem = models.CharField(max_length=50, help_text="例如填写：512M,1G,2G..32G等", verbose_name="内存总量")
-    sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    # sys_author = models.CharField(max_length=50, verbose_name="项目负责人")
+    sys_author = models.ForeignKey(User, on_delete=models.CASCADE, default="", to_field="username",
+                                   related_name="redis_ins_sys_author", verbose_name="项目负责人")
     area = models.CharField(max_length=50, verbose_name="机房")
     pub_date = models.DateTimeField('审批时间', default=timezone.now)
-    approval_user = models.CharField(max_length=150, null=True, verbose_name="审批人")
+    # approval_user = models.CharField(max_length=150, null=True, verbose_name="审批人")
+    approval_user = models.ForeignKey(User, on_delete=models.CASCADE, default="", to_field="username",
+                                      verbose_name="审批人")
     ins_choice = [
         (0, "已上线"),
         (1, "已下线"),
@@ -383,9 +393,9 @@ class RedisClusterConf(models.Model):
                                                     help_text="主从迁移至少需要的从节点数,默认1个",
                                                     verbose_name="cluster-migration-barrier")
     clusterconfigfile = models.CharField(max_length=150,
-                                           help_text="集群配置文件名称,格式:nodes-{port}.conf",
-                                           verbose_name="cluster-config-file",
-                                           default="nodes-%d.conf")
+                                         help_text="集群配置文件名称,格式:nodes-{port}.conf",
+                                         verbose_name="cluster-config-file",
+                                         default="nodes-%d.conf")
     cluster_require_full_coverage = models.CharField(max_length=150,
                                                      help_text="节点部分失败期间,其他节点是否继续工作",
                                                      verbose_name="sentinel down-after-milliseconds",
@@ -411,7 +421,9 @@ class RedisVersion(models.Model):
     # redis_version = models.CharField(max_length=60, unique=True, primary_key=True,
     #                                  default="3.0.6", verbose_name="Redis版本", error_messages={'required': "不能为空"})
     pub_date = models.DateTimeField(default=timezone.now, verbose_name="版本发布时间")
-    who_apply = models.CharField(max_length=60, default="", verbose_name="版本发布人")
+    # who_apply = models.CharField(max_length=60, default="", verbose_name="版本发布人")
+    who_apply = models.ForeignKey(User, on_delete=models.CASCADE, default="", to_field="username",
+                                  related_name="who_apply", verbose_name="版本发布人")
 
     def __str__(self):
         return "Redis版本添加成功"
@@ -441,7 +453,9 @@ class ApplyRedisText(models.Model):
                                                                    "master3Ip:master3Port:memSize(M):slave3Ip:slave3Port</br>",
                                   error_messages={'required': "不能为空"},
                                   validators=[redis_apply_text])
-    who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
+    # who_apply_ins = models.CharField(max_length=50, default="", verbose_name="审批人")
+    who_apply_ins = models.ForeignKey(User, on_delete=models.CASCADE, default="",
+                                      related_name="who_apply_ins", to_field="username", verbose_name="审批人")
     apply_time = models.DateTimeField(verbose_name="审批时间", default=timezone.now)
 
     def __str__(self):
