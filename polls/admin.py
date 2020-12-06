@@ -6,10 +6,10 @@ from django.forms import widgets
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 from django.shortcuts import redirect
-from django.template import Context, Template
 from django.template.loader import get_template
 from django.http import HttpResponse
 from .models import *
+from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
 from jinja2 import Environment, FileSystemLoader
 from .handlers import ApproveRedis
@@ -120,15 +120,48 @@ class ChoiceInline(admin.StackedInline):
     model = ApplyRedisText
     extra = 1
 
+    # exclude = ['who_apply_ins', ]
+
     def has_delete_permission(self, request, obj=None):
         """隐藏删除按钮"""
         return False
 
     def has_change_permission(self, request, obj=None):
+        """
+        将所有可见字段设置为只读
+        :param request:
+        :param obj:
+        :return:
+        """
         if obj:
             if ApplyRedisText.objects.filter(redis_ins=obj.redis_ins_name):
                 self.readonly_fields = [field.name for field in ApplyRedisText._meta.fields]
         return self.readonly_fields
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """
+        设置默认项目申请人为当前登录用户
+        :param db_field:
+        :param kwargs:
+        :return:
+        """
+        field = super(ChoiceInline, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'who_apply_ins':
+            field.initial = kwargs['request'].user
+        return field
+
+    def save_model(self, request, obj, form, change):
+        """
+        隐藏前端页面审批人字段，后台自动添加用户入库
+        :param request: 当前wsgi
+        :param obj:
+        :param form:
+        :param change:
+        :return:
+        """
+        user_id = User.objects.filter(username=request.user).values('username').first()['username']
+        obj.who_apply_ins_id = user_id
+        super().save_model(request, obj, form, change)
 
 
 class ServerUserLine(admin.StackedInline):
@@ -309,19 +342,33 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
         if obj:
             if ApplyRedisInfo.objects.filter(apply_ins_name=obj.apply_ins_name):
                 self.readonly_fields = [field.name for field in RedisApply._meta.fields]
-            else:
-                self.readonly_fields = ['apply_status', ]
-            return self.readonly_fields
-        self.readonly_fields = ()
-        return self.readonly_fields
+        if 'apply_status' not in self.readonly_fields:
+            self.readonly_fields = list(self.readonly_fields)
+            self.readonly_fields.append('apply_status')
+        return tuple(self.readonly_fields)
+
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        """
+        设置默认项目申请人为当前登录用户
+        :param db_field:
+        :param kwargs:
+        :return:
+        """
+        field = super(ApplyRedisInfoAdmin, self).formfield_for_dbfield(db_field, **kwargs)
+        if db_field.name == 'sys_author':
+            field.initial = kwargs['request'].user
+        return field
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'apply_status']
+    list_display_links = ['id', 'apply_ins_name']
     list_filter = ['redis_type']
     search_fields = ['area']
     # 不可见字段
     exclude = ['create_user']
+
+    # readonly_fields = ['apply_status', ]
     list_per_page = 15
 
 
@@ -373,6 +420,7 @@ class RedisApplyAdmin(admin.ModelAdmin):
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'create_user', 'apply_status']
+    list_display_links = ['id', 'apply_ins_name']
     list_filter = ['redis_type']
     search_fields = ['area']
     list_per_page = 15
@@ -464,17 +512,17 @@ class RedisApprovalAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """函数作用：使当前登录的用户只能看到自己负责的实例"""
         qs = super(RedisApprovalAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
+        if request.user.is_superuser:   # 管理员可以看到所有申请的实例
             return qs
-        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
+        return qs.filter(approval_user=request.user)
 
     def get_form(self, request, obj=None, **args):
         """审批拒绝的实例，DBA无法进行配置上线，填写配置的文本框不可见"""
         defaults = {}
-        if obj.ins_status == 4:    # 如实例审批状态为已拒绝则不关联配置文本框
+        if obj.ins_status == 4:    # 如实例审批状态为已拒绝则不关联配置文本框，这里的obj对象是modules中的RedisApproval
             self.inlines = []
         else:
-            self.inlines = [ChoiceInline]
+            self.inlines = [ChoiceInline]   # 如果审批状态为通过则管理配置文本框
         defaults.update(args)
         return super(RedisApprovalAdmin, self).get_form(request, obj, **defaults)
 
@@ -568,10 +616,14 @@ class RunningInsTimeAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 RunningInsStandaloneInline.max_num = 1
             elif obj.redis_type == 'Redis-Sentinel':
                 self.inlines = [RunningInsSentinelInline]
-                RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(running_ins_name=obj.running_ins_name))
+                RunningInsSentinelInline.max_num = len(RunningInsSentinel.objects.filter(
+                    running_ins_name=obj.running_ins_name
+                ))
             elif obj.redis_type == 'Redis-Cluster':
                 self.inlines = [RunningInsClusterInline]
-                RunningInsClusterInline.max_num = len(RunningInsCluster.objects.filter(running_ins_name=obj.running_ins_name))
+                RunningInsClusterInline.max_num = len(RunningInsCluster.objects.filter(
+                    running_ins_name=obj.running_ins_name
+                ))
         else:
             self.inlines = []  # 如果不是继承，就取消设置
         defaults.update(args)
