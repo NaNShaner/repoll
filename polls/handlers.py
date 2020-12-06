@@ -5,9 +5,8 @@ from .scheduled import mem_unit_chage
 from django.core.exceptions import ValidationError
 # 针对model 的signal
 from django.dispatch import receiver
-from django.contrib import messages
-from django.core.signals import got_request_exception
 from django.db.models.signals import post_save
+from django.contrib.auth.models import User
 from .tools import redis_apply_text, split_integer, slot_split_part
 import os
 import copy
@@ -160,14 +159,15 @@ def apply_redis_info_handler(sender, **kwargs):
     create_user = redis_ins_obj.values('create_user').first()
     apply_status = redis_ins_obj.values('apply_status').first()
     area = redis_ins_obj.values('area').first()
+    uq = User.objects.filter(username=sys_author['sys_author']).values('username').first()['username']
     obj = RedisApply(apply_ins_name=redis_ins_obj_name['apply_ins_name'],
                      ins_disc=ins_disc['ins_disc'],
                      redis_type=redis_ins_obj_type['redis_type'],
                      redis_mem=redis_ins_obj_mem['redis_mem'],
-                     sys_author=sys_author['sys_author'],
+                     sys_author_id=uq,
                      area=area['area'],
                      pub_date=pub_date['pub_date'],
-                     create_user=create_user['create_user'],
+                     create_user_id=uq,
                      apply_status=apply_status['apply_status']
                      )
     obj.save()
@@ -914,11 +914,6 @@ class ApproveRedis:
                         apply_status=RedisApply.status_choice[2][0]
                     )
             else:
-                # RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(ins_status=RedisIns.ins_choice[3][0])
-                # RedisApply.objects.filter(apply_ins_name=self.new_asset.apply_ins_name).update(
-                #     apply_status=RedisApply.status_choice[2][0]
-                # )
-                # return True
                 return False
         except ValueError as e:
             return e
