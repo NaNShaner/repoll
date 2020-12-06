@@ -61,7 +61,7 @@ def redis_apply_text(apply_text, redis_type=None):
                 if redis_text_split[0] not in mysql_ip_row:
                     raise ValidationError("服务器{0},不在资源池列表中".format(redis_text_split[0]))
                 apply_text_dict = {
-                    'redis_ip':  redis_text_split[0],
+                    'redis_ip': redis_text_split[0],
                     'redis_port': redis_text_split[1],
                     'redis_mem': redis_text_split[2]
                 }
@@ -99,6 +99,7 @@ def redis_apply_text(apply_text, redis_type=None):
                 }
                 return apply_text_dict
             except Exception as e:
+                # 报错前端不显示
                 raise ValidationError("文本格式输入错误，{0}".format(e))
         elif redis_type == 'Redis-Cluster':
             redis_text_split = apply_text.split("\r\n")
@@ -146,13 +147,6 @@ def redis_apply_text(apply_text, redis_type=None):
                 raise ValidationError("审批文本中存在多余的空行，请删除空行")
             else:
                 all_line = apply_text.split('\r\n')
-                # redis_ins = all_line.pop(0)
-                # all_redis_ins = redis_ins.split(":")
-                # all_redis_ins_ip = all_redis_ins[::2]
-                # all_redis_ins_port = all_redis_ins[1::2]
-                # redis_sentinel = [redis_sentinel for redis_sentinel in all_line if redis_sentinel != '']
-                # redis_sentinel_ip = [sentinel_ip.split(":")[0] for sentinel_ip in redis_sentinel]
-                # redis_sentinel_port = [sentinel_port.split(":")[1] for sentinel_port in redis_sentinel]
                 all_ip_list = []
                 for one_line in all_line:
                     one_line_part = one_line.split(":")
@@ -194,7 +188,7 @@ def slot_split_part(n):
     :param n: split_integer函数的返回结果
     :return:
     """
-    return ['..'.join((str(i+1), str(j))) for i, j in zip([-1]+list(it.accumulate(n[:-1])), it.accumulate(n))]
+    return ['..'.join((str(i + 1), str(j))) for i, j in zip([-1] + list(it.accumulate(n[:-1])), it.accumulate(n))]
 
 
 def recreate_conf_file():

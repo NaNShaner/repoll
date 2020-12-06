@@ -23,6 +23,7 @@ from rest_framework import serializers, viewsets, routers, permissions
 from rest_framework.decorators import permission_classes
 from polls.models import RunningInsTime
 from polls.views import favicon
+from polls.apis import import_ext_ins
 
 
 # Serializers define the API representation.
@@ -55,7 +56,6 @@ class RunningInsTimeSerializer(serializers.HyperlinkedModelSerializer):
                   'running_time', 'ins_status']
 
 
-# ViewSets define the view behavior.
 @permission_classes((permissions.IsAdminUser, ))
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -77,8 +77,8 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^polls/', include('polls.urls')),
     url(r'^$', generic.RedirectView.as_view(url='/admin/', permanent=False)),
-    url(r'^', include(router.urls)),
-    # url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^apis/', include(router.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'favicon.ico$', favicon),
     url(r'^static/(?P<path>.*)$', static.serve,
         {'document_root': settings.STATIC_ROOT}, name='static'),

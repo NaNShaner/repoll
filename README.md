@@ -4,6 +4,7 @@
 
 [![ice](https://img.shields.io/badge/developing%20with-Simpleui-2077ff.svg)](https://github.com/newpanjing/simpleui)
 ![](https://img.shields.io/badge/build-passing-green.svg)
+![Django CI](https://github.com/NaNShaner/repoll/workflows/Django%20CI/badge.svg)
 # repoll
 使用django框架编写的redis的管理平台，[项目wiki](https://github.com/NaNShaner/repoll/wiki)
 ![Anurag's github stats](https://github-readme-stats.vercel.app/api?username=NaNShaner&show_icons=true&theme=radical)
@@ -64,6 +65,7 @@ python3 manage.py  collectstatic
 ```bash
 python3 manage.py createsuperuser #用户名密码，自定义
 ```
+* 如需对接ldap请根据setting注释根据实际情况修改配置
 # 启动项目
 
 * 开启redis的qps监控执行以下命令
@@ -111,6 +113,8 @@ admin/admin
 - [x] 支持在线扩缩容的申请、审批、配置生效流程
 - [x] 支持导入已存在的redis实例
 - [ ] 支持web console，在线执行redis命令
+- [ ] 支持容器化部署
+- [ ] 支持Redis实例容器化部署
 
 # 声明
 该项目将长期维护，期望有对redis有平台化管理的朋友加入一起维护。

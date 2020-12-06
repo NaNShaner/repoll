@@ -6,7 +6,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, Http404
-
+from django.contrib import messages
+from django.shortcuts import redirect
 from .forms import NameForm
 
 # pyecharts
@@ -66,6 +67,18 @@ def get_ext_ins(request):
     """
     form = NameForm()
     return render(request, 'import_ext_ins.html', {'form': form})
+
+
+@api_view(['GET'])
+def return_message(request, message):
+    try:
+        if request.method == 'GET':
+            messages.add_message(request, messages.INFO, message)
+        else:
+            message = '未知错误'
+    except:
+        message = '未知错误'
+    return render(request, 'messages.html', locals())
 
 
 def favicon(request):

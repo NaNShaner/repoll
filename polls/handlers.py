@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 # 针对model 的signal
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.contrib.auth.models import User
 from .tools import redis_apply_text, split_integer, slot_split_part
 import os
 import copy
@@ -14,7 +15,7 @@ import copy
 TEMPLATES_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-logger = logging.getLogger("django")
+logger = logging.getLogger("file")
 
 
 @receiver(post_save, sender=ApplyRedisText, dispatch_uid="mymodel_post_save")
@@ -123,6 +124,7 @@ def apply_redis_text_handler(sender, **kwargs):
                         c.start_all_redis_ins()
                         c.save_cluster_ins()
                     else:
+                        """前台页面没有报错显示"""
                         raise ValidationError("redis cluster 启动失败")
         RedisIns.objects.filter(redis_ins_name=redis_ins_obj_name["redis_ins_name"]).update(on_line_status=0)
         start_cluster = StartRedisCluster(cluster_list=redis_list)
@@ -157,14 +159,15 @@ def apply_redis_info_handler(sender, **kwargs):
     create_user = redis_ins_obj.values('create_user').first()
     apply_status = redis_ins_obj.values('apply_status').first()
     area = redis_ins_obj.values('area').first()
+    uq = User.objects.filter(username=sys_author['sys_author']).values('username').first()['username']
     obj = RedisApply(apply_ins_name=redis_ins_obj_name['apply_ins_name'],
                      ins_disc=ins_disc['ins_disc'],
                      redis_type=redis_ins_obj_type['redis_type'],
                      redis_mem=redis_ins_obj_mem['redis_mem'],
-                     sys_author=sys_author['sys_author'],
+                     sys_author_id=uq,
                      area=area['area'],
                      pub_date=pub_date['pub_date'],
-                     create_user=create_user['create_user'],
+                     create_user_id=uq,
                      apply_status=apply_status['apply_status']
                      )
     obj.save()
@@ -190,7 +193,6 @@ def get_redis_conf(redis_type):
 def get_server_user_passwd(server_ip):
     """
     通过server IP从库中获取用户名和密码
-    :TODO 通过server IP从库中获取用户名和密码，取消用户名密码硬编码
     :param server_ip:
     :return:
     """
@@ -201,7 +203,6 @@ def get_server_user_passwd(server_ip):
 def do_command(host, commands, private_key_file=None, user_name=None, user_password=None):
     """
     登录远端服务器执行命令
-    TODO: 使用库中服务器资源池ServerUserPass表里的用户名和密码
     :param host: 远端主机
     :param commands:  到远端执行的命令
     :param user_name: 登录到远端的服务名
@@ -209,6 +210,7 @@ def do_command(host, commands, private_key_file=None, user_name=None, user_passw
     :param user_password: 用户密码
     :return:
     """
+    pwd = get_server_user_passwd(server_ip=host)
     try:
         # 创建SSH对象
         ssh = paramiko.SSHClient()
@@ -217,7 +219,7 @@ def do_command(host, commands, private_key_file=None, user_name=None, user_passw
         if private_key_file:
             private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username=user_name, pkey=private_key)
+            ssh.connect(hostname=host, port=22, username=pwd['user_name'], pkey=private_key)
             # 执行命令
             stdin, stdout, stderr = ssh.exec_command(commands)
             # 获取命令结果
@@ -228,7 +230,6 @@ def do_command(host, commands, private_key_file=None, user_name=None, user_passw
             ssh.close()
             return command_exit_status, command_exit_result
         else:
-            pwd = get_server_user_passwd(server_ip=host)
             # 连接服务器
             ssh.connect(hostname=host, port=22, username=pwd['user_name'], password=pwd['user_passwd'])
             # 执行命令
@@ -256,6 +257,7 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None,
     :param user_name: 用户名
     :return:
     """
+    pwd = get_server_user_passwd(server_ip=host)
     try:
         ssh = paramiko.SSHClient()
         # 允许连接不在know_hosts文件中的主机
@@ -263,20 +265,20 @@ def do_scp(host, local_file, remote_file, private_key_file=None, user_name=None,
         if private_key_file:
             private_key = paramiko.RSAKey.from_private_key_file(private_key_file)
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username=user_name, pkey=private_key)
+            ssh.connect(hostname=host, port=22, username=pwd['user_name'], pkey=private_key)
             # 执行命令
             client = paramiko.Transport(host)
-            client.connect(username=user_name, pkey=private_key)
+            client.connect(username=pwd['user_name'], pkey=private_key)
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
             client.close()
             return True
         else:
             # 连接服务器
-            ssh.connect(hostname=host, port=22, username=user_name, password=user_password)
+            ssh.connect(hostname=host, port=22, username=pwd['user_name'], password=pwd['user_passwd'])
             # 执行命令
             client = paramiko.Transport(host)
-            client.connect(username=user_name, password=user_password)
+            client.connect(username=pwd['user_name'], password=pwd['user_passwd'])
             sftp = paramiko.SFTPClient.from_transport(client)
             sftp.put(local_file, remote_file)
             client.close()
@@ -441,8 +443,7 @@ class RedisStandalone:
             if self.master_name:
                 _maser_ip_port = self.master_ip_port.split(":")
                 f.write("slaveof {0} {1}".format(_maser_ip_port[0], _maser_ip_port[1]))
-        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf",
-                  user_name="root", user_password="Pass@word"):
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + ".conf"):
             logging.info("文件分发成功")
         else:
             logging.error("文件分发失败")
@@ -465,7 +466,7 @@ class RedisStartClass:
         """
         启动redis的实例
         """
-        do_command_result = do_command(self.host, self.redis_server_ctl, user_name="root", user_password="Pass@word")
+        do_command_result = do_command(self.host, self.redis_server_ctl)
         if do_command_result:
             if do_command_result[0] == 0:
                 return True
@@ -538,8 +539,7 @@ class RedisModelStartClass:
                                                        port=redis_sentinel_port, kwargs=conf_modify)
                                 f.write(k + " " + str(v) + "\n")
                 if do_scp(redis_sentinel_ip, conf_file_name,
-                          "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf",
-                          user_name="root", user_password="Pass@word"):
+                          "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf"):
                     logging.info("文件分发成功")
                 else:
                     logging.error("文件分发失败")
@@ -706,8 +706,7 @@ class RedisClusterClass:
                                                maxmemory=mem_unit_chage(self.redis_ins_mem),
                                                kwargs={"redis_port": self.redis_port})
                         f.write(k + " " + str(v) + "\n")
-        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf",
-                  user_name="root", user_password="Pass@word"):
+        if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"):
             logging.info("目标服务器{0}文件分发成功".format("/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"))
         else:
             logging.error("目标服务器{0}文件分发失败".format("/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"))
@@ -790,7 +789,7 @@ class StartRedisCluster:
                         comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3}".format(
                             redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port
                         )
-                        _exex_command = do_command(host=redis_ins_one_ip, commands=comm_line, user_name="root", user_password="Pass@word")
+                        _exex_command = do_command(host=redis_ins_one_ip, commands=comm_line)
                         if _exex_command[0] == 0:
                             logging.info("{0}:{1} cluster meet {2}:{3} is ok".format(
                                 redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port))
@@ -809,7 +808,7 @@ class StartRedisCluster:
         node_dict = {}
         redis_cluster_ip_port = self.cluster_list[0]
         _comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster nodes ".format(redis_cluster_ip_port['redis_master'][0], redis_cluster_ip_port['redis_master'][1])
-        _comm_result = do_command(host=redis_cluster_ip_port['redis_master'][0], commands=_comm_line, user_name="root", user_password="Pass@word")
+        _comm_result = do_command(host=redis_cluster_ip_port['redis_master'][0], commands=_comm_line)
         if _comm_result[0] == 0:
             _comm_result_list = _comm_result[1].decode('unicode-escape')
             _comm_result_list = _comm_result_list.split("\n")
@@ -835,10 +834,9 @@ class StartRedisCluster:
                 redis_master_ip = redis_ip_port['redis_master']
                 _add_slot_comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster addslots {2}{3}{4}"\
                     .format(redis_master_ip[0], redis_master_ip[1], "{", slot_split[num], "}")
+                logger.info(f"集群创建啊命令为{_add_slot_comm_line}")
                 _ex_addslots_command = do_command(host=redis_master_ip[0],
-                                                  commands=_add_slot_comm_line,
-                                                  user_name="root",
-                                                  user_password="Pass@word")
+                                                  commands=_add_slot_comm_line,)
                 if _ex_addslots_command[0] == 0:
                     logging.info("add slot 成功，命令行命令为{0}".format(_add_slot_comm_line))
                 else:
@@ -851,9 +849,7 @@ class StartRedisCluster:
                     )
                     logging.info(_add_master_replca_comm_line)
                     _ex_cluster_replicate = do_command(host=redis_slave_ip[0],
-                                                       commands=_add_master_replca_comm_line,
-                                                       user_name="root",
-                                                       user_password="Pass@word")
+                                                       commands=_add_master_replca_comm_line)
                     if _ex_cluster_replicate[0] == 0:
                         logging.info("add replicate 成功")
                     else:
@@ -918,11 +914,6 @@ class ApproveRedis:
                         apply_status=RedisApply.status_choice[2][0]
                     )
             else:
-                # RedisIns.objects.filter(redis_ins_name=self.new_asset.apply_ins_name).update(ins_status=RedisIns.ins_choice[3][0])
-                # RedisApply.objects.filter(apply_ins_name=self.new_asset.apply_ins_name).update(
-                #     apply_status=RedisApply.status_choice[2][0]
-                # )
-                # return True
                 return False
         except ValueError as e:
             return e
