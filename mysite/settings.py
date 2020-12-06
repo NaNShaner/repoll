@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_python3_ldap',
     'polls.apps.PollsConfig',
     'rest_framework',
     'django_crontab',
@@ -52,7 +53,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         # 适用于添加身份验证和权限以后
         'rest_framework.permissions.IsAuthenticated'
-    ]
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
 }
 
 MIDDLEWARE = [
@@ -178,6 +181,40 @@ SIMPLEUI_HOME_INFO = False
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
+
+# LDAP server的URL
+LDAP_AUTH_URL = "ldap://127.0.0.1:389"
+# 公司内部不使用 TLS 连接
+LDAP_AUTH_USE_TLS = False
+
+# LDAP 搜索域，这里请根据实际修改
+LDAP_AUTH_SEARCH_BASE = "dc=ihopeit,dc=com"
+
+# 表示用户的LDAP类.
+LDAP_AUTH_OBJECT_CLASS = "inetOrgPerson"
+
+# LDAP和django用户表字段的对应关系.
+LDAP_AUTH_USER_FIELDS = {
+    "username": "cn",
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
+
+# 用于唯一标识用户的django模型字段的元组
+LDAP_AUTH_USER_LOOKUP_FIELDS = ("username",)
+
+LDAP_AUTH_CLEAN_USER_DATA = "django_python3_ldap.utils.clean_user_data"
+
+# LDAP中用户名及密码，这里请根据实际修改
+LDAP_AUTH_CONNECTION_USERNAME = "admin"
+LDAP_AUTH_CONNECTION_PASSWORD = "admin_passwd_4_ldap"
+
+# LDAP_AUTH_FORMAT_USERNAME = "django_python3_ldap.utils.format_username_active_directory"
+
+AUTHENTICATION_BACKENDS = {"django_python3_ldap.auth.LDAPBackend",
+                           "django.contrib.auth.backends.ModelBackend", }
+
 # logging的配置
 LOGGING = {
     'version': 1,                       # 指明dictConnfig的版本
@@ -229,7 +266,7 @@ LOGGING = {
         },
         'redis.monitor': {
             'handlers': ['monitor'],
-            'level': 'ERROR',
+            'level': 'INFO',
             'propagate': True,
         },
         'django.request ': {
