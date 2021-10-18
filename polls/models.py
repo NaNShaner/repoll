@@ -330,6 +330,12 @@ class RedisConf(models.Model):
     logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
                                verbose_name="logfile", default="/opt/repoll/")
 
+    # 默认Redis密码
+    masterauth = models.CharField(max_length=150, help_text="当master服务设置了密码保护时slave服务连接master的密码",
+                                  verbose_name="masterauth", null=True, blank=True, default="qZr3pet")
+    requirepass = models.CharField(max_length=150, help_text="设置客户端连接后进行任何其他指定前需要使用的密码",
+                                   verbose_name="requirepass", null=True, blank=True, default="qZr3pet")
+
     def __str__(self):
         return self.redis_version
 

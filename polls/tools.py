@@ -4,6 +4,7 @@ from IPy import IP
 import itertools as it
 import re
 from django.db import connection
+from django.conf import settings
 
 
 def my_custom_sql():
@@ -14,7 +15,8 @@ def my_custom_sql():
     """
     row_list = []
     cursor = connection.cursor()
-    cursor.execute("SELECT ip FROM django.polls_ipaddr")
+    db_name = settings.DATABASES
+    cursor.execute(f"SELECT ip FROM {db_name['default']['NAME']}.polls_ipaddr")
     row = cursor.fetchall()
     for i in row:
         row_list.append(i[0])

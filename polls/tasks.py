@@ -1,8 +1,8 @@
 import time
 import redis
-from .models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster, RealTimeQps
+from polls.models import RunningInsTime, RunningInsSentinel, RunningInsStandalone, RunningInsCluster, RealTimeQps
 from django.utils import timezone
-from .scheduled import RedisScheduled
+from polls.scheduled import RedisScheduled
 import threading
 import logging
 
