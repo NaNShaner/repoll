@@ -36,14 +36,14 @@ def apply_redis_text_handler(sender, **kwargs):
     if redis_ins_type == 'Redis-Standalone':
         redis_ip = redis_apply_text_split['redis_ip']
         redis_port = redis_apply_text_split['redis_port']
-        a = RedisStandalone(redis_ins=redis_ins_obj,
-                            redis_ins_name=redis_ins_obj_name,
-                            redis_ins_type=redis_ins_type,
-                            redis_ins_mem=redis_apply_text_split['redis_mem'],
-                            redis_ip=redis_ip,
-                            redis_port=redis_port)
-        a.saved_redis_running_ins()
-        if a.create_redis_conf_file():
+        redis_standalon_ins = RedisStandalone(redis_ins=redis_ins_obj,
+                                              redis_ins_name=redis_ins_obj_name,
+                                              redis_ins_type=redis_ins_type,
+                                              redis_ins_mem=redis_apply_text_split['redis_mem'],
+                                              redis_ip=redis_ip,
+                                              redis_port=redis_port)
+        redis_standalon_ins.saved_redis_running_ins()
+        if redis_standalon_ins.create_redis_conf_file():
             redis_start = RedisStartClass(host=redis_ip,
                                           redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" + str(redis_port) + ".conf")
             if redis_start.start_server():
@@ -551,25 +551,25 @@ class RedisModelStartClass:
         创建master和slave的配置文件
         :return:
         """
-        a = RedisStandalone(redis_ins=self.redis_ins,
-                            redis_ins_name=self.redis_ins_name,
-                            redis_ins_type='Redis-Standalone',
-                            redis_ins_mem=self.redis_mem,
-                            redis_ip=self.redis_master_ip,
-                            redis_port=self.redis_master_port)
-        a.create_redis_conf_file()
+        redis_master_standalone_ins = RedisStandalone(redis_ins=self.redis_ins,
+                                                      redis_ins_name=self.redis_ins_name,
+                                                      redis_ins_type='Redis-Standalone',
+                                                      redis_ins_mem=self.redis_mem,
+                                                      redis_ip=self.redis_master_ip,
+                                                      redis_port=self.redis_master_port)
+        redis_master_standalone_ins.create_redis_conf_file()
 
         for slave_ip_port in self.redis_slave_ip_port:
             for slave_ip, slave_port in slave_ip_port.items():
-                a = RedisStandalone(redis_ins=self.redis_ins,
-                                    redis_ins_name=self.redis_ins_name,
-                                    redis_ins_type='Redis-Standalone',
-                                    redis_ins_mem=self.redis_mem,
-                                    redis_ip=slave_ip,
-                                    redis_port=slave_port,
-                                    master_name=self.redis_master_name,
-                                    master_ip_port="{0}:{1}".format(self.redis_master_ip, self.redis_master_port))
-                a.create_redis_conf_file()
+                redis_slave_standalone_ins = RedisStandalone(redis_ins=self.redis_ins,
+                                                             redis_ins_name=self.redis_ins_name,
+                                                             redis_ins_type='Redis-Standalone',
+                                                             redis_ins_mem=self.redis_mem,
+                                                             redis_ip=slave_ip,
+                                                             redis_port=slave_port,
+                                                             master_name=self.redis_master_name,
+                                                             master_ip_port="{0}:{1}".format(self.redis_master_ip, self.redis_master_port))
+                redis_slave_standalone_ins.create_redis_conf_file()
         return True
 
     def start_redis_master(self):
@@ -754,6 +754,12 @@ class StartRedisCluster:
         """
         if isinstance(cluster_list, list):
             self.cluster_list = cluster_list
+        redis_standalone_conf = get_redis_conf("Redis-Standalone")
+        redis_pass_word = redis_standalone_conf.filter(redis_version='3.0.6').values('masterauth').first()
+        if redis_pass_word:
+            self.redis_pass_word = redis_pass_word['masterauth']
+        else:
+            self.redis_pass_word = None
 
     def redis_cluster_list(self):
         """
@@ -786,9 +792,15 @@ class StartRedisCluster:
                     for redis_ins_one_by_one in redis_ins_list_copy:
                         redis_ins_one_by_one_ip = redis_ins_one_by_one[0]
                         redis_ins_one_port_port = redis_ins_one_by_one[1]
-                        comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3}".format(
-                            redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip, redis_ins_one_port_port
-                        )
+                        if self.redis_pass_word:
+                            comm_line = "/opt/repoll/redis/src/redis-cli -c -a {0} -h {1} -p {2} cluster meet {3} {4}".format(
+                                self.redis_pass_word, redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip,
+                                redis_ins_one_port_port
+                            )
+                        else:
+                            comm_line = "/opt/repoll/redis/src/redis-cli -c -h {0} -p {1} cluster meet {2} {3}".format(
+                                redis_ins_one_ip, redis_ins_one_port, redis_ins_one_by_one_ip,redis_ins_one_port_port
+                            )
                         _exex_command = do_command(host=redis_ins_one_ip, commands=comm_line)
                         if _exex_command[0] == 0:
                             logging.info("{0}:{1} cluster meet {2}:{3} is ok".format(
