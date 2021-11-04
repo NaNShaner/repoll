@@ -864,17 +864,17 @@ class StartRedisCluster:
             for redis_ip_port in self.cluster_list:
                 redis_master_ip = redis_ip_port['redis_master']
                 if self.redis_pass_word:
-                    _get_redis_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
-                                                                 host_ip=redis_master_ip[0],
-                                                                 host_port=redis_master_ip[1],
-                                                                 pass_word=self.redis_pass_word)
+                    _get_redis_master_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
+                                                                        host_ip=redis_master_ip[0],
+                                                                        host_port=redis_master_ip[1],
+                                                                        pass_word=self.redis_pass_word)
                 else:
-                    _get_redis_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
-                                                                 host_ip=redis_master_ip[0],
-                                                                 host_port=redis_master_ip[1])
-                _add_slot_comm_line = _get_redis_server_cli + "cluster addslots {0}{1}{2}".format("{",
-                                                                                                   slot_split[num],
-                                                                                                   "}")
+                    _get_redis_master_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
+                                                                        host_ip=redis_master_ip[0],
+                                                                        host_port=redis_master_ip[1])
+                _add_slot_comm_line = _get_redis_master_server_cli + "cluster addslots {0}{1}{2}".format("{",
+                                                                                                         slot_split[num],
+                                                                                                         "}")
                 logger.info(f"集群创建啊命令为{_add_slot_comm_line}")
                 _ex_addslots_command = do_command(host=redis_master_ip[0],
                                                   commands=_add_slot_comm_line)
@@ -883,7 +883,16 @@ class StartRedisCluster:
                 else:
                     logger.error("add slot 失败，报错为{0}".format(_ex_addslots_command[1]))
                 for redis_slave_ip in redis_ip_port['redis_slave']:
-                    _add_master_replca_comm_line = _get_redis_server_cli + " cluster replicate {0}".format(
+                    if self.redis_pass_word:
+                        _get_redis_slave_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
+                                                                           host_ip=redis_slave_ip[0],
+                                                                           host_port=redis_slave_ip[1],
+                                                                           pass_word=self.redis_pass_word)
+                    else:
+                        _get_redis_slave_server_cli = get_redis_server_cli(redis_type="Redis-Cluster",
+                                                                           host_ip=redis_slave_ip[0],
+                                                                           host_port=redis_slave_ip[1])
+                    _add_master_replca_comm_line = _get_redis_slave_server_cli + " cluster replicate {0}".format(
                         cluster_node_info['{0}:{1}'.format(redis_master_ip[0], redis_master_ip[1])]
                     )
                     logger.info(_add_master_replca_comm_line)
