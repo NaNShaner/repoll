@@ -342,6 +342,8 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
         if obj:
             if ApplyRedisInfo.objects.filter(apply_ins_name=obj.apply_ins_name):
                 self.readonly_fields = [field.name for field in RedisApply._meta.fields]
+        else:
+            self.readonly_fields = ()
         if 'apply_status' not in self.readonly_fields:
             self.readonly_fields = list(self.readonly_fields)
             self.readonly_fields.append('apply_status')
@@ -362,6 +364,7 @@ class ApplyRedisInfoAdmin(admin.ModelAdmin):
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
                     'pub_date', 'apply_status']
+
     list_display_links = ['id', 'apply_ins_name']
     list_filter = ['redis_type']
     search_fields = ['area']
