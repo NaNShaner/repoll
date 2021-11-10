@@ -444,7 +444,7 @@ class ApplyRedisText(models.Model):
     """用于DBA配置已审批通过的Redis实例"""
     # ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, to_field="redis_ins_name", on_delete=models.CASCADE)
-    apply_text = models.TextField(max_length=250, verbose_name="实例详情",
+    apply_text = models.TextField(max_length=2400, verbose_name="实例详情",
                                   blank=True, null=True, help_text="具体规则如下: </br>"
                                                                    "1. standalone类型：</br>"
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
