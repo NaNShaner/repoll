@@ -10,18 +10,28 @@ import logging
 logger = logging.getLogger("redis.monitor")
 
 
-def get_redis_status(func, ins_name):
+def get_redis_status(func, ins_name, redis_ip, redis_port):
     """
     获取当前redis实例或集群的状态，判断是否需要执行入库操作
     :param func:
     :param ins_name:
+    :param redis_ip:
+    :param redis_port:
     :return:
     """
-    running_type = func.objects.filter(running_ins_name=ins_name).values("running_time")
-    return running_type["running_time"]
+    running_type_dict = {}
+    try:
+        running_type = func.objects.filter(running_ins_name=ins_name).filter(redis_ip=redis_ip).filter(running_ins_port=redis_port).values("redis_ins_alive")
+        running_type_dict = running_type.first()
+    except Exception as e:
+        logger.error(
+            f"get_redis_status--end:{e}")
+    logger.error(
+        f"running_type:{running_type_dict}")
+    return running_type_dict["redis_ins_alive"]
 
 
-def set_redis_status(func, ins_name, mes):
+def set_redis_status(func, ins_name, mes, redis_ip, redis_port):
     """
     获取当前redis实例或集群的状态，判断是否需要执行入库操作
     :param func:
@@ -30,7 +40,7 @@ def set_redis_status(func, ins_name, mes):
     :return:
     """
     try:
-        func.objects.filter(running_ins_name=ins_name).update(running_time=mes)
+        func.objects.filter(running_ins_name=ins_name).filter(redis_ip=redis_ip).filter(running_ins_port=redis_port).update(redis_ins_alive=mes)
     except ImportError as e:
         logger.error(e)
     return True
@@ -86,7 +96,7 @@ def get_all_redis_ins():
                     all_ip_port.append(ip_port)
         except redis.exceptions.ConnectionError as e:
             logger.error("报错信息为".format(e))
-        logger.error("all_sentienl_ip_port : {0}".format(all_sentienl_ip_port))
+        # logger.error("all_sentienl_ip_port : {0}".format(all_sentienl_ip_port))
     return all_ip_port, all_sentienl_ip_port
 
 
@@ -101,18 +111,31 @@ def get_redis_ins_qps():
     for items in all_ip_port:
         try:
             redis_mon = RedisScheduled(redis_ip=items['redis_ip'], redis_port=items['running_ins_port'],
-                                       redis_ins_mem=items['redis_ins_mem'], redis_ins=items['redis_ins'])
+                                       redis_ins_mem=items['redis_ins_mem'], redis_ins=items['redis_ins'],
+                                       password="qZr3pet")
+            logger.error(f"00.实例{items['redis_ins'].running_ins_name}的运行模式{items['redis_type']},{items['redis_ip']}:{items['running_ins_port']}的存活状态为{redis_mon.redis_alive}")
             if not redis_mon.redis_alive:
+                logger.error(
+                    f"01.实例{items['redis_ins'].running_ins_name}的运行模式{items['redis_type']},{items['redis_ip']}:{items['running_ins_port']}的存活状态为{redis_mon.redis_alive}")
+
                 if items["redis_type"] == 'Redis-Cluster':
-                    now_status = get_redis_status(RunningInsCluster, items['redis_ins'].running_ins_name)
+                    now_status = get_redis_status(RunningInsCluster, items['redis_ins'].running_ins_name, items['redis_ip'], items['running_ins_port'])
+                    logger.error(
+                        f"02.实例{items['redis_ins'].running_ins_name}的运行模式{items['redis_type']},{items['redis_ip']}:{items['running_ins_port']}的数据库中的状态为{now_status}")
                     if now_status != "未启动":
-                        set_redis_status(RunningInsCluster, items['redis_ins'].running_ins_name, "未启动")
+                        set_redis_status(RunningInsCluster, items['redis_ins'].running_ins_name, "未启动", items['redis_ip'], items['running_ins_port'])
                     cluster_alive_status = redis_mon.cluster_alive_status
+                    logger.error(
+                        f"实例{items['redis_ins'].running_ins_name}的运行模式{items['redis_type']},{items['redis_ip']}:{items['running_ins_port']}的集群存活状态为{cluster_alive_status}")
+
                     if not cluster_alive_status or cluster_alive_status["cluster_state"] != "ok":
                         RunningInsTime.objects.filter(running_ins_name=items['redis_ins'].running_ins_name).update(
                             running_time=0, running_type="未运行")
                         logger.error("集群实例{0}，未启动".format(items['redis_ins'].running_ins_name))
                 elif items["redis_type"] == 'Redis-Sentinel':
+                    logger.error(
+                        f"01.实例{items['redis_ins'].running_ins_name}的运行模式{items['redis_type']},{items['redis_ip']}:{items['running_ins_port']}的存活状态为{redis_mon.redis_alive}")
+
                     RunningInsSentinel.objects.filter(redis_ip=items['redis_ip'],
                                                       running_ins_port=items['running_ins_port']).update(
                         redis_ins_alive="未启动")
