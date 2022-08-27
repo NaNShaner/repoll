@@ -48,7 +48,7 @@ def apply_redis_text_handler(sender, **kwargs):
             if redis_start.start_server():
                 logger.info("Redis 单实例启动成功，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
             else:
-                logging.info("Redis 单实例启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
+                logger.info("Redis 单实例启动失败，服务器IP：{0}, 启动端口为：{1}".format(redis_ip, redis_port))
                 raise ValidationError("redis 单实例启动失败")
         else:
             raise ValidationError("redis 单实例启动失败")
@@ -72,13 +72,13 @@ def apply_redis_text_handler(sender, **kwargs):
                 start_slave = b.start_slave_master()
                 if start_slave:
                     b.start_sentinel_master()
-                    logging.info("哨兵模式启动成功,redis_master_ip_port:{0},"
-                                 "redis_slave_ip_port:{1},"
-                                 "redis_sentinel_ip_port:{2},"
-                                 "redis_master_name:{3}".format(redis_apply_text_split['redis_master_ip_port'],
-                                                                redis_apply_text_split['redis_slave_ip_port'],
-                                                                redis_apply_text_split['redis_sentinel_ip_port'],
-                                                                redis_apply_text_split['redis_master_name']))
+                    logger.info("哨兵模式启动成功,redis_master_ip_port:{0},"
+                                "redis_slave_ip_port:{1},"
+                                "redis_sentinel_ip_port:{2},"
+                                "redis_master_name:{3}".format(redis_apply_text_split['redis_master_ip_port'],
+                                                               redis_apply_text_split['redis_slave_ip_port'],
+                                                               redis_apply_text_split['redis_sentinel_ip_port'],
+                                                               redis_apply_text_split['redis_master_name']))
         else:
             raise ValidationError("redis 哨兵动失败")
         b.save_sentinel_redis_ins()
@@ -105,6 +105,7 @@ def apply_redis_text_handler(sender, **kwargs):
                                           redis_ins_mem=redis_one_ins['redis_mem'],
                                           redis_ip=all_redis_ins[0],
                                           redis_port=all_redis_ins[1])
+                    # c.check_redis_cluster_port(redis_apply_text_split)
                     file_status = c.create_cluster_file()
                     if file_status:
                         c.start_all_redis_ins()
@@ -421,8 +422,6 @@ class RedisStandalone:
         obj_runningins = RunningInsTime(running_ins_name=self.redis_ins_name,
                                         redis_type=self.redis_ins_type,
                                         redis_ins_mem=self.redis_ins_mem,
-                                        # redis_ip=self.redis_ip,
-                                        # running_ins_port=self.redis_port
                                         )
         obj_runningins.save()
         try:
@@ -745,6 +744,22 @@ class RedisClusterClass:
         else:
             logger.info("redis 实例{2}启动失败，ip:port: {0}:{1}".format(self.redis_ip, self.redis_port, self.redis_ins_name))
             return False
+
+    def check_redis_cluster_port(self, redis_one_ins):
+        """
+        由于集群需要使用监听端口和集群间通信2个端口，默认逻辑是通信端口=监听端口+10000
+        :param redis_one_ins: 集群实例详情
+        :return:
+        """
+        for redis_ins in redis_one_ins:
+            for ins in redis_ins["redis_ip_port"]:
+                cluster_self_connet_port = int(ins[1]) + 10000
+                _comm = f"/usr/sbin/lsof -i:{cluster_self_connet_port}"
+                _ex_comm = do_command(ins[0], _comm)
+                if _ex_comm[0] == 0:
+                    logger.error(f"{self.redis_ins_name} 端口存活检查失败:{ins[0]}上存在{cluster_self_connet_port}")
+                    raise ValidationError(f"{self.redis_ins_name} 端口存活检查失败:{ins[0]}上存在{cluster_self_connet_port}")
+        return True
 
     def save_cluster_ins(self):
         """
