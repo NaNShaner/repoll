@@ -64,7 +64,7 @@ class RedisScheduled(object):
         except ConnectionError as e:
             RunningInsTime.objects.filter(running_ins_name=self.redis_ins.running_ins_name).update(
                 running_time="未启动")
-            print("ConnectionRefusedError: {0}".format(e))
+            logger.error(f"实例：{self.redis_ins} 的{self.redis_ip}:{self.redis_port} 抛出ConnectionRefusedError: {e}")
 
     def redis_connections(self):
         """
