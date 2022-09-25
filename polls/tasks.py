@@ -46,6 +46,116 @@ def set_redis_status(func, ins_name, mes, redis_ip, redis_port):
     return True
 
 
+class AllRedisIns:
+    def __int__(self, redis_name=None, redis_ins=None):
+        """
+
+        :param redis_name: 实例名称
+        :param redis_ins:  实例对象obj
+        :return:
+        """
+        self.redis_name = redis_name
+        # self.ip_port_dict = ip_port_dict
+        self.sentinel = "Redis-Sentinel"
+        self.standalone = 'Redis-Standalone'
+        self.cluster = "Redis-Cluster"
+        self.redis_err_type = "default"
+        # 平台内所有入库的redis 实例的ip地址和端口存入该列表
+        self.all_ip_port = []
+        # 平台内所有哨兵实例的ip地址和端口存入该列表
+        self.all_sentinel_ip_port = []
+
+        self.redis_ins = []
+        running_ins_names = RunningInsTime.objects.all()
+        all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
+        for redis_name in all_redis_names:
+            redis_ins = running_ins_names.get(running_ins_name=redis_name)
+            self.redis_ins_list = self.redis_ins.append(redis_ins)
+
+    def get_redis_running_type(self, ins):
+        """
+        判断redis实例的运行模式，非单机、烧饼、集群模式反馈default
+        :return:
+        """
+        if ins.redis_type == self.sentinel:
+            return self.sentinel
+        elif ins.redis_type == self.standalone:
+            return self.standalone
+        elif ins.redis_type == self.cluster:
+            return self.cluster
+        else:
+            return "default"
+
+    def get_all_redis_sentinel(self):
+        """
+        如是哨兵模式，获取哨兵实例所有实例地址及其端口信息
+        :return: self.all_sentinel_ip_port 哨兵实例的地址和端口，self.all_ip_port redis实例的地址和端口
+        """
+        redis_type = self.get_redis_running_type()
+        if redis_type == self.redis_err_type:
+            return
+        if redis_type == self.sentinel:
+            redis_sentinel = RunningInsSentinel.objects.all().filter(running_ins_name=self.redis_name).values()
+            for redis_ip_port in redis_sentinel:
+                ip_port = {}
+                if redis_ip_port["redis_type"] != 'Redis-Sentinel':
+                    ip_port['redis_ip'] = redis_ip_port['redis_ip']
+                    ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
+                    ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
+                    ip_port['redis_ins'] = self.redis_ins
+                    ip_port['redis_type'] = 'Redis-Sentinel'
+                    self.all_ip_port.append(ip_port)
+                else:
+                    ip_port['redis_ip'] = redis_ip_port['redis_ip']
+                    ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
+                    self.all_sentinel_ip_port.append(ip_port)
+            return self.all_sentinel_ip_port, self.all_ip_port
+
+    def get_all_redis_cluster(self):
+        redis_type = self.get_redis_running_type()
+        if redis_type == self.redis_err_type:
+            return
+        if redis_type == self.cluster:
+            redis_cluster = RunningInsCluster.objects.all().filter(running_ins_name=self.redis_name).values()
+            for redis_ip_port in redis_cluster:
+                ip_port = {'redis_ip': redis_ip_port['redis_ip'], 'running_ins_port': redis_ip_port['running_ins_port'],
+                           'redis_ins_mem': redis_ip_port['redis_ins_mem'], 'redis_ins': self.redis_ins,
+                           'redis_type': 'Redis-Cluster'}
+                self.all_ip_port.append(ip_port)
+            return self.all_ip_port
+
+    def get_all_redis_standalone(self):
+        redis_type = self.get_redis_running_type()
+        if redis_type == self.redis_err_type:
+            return
+        if redis_type == self.standalone:
+            redis_standalone = RunningInsStandalone.objects.all().filter(running_ins_name=self.redis_name).values()
+            for redis_standalone_ins in redis_standalone:
+                ip_port = {'redis_ip': redis_standalone_ins['redis_ip'],
+                           'running_ins_port': redis_standalone_ins['running_ins_port'],
+                           'redis_ins_mem': redis_standalone_ins['redis_ins_mem'], 'redis_ins': self.redis_ins,
+                           'redis_type': 'Redis-Standalone'}
+                self.all_ip_port.append(ip_port)
+            return self.all_ip_port
+
+    def get_all_redis_ins_info(self):
+        """
+        返回集群内所有实例的地址及其端口
+        :return:
+        """
+
+        for i in self.redis_ins_list:
+            self.get_all_redis_standalone()
+            self.get_all_redis_sentinel()
+            self.get_all_redis_cluster()
+
+
+        redis_sentinel, redis_ins = self.get_all_redis_sentinel()
+        redis_cluster_ins = self.get_all_redis_cluster()
+        redis_standalone = self.get_all_redis_standalone()
+        return redis_ins + redis_cluster_ins + redis_standalone, redis_sentinel
+
+
 def get_all_redis_ins():
     """
     获取当前平台内所有的redis实例的ip和端口，用于监控使用
@@ -54,50 +164,11 @@ def get_all_redis_ins():
     """
     running_ins_names = RunningInsTime.objects.all()
     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
-    all_ip_port = []    # 平台内所有入库的redis 实例的ip地址和端口存入该列表
-    all_sentienl_ip_port = []   # 平台内所有哨兵实例的ip地址和端口存入该列表
     for redis_name in all_redis_names:
-        try:
-            redis_ins = running_ins_names.get(running_ins_name=redis_name)
-            if redis_ins.redis_type == 'Redis-Sentinel':
-                redis_sentinel = RunningInsSentinel.objects.all().filter(running_ins_name=redis_name).values()
-                for redis_ip_port in redis_sentinel:
-                    ip_port = {}
-                    if redis_ip_port["redis_type"] != 'Redis-Sentinel':
-                        ip_port['redis_ip'] = redis_ip_port['redis_ip']
-                        ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
-                        ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
-                        ip_port['redis_ins'] = redis_ins
-                        ip_port['redis_type'] = 'Redis-Sentinel'
-                        all_ip_port.append(ip_port)
-                    else:
-                        ip_port['redis_ip'] = redis_ip_port['redis_ip']
-                        ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
-                        all_sentienl_ip_port.append(ip_port)
-            elif redis_ins.redis_type == 'Redis-Standalone':
-                redis_standalone = RunningInsStandalone.objects.all().filter(running_ins_name=redis_name).values()
-                for redis_standalone_ins in redis_standalone:
-                    ip_port = {}
-                    ip_port['redis_ip'] = redis_standalone_ins['redis_ip']
-                    ip_port['running_ins_port'] = redis_standalone_ins['running_ins_port']
-                    ip_port['redis_ins_mem'] = redis_standalone_ins['redis_ins_mem']
-                    ip_port['redis_ins'] = redis_ins
-                    ip_port['redis_type'] = 'Redis-Standalone'
-                    all_ip_port.append(ip_port)
-            elif redis_ins.redis_type == 'Redis-Cluster':
-                redis_cluster = RunningInsCluster.objects.all().filter(running_ins_name=redis_name).values()
-                for redis_ip_port in redis_cluster:
-                    ip_port = {}
-                    ip_port['redis_ip'] = redis_ip_port['redis_ip']
-                    ip_port['running_ins_port'] = redis_ip_port['running_ins_port']
-                    ip_port['redis_ins_mem'] = redis_ip_port['redis_ins_mem']
-                    ip_port['redis_ins'] = redis_ins
-                    ip_port['redis_type'] = 'Redis-Cluster'
-                    all_ip_port.append(ip_port)
-        except redis.exceptions.ConnectionError as e:
-            logger.error("报错信息为".format(e))
-        # logger.error("all_sentienl_ip_port : {0}".format(all_sentienl_ip_port))
-    return all_ip_port, all_sentienl_ip_port
+        redis_ins = running_ins_names.get(running_ins_name=redis_name)
+        ari = AllRedisIns()
+        a = ari.get_all_redis_ins_info()
+
 
 
 def get_redis_ins_qps():
@@ -221,7 +292,6 @@ def get_redis_ins_qps():
                         running_time=redis_uptime_in_days,
                         running_type="运行中",
                         running_ins_used_mem_rate=redis_memory_usage)
-                    # logger.error("实例：{0}，{1}:{2}".format("RunningInsStandalone", items['redis_ip'], items['running_ins_port']))
         except ValueError as e:
             logger.error("报错信息为{0}".format(e))
         finally:
