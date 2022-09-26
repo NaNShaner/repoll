@@ -35,14 +35,14 @@ def apply_redis_text_handler(sender, **kwargs):
     if redis_ins_type == 'Redis-Standalone':
         redis_ip = redis_apply_text_split['redis_ip']
         redis_port = redis_apply_text_split['redis_port']
-        redis_standalon_ins = RedisStandalone(redis_ins=redis_ins_obj,
-                                              redis_ins_name=redis_ins_obj_name,
-                                              redis_ins_type=redis_ins_type,
-                                              redis_ins_mem=redis_apply_text_split['redis_mem'],
-                                              redis_ip=redis_ip,
-                                              redis_port=redis_port)
-        redis_standalon_ins.saved_redis_running_ins()
-        if redis_standalon_ins.create_redis_conf_file():
+        redis_standalone_ins = RedisStandalone(redis_ins=redis_ins_obj,
+                                               redis_ins_name=redis_ins_obj_name,
+                                               redis_ins_type=redis_ins_type,
+                                               redis_ins_mem=redis_apply_text_split['redis_mem'],
+                                               redis_ip=redis_ip,
+                                               redis_port=redis_port)
+        redis_standalone_ins.saved_redis_running_ins()
+        if redis_standalone_ins.create_redis_conf_file():
             redis_start = RedisStartClass(host=redis_ip,
                                           redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" + str(redis_port) + ".conf")
             if redis_start.start_server():
