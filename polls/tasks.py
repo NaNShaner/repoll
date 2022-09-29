@@ -140,7 +140,7 @@ def get_all_redis_ins():
     for redis_name in all_redis_names:
         redis_ins = running_ins_names.get(running_ins_name=redis_name)
         redis_name = redis_name
-        ari = AllRedisIns(redis_ins, redis_name)
+        ari = AllRedisIns(redis_name, redis_ins)
         # 尽早报错
         if ari.get_redis_running_type() != redis_err_type:
             if ari.get_redis_running_type() == sentinel:
