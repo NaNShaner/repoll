@@ -406,19 +406,19 @@ class RedisApplyAdmin(admin.ModelAdmin):
                 del actions['delete_selected']
         return actions
 
-    # def get_queryset(self, request):
-    #     """函数作用：使当前登录的用户只能看到自己负责的实例"""
-    #     qs = super(RedisApplyAdmin, self).get_queryset(request)
-    #     if request.user.is_superuser:
-    #         return qs
-    #     return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
+    def get_queryset(self, request):
+        """函数作用：使当前登录的用户只能看到自己负责的实例"""
+        qs = super(RedisApplyAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(create_user=RedisApply.objects.filter(create_user=request.user))
 
-    # def has_change_permission(self, request, obj=None):
-    #     if obj:
-    #         if request.method not in ('GET', 'HEAD'):
-    #             self.message_user(request, "操作实例为 {0} 的实例失败，实例已存在无法修改".format(obj.apply_ins_name))
-    #             return False
-    #     return super(RedisApplyAdmin, self).has_change_permission(request, obj)
+    def has_change_permission(self, request, obj=None):
+        if obj:
+            if request.method not in ('GET', 'HEAD'):
+                self.message_user(request, "操作实例为 {0} 的实例失败，实例已存在无法修改".format(obj.apply_ins_name))
+                return False
+        return super(RedisApplyAdmin, self).has_change_permission(request, obj)
 
     list_display = ['id', 'apply_ins_name', 'ins_disc', 'redis_type',
                     'redis_mem', 'sys_author', 'area',
