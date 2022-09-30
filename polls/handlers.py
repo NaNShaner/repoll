@@ -356,8 +356,10 @@ def regx_redis_conf(key, value, port, maxmemory=None, **kwargs):
                 key = key.replace(key, "sentinel monitor ")
                 value = value.replace("%masterName_ip_port_num%",
                                       " {0} {1} {2} {3}".format(kwargs['kwargs']['masterName'], kwargs['kwargs']['masterIp'],
-                                                                kwargs['kwargs']['masterPort'], kwargs['kwargs']['sentienlNum']))
+                                                                kwargs['kwargs']['masterPort'], kwargs['kwargs']['sentinelNum']))
                 return key, value
+            elif "authPass" in key:
+                key = key.replace(key, "sentinel auth-pass {0} ".format(kwargs['kwargs']['masterName']))
             elif "sentinelDownAfterMilliseconds" in key:
                 key = key.replace(key, "sentinel down-after-milliseconds ")
                 value = value.replace(value, " {0} 20000".format(kwargs['kwargs']['masterName']))
@@ -541,12 +543,12 @@ class RedisModelStartClass:
         for sentinel in self.redis_sentinel_ip_port:
             if isinstance(sentinel, str):
                 redis_sentinel_ip, redis_sentinel_port = sentinel.split(":")
-                conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(redis_sentinel_port) + "-sentienl.conf"
+                conf_file_name = "{0}/templates/".format(TEMPLATES_DIR) + str(redis_sentinel_port) + "-sentinel.conf"
                 conf_modify = {
                     "masterName": self.redis_master_name,
                     "masterIp": self.redis_master_ip,
                     "masterPort": self.redis_master_port,
-                    "sentienlNum": self.redis_sentinel_num,
+                    "sentinelNum": self.redis_sentinel_num,
                 }
                 with open(conf_file_name, 'w+') as f:
                     for k, v in all_redis_conf[0].items():
@@ -556,7 +558,7 @@ class RedisModelStartClass:
                                                        port=redis_sentinel_port, kwargs=conf_modify)
                                 f.write(k + " " + str(v) + "\n")
                 if do_scp(redis_sentinel_ip, conf_file_name,
-                          "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentienl.conf"):
+                          "/opt/repoll/conf/" + str(redis_sentinel_port) + "-sentinel.conf"):
                     logging.info("文件分发成功")
                 else:
                     logging.error("文件分发失败")
@@ -623,7 +625,7 @@ class RedisModelStartClass:
                 redis_sentinel_ip, redis_sentinel_port = sentinel.split(":")
                 redis_sentinel_start = RedisStartClass(host=redis_sentinel_ip,
                                                        redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/" +
-                                                                        str(redis_sentinel_port) + "-sentienl.conf --sentinel")
+                                                                        str(redis_sentinel_port) + "-sentinel.conf --sentinel")
                 redis_sentinel_start_result = redis_sentinel_start.start_server()
                 start_result_dict["{0}:{1}".format(redis_sentinel_ip, redis_sentinel_port)] = redis_sentinel_start_result
         return start_result_dict
