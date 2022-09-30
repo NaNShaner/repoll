@@ -330,6 +330,12 @@ class RedisConf(models.Model):
     logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
                                verbose_name="logfile", default="/opt/repoll/")
 
+    # 默认Redis密码
+    masterauth = models.CharField(max_length=150, help_text="当master服务设置了密码保护时slave服务连接master的密码",
+                                  verbose_name="masterauth", null=True, blank=True, default="qZr3pet")
+    requirepass = models.CharField(max_length=150, help_text="设置客户端连接后进行任何其他指定前需要使用的密码",
+                                   verbose_name="requirepass", null=True, blank=True, default="qZr3pet")
+
     def __str__(self):
         return self.redis_version
 
@@ -365,6 +371,9 @@ class RedisSentienlConf(models.Model):
                                              default="%s 1%")
     logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
                                verbose_name="logfile", default="/opt/repoll/")
+    # 默认Redis密码
+    authPass = models.CharField(max_length=150, help_text="当master服务设置了密码保护时slave服务连接master的密码",
+                                verbose_name="auth-pass", null=True, blank=True, default="qZr3pet")
 
     def __str__(self):
         return "Sentinel 配置成功"
@@ -438,7 +447,7 @@ class ApplyRedisText(models.Model):
     """用于DBA配置已审批通过的Redis实例"""
     # ipaddr = models.ForeignKey(Ipaddr, on_delete=models.CASCADE, null=True)
     redis_ins = models.ForeignKey(RedisIns, to_field="redis_ins_name", on_delete=models.CASCADE)
-    apply_text = models.TextField(max_length=250, verbose_name="实例详情",
+    apply_text = models.TextField(max_length=2400, verbose_name="实例详情",
                                   blank=True, null=True, help_text="具体规则如下: </br>"
                                                                    "1. standalone类型：</br>"
                                                                    "masterIp:masterPort:memSize(M)(例如：10.10.xx.xx:2048)</br>"
