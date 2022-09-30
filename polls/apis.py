@@ -75,7 +75,7 @@ def redisstart(request, redis_type, ins_id):
         running_ins_type = c.__dict__['redis_type']
     if running_ins_type == 'Redis-Sentinel':
         redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
-                                   redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-sentienl.conf --sentinel".format(
+                                   redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-sentinel.conf --sentinel".format(
                                        running_ins_port['running_ins_port']))
     else:
         if redis_type == 'cluster':
