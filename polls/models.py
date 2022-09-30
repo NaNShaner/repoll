@@ -371,6 +371,9 @@ class RedisSentienlConf(models.Model):
                                              default="%s 1%")
     logfile = models.CharField(max_length=150, help_text="Redis日志存放路径",
                                verbose_name="logfile", default="/opt/repoll/")
+    # 默认Redis密码
+    authPass = models.CharField(max_length=150, help_text="当master服务设置了密码保护时slave服务连接master的密码",
+                                verbose_name="auth-pass", null=True, blank=True, default="qZr3pet")
 
     def __str__(self):
         return "Sentinel 配置成功"
