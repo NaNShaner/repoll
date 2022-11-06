@@ -16,24 +16,33 @@ class RunningInsTimeSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-@api_view(['GET'])
-@permission_classes((permissions.IsAuthenticated,))
-def redisstop(request, redis_type, ins_id):
-    """
-    API接口，停止redis实例。
-    授权模式，当前平台内部用户
-    """
+def get_running_ins(redis_type):
     if redis_type == 'sentinel':
         running_ins_time = RunningInsSentinel.objects.all()
     elif redis_type == 'standalone':
         running_ins_time = RunningInsStandalone.objects.all()
     elif redis_type == 'cluster':
         running_ins_time = RunningInsCluster.objects.all()
+    else:
+        running_ins_time = "default"
+    return running_ins_time
+
+
+@api_view(['GET'])
+@permission_classes((permissions.IsAuthenticated,))
+def redisstop(request, redis_type, ins_id):
+    """
+    TODO：硬编码密码
+    API接口，停止redis实例。
+    授权模式，当前平台内部用户
+    """
+    running_ins_time = get_running_ins(redis_type)
     running_ins = running_ins_time.filter(id=ins_id)
     running_ins_ip = running_ins.values('redis_ip').first()
     running_ins_port = running_ins.values('running_ins_port').first()
     redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
-                               redis_server_ctl="/opt/repoll/redis/src/redis-cli -p {0} shutdown".format(running_ins_port['running_ins_port']))
+                               redis_server_ctl="/opt/repoll/redis/src/redis-cli -a qZr3pet -p {0} shutdown".format(
+                                   running_ins_port['running_ins_port']))
     serializer = RunningInsTimeSerializer(running_ins, many=True)
     result = serializer.data[0]
     if redisins.start_server():
@@ -62,12 +71,7 @@ def redisstart(request, redis_type, ins_id):
     API接口，启动redis实例。
     授权模式，当前平台内部用户
     """
-    if redis_type == 'sentinel':
-        running_ins_time = RunningInsSentinel.objects.all()
-    elif redis_type == 'standalone':
-        running_ins_time = RunningInsStandalone.objects.all()
-    elif redis_type == 'cluster':
-        running_ins_time = RunningInsCluster.objects.all()
+    running_ins_time = get_running_ins(redis_type)
     running_ins = running_ins_time.filter(id=ins_id)
     running_ins_ip = running_ins.values('redis_ip').first()
     running_ins_port = running_ins.values('running_ins_port').first()
@@ -75,12 +79,14 @@ def redisstart(request, redis_type, ins_id):
         running_ins_type = c.__dict__['redis_type']
     if running_ins_type == 'Redis-Sentinel':
         redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
-                                   redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-sentinel.conf --sentinel".format(
+                                   redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/"
+                                                    "{0}-sentinel.conf --sentinel".format(
                                        running_ins_port['running_ins_port']))
     else:
         if redis_type == 'cluster':
             redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
-                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/{0}-cluster.conf".format(
+                                       redis_server_ctl="/opt/repoll/redis/src/redis-server /opt/repoll/conf/"
+                                                        "{0}-cluster.conf".format(
                                            running_ins_port['running_ins_port']))
         else:
             redisins = RedisStartClass(host=running_ins_ip['redis_ip'],
@@ -121,7 +127,7 @@ def allredisins(request, redis_type=None):
     try:
         if redis_type == "all":
             sentinel_ins = sentinel_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
-                                                    'redis_ins_mem', 'redis_type', 'running_ins_name',)
+                                                    'redis_ins_mem', 'redis_type', 'running_ins_name', )
             stanalone_ins = stanalone_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
                                                       'redis_ins_mem', 'redis_type', 'running_ins_name')
             cluster_ins = cluster_ins_time.values('redis_ip', 'running_ins_port', 'redis_ins_alive',
