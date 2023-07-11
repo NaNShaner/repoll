@@ -103,7 +103,7 @@ sh repoll-init.sh repoll # 密码自定义
 * 管理员（dba角色）进行配置上线
 
 # demo演示
-http://repoll.club:8091/
+http://43.143.240.39/
 admin/admin
 
 
