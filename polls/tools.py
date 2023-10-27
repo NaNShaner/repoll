@@ -1,3 +1,5 @@
+import ipaddress
+
 from django.core.exceptions import ValidationError
 from django.utils.html import format_html
 from IPy import IP
@@ -16,7 +18,8 @@ def my_custom_sql():
     row_list = []
     cursor = connection.cursor()
     db_name = settings.DATABASES
-    cursor.execute(f"SELECT ip FROM {db_name['default']['NAME']}.polls_ipaddr")
+    # cursor.execute(f"SELECT ip FROM {db_name['default']['NAME']}.polls_ipaddr")
+    cursor.execute(f"SELECT ip FROM 'polls_ipaddr'")
     row = cursor.fetchall()
     for i in row:
         row_list.append(i[0])
@@ -29,10 +32,10 @@ def judge_legal_ip(ip):
     :param ip:
     :return:
     """
-    compile_ip = re.compile('^((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)$')
-    if compile_ip.match(ip):
+    try:
+        ipaddress.IPv4Network(ip)
         return True
-    else:
+    except ValueError:
         return False
 
 
