@@ -739,6 +739,7 @@ class RedisPollControlAdmin(admin.ModelAdmin):
     list_display = ['id', 'ip', 'area', 'machina_type', 'machina_mem']
     list_filter = ['ip', 'area']
     search_fields = ['ip', 'area']
+    list_display_links = ['id', 'ip']
     list_per_page = 15
 
     inlines = [ServerUserLine]

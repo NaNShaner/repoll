@@ -1,7 +1,7 @@
 from .models import *
 import paramiko
 import logging
-from .scheduled import mem_unit_chage
+from .scheduled import mem_unit_change
 from django.core.exceptions import ValidationError
 # 针对model 的signal
 from django.dispatch import receiver
@@ -457,7 +457,7 @@ class RedisStandalone:
                 if k != 'id' and k != 'redis_version' and k != 'redis_type':
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port,
-                                               maxmemory=mem_unit_chage(self.redis_ins_mem))
+                                               maxmemory=mem_unit_change(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
             if self.master_name:
                 _maser_ip_port = self.master_ip_port.split(":")
@@ -716,13 +716,13 @@ class RedisClusterClass:
                 if k != 'id' and k != 'redis_version' and k != 'redis_type':
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port,
-                                               maxmemory=mem_unit_chage(self.redis_ins_mem))
+                                               maxmemory=mem_unit_change(self.redis_ins_mem))
                         f.write(k + " " + str(v) + "\n")
             for k, v in all_cluster_conf[0].items():
                 if k != 'id' and k != 'redis_version' and k != 'redis_type':
                     if isinstance(v, str) or isinstance(v, int):
                         k, v = regx_redis_conf(key=k, value=v, port=self.redis_port,
-                                               maxmemory=mem_unit_chage(self.redis_ins_mem),
+                                               maxmemory=mem_unit_change(self.redis_ins_mem),
                                                kwargs={"redis_port": self.redis_port})
                         f.write(k + " " + str(v) + "\n")
         if do_scp(self.redis_ip, conf_file_name, "/opt/repoll/conf/" + str(self.redis_port) + "-cluster.conf"):

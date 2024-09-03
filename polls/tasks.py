@@ -147,9 +147,13 @@ def get_all_redis_ins():
     :type: list
     """
     all_sentinel_ip_port, all_ip_port = [], []
+
     running_ins_names = RunningInsTime.objects.all()
     all_redis_names = [running_ins_name.__dict__['running_ins_name'] for running_ins_name in running_ins_names]
+    logger.info("{0}".format(all_redis_names))
+
     for redis_name in all_redis_names:
+
         redis_ins = running_ins_names.get(running_ins_name=redis_name)
         redis_name = redis_name
         ari = AllRedisIns(redis_name, redis_ins)
@@ -257,8 +261,8 @@ class RedisMonitorTask:
                                          running_ins_port=self.redis_ins['running_ins_port']).update(
             redis_type=self.redis_running_type,
             redis_ins_alive="运行中")
-        # logger.info("当前实例{1}:{2}的角色是{0}".format(self.redis_running_type, self.redis_ins['redis_ip'],
-        #                                                 self.redis_ins['running_ins_port']))
+        logger.info("当前实例{1}:{2}的角色是{0}".format(self.redis_running_type, self.redis_ins['redis_ip'],
+                                                        self.redis_ins['running_ins_port']))
 
     def redis_sentinel_monitor_alive(self):
         RunningInsSentinel.objects.filter(redis_ip=self.redis_ins['redis_ip'],
@@ -268,12 +272,14 @@ class RedisMonitorTask:
         for sentinel_items in self.redis_sentinel_ins:
             redis_sentinel_mon = RedisScheduled(redis_ip=sentinel_items['redis_ip'],
                                                 redis_port=sentinel_items['running_ins_port'])
-            logger.info("sentinel_items:{0} \n redis_sentinel_mon:{1} \n redis_sentinel_mon.info:{2}".format(sentinel_items,
-                                                                                                             redis_sentinel_mon.redis_alive,
-                                                                                                             redis_sentinel_mon.info))
+            logger.info(
+                "sentinel_items:{0} \n redis_sentinel_mon:{1} \n redis_sentinel_mon.info:{2}".format(sentinel_items,
+                                                                                                     redis_sentinel_mon.redis_alive,
+                                                                                                     redis_sentinel_mon.info))
             if redis_sentinel_mon.redis_alive:
                 RunningInsSentinel.objects.filter(redis_ip=sentinel_items['redis_ip'],
-                                                  running_ins_port=sentinel_items['running_ins_port']).update(redis_ins_alive="运行中")
+                                                  running_ins_port=sentinel_items['running_ins_port']).update(
+                    redis_ins_alive="运行中")
                 if redis_sentinel_mon.info:
                     if redis_sentinel_mon.info["master0"]["status"] == "ok":
                         RunningInsTime.objects.filter(
@@ -285,10 +291,10 @@ class RedisMonitorTask:
                             RunningInsTime.objects.filter(
                                 running_ins_name=self.redis_ins['redis_ins'].running_ins_name).update(
                                 running_ins_used_mem_rate=self.redis_memory_usage)
-                # logger.info("{0}:{1} 当前存活状态{2},入库状态{3}".format(sentinel_items['redis_ip'],
-                #                                                          sentinel_items['running_ins_port'],
-                #                                                          redis_sentinel_mon.redis_alive,
-                #                                                          result))
+                logger.info("{0}:{1} 当前存活状态{2}".format(sentinel_items['redis_ip'],
+                                                             sentinel_items['running_ins_port'],
+                                                             redis_sentinel_mon.redis_alive,
+                                                             ))
 
     def redis_standalone_monitor_alive(self):
         RunningInsStandalone.objects.filter(redis_ip=self.redis_ins['redis_ip'],
