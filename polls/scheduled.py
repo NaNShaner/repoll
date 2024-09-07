@@ -31,7 +31,7 @@ class RedisScheduled(object):
             logger.error("实例{0}:{1}  执行redis info命令失败，报错信息为{2}".format(self.redis_ip, self.redis_port, e))
             self.info = None
 
-    def redismonitor(self):
+    def redis_monitor(self):
         """
         链接redis实例，获取qps、内存使用率并将数据入库
         :return:
@@ -42,7 +42,7 @@ class RedisScheduled(object):
                 uptime_in_days = self.info['uptime_in_days']
                 i = 0
                 while i < 60:
-                    redis_ins_used_mem = mem_unit_chage(used_memory_human) / mem_unit_chage(self.redis_ins_mem)
+                    redis_ins_used_mem = mem_unit_change(used_memory_human) / mem_unit_change(self.redis_ins_mem)
                     time.sleep(1)
                     logger.info("{0},Redis的QPS为{1},已用内存{2},内存使用率{3},端口为{4},运行天数{5}".format(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
                                                                              self.info['instantaneous_ops_per_sec'],
@@ -64,7 +64,7 @@ class RedisScheduled(object):
         except ConnectionError as e:
             RunningInsTime.objects.filter(running_ins_name=self.redis_ins.running_ins_name).update(
                 running_time="未启动")
-            print("ConnectionRefusedError: {0}".format(e))
+            logger.error(f"实例：{self.redis_ins} 的{self.redis_ip}:{self.redis_port} 抛出ConnectionRefusedError: {e}")
 
     def redis_connections(self):
         """
@@ -144,7 +144,7 @@ class RedisScheduled(object):
         try:
             return self.info['rejected_connections']
         except Exception as e:
-            return None
+            return e
 
     def evicted_keys(self):
         """
@@ -154,7 +154,7 @@ class RedisScheduled(object):
         try:
             return self.info['evicted_keys']
         except Exception as e:
-            return None
+            return e
 
     def blocked_clients(self):
         """
@@ -164,7 +164,7 @@ class RedisScheduled(object):
         try:
             return self.info['blocked_clients']
         except Exception as e:
-            return None
+            return e
 
     def ops(self):
         """
@@ -174,7 +174,7 @@ class RedisScheduled(object):
         try:
             return self.info['instantaneous_ops_per_sec']
         except Exception as e:
-            return None
+            return e
 
     def hit_rate(self):
         """
@@ -251,7 +251,7 @@ class RedisScheduled(object):
             return None
 
 
-def mem_unit_chage(mem):
+def mem_unit_change(mem):
     """
     将内存大小换算为m为单位
     :param mem:
