@@ -7,6 +7,7 @@
 ![Django CI](https://github.com/NaNShaner/repoll/workflows/Django%20CI/badge.svg)
 # repoll
 使用django框架编写的redis的管理平台，[项目wiki](https://github.com/NaNShaner/repoll/wiki)
+
 ![Anurag's github stats](https://github-readme-stats.vercel.app/api?username=NaNShaner&show_icons=true&theme=radical)
 ## 项目简介
 ### 主要功能（当前功能）
@@ -18,14 +19,15 @@
 # 环境依赖
 - 操作系统
 ```
-Ubuntu 18.04
+CentOS Linux release 7.9
+```
+- 容器化运行
+```bash
+docker run -it -d -p 8000:8000 registry.cn-hangzhou.aliyuncs.com/repoll/mysite-repoll:0.2
 ```
 - 安装依赖
 ```
-apt install python3-pip
-apt-get install libmysqlclient-dev python3-dev
-# yum install mysql-devel python3-devel 
-pip3 install -r requirements.txt
+pip3 install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 # 配置Django
@@ -33,21 +35,6 @@ pip3 install -r requirements.txt
 ```angular2html
 make /django # 目录可以自定义
 cd /django ; git clone https://github.com/NaNShaner/repoll.git
-```
-* 配置数据库链接
-```
-vi /django/repoll/mysite/settings.py
-# 修改下文mysql的ip、port、库名、用户名以及密码
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django',
-        'USER': 'root',
-        'PASSWORD': 'Pass@word',
-        'HOST': '127.0.0.1',
-        'PORT': '32768',
-    }
-}
 ```
 
 * 初始化数据库
@@ -80,6 +67,7 @@ python3 manage.py runserver 127.0.0.1:8000 # 这里的IP换成本机服务器IP�
 ```
 # 访问项目地址
 ```
+# 账号/密码 admin/admin
 http://127.0.0.1:8000/admin
 ```
 
@@ -101,10 +89,6 @@ sh repoll-init.sh repoll # 密码自定义
 * 分配普通用户权限（dev或者ops角色）
 * 领导层进行审批（boss角色）
 * 管理员（dba角色）进行配置上线
-
-# demo演示
-http://43.143.240.39/
-admin/admin
 
 
 # Todo list
